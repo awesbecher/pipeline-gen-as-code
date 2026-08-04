@@ -1,0 +1,21 @@
+{
+  "name": "wesbecher",
+  "owner": {
+    "name": "Andrew Wesbecher",
+    "email": "awesbecher@gmail.com",
+    "url": "https://www.wesbecher.llc"
+  },
+  "metadata": {
+    "description": "Playbooks from wesbecher.llc, runnable.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "nine-engines",
+      "source": "./",
+      "description": "The Nine Engines pipeline generation playbook: company parameters in, budgeted engine portfolio and weekly operating loop out.",
+      "category": "sales",
+      "keywords": ["pipeline-generation", "gtm", "sales", "outbound", "abm", "plg"]
+    }
+  ]
+}
