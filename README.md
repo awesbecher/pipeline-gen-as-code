@@ -1,23 +1,73 @@
-# The Masterclass Pipeline Generation Playbook
+<div align="center">
+
+<img src="assets/banner.svg" alt="The Nine Engines: the Masterclass Pipeline Generation Playbook, by Andrew Wesbecher" width="100%">
 
 [![tests](https://github.com/awesbecher/masterclass-pipeline-gen/actions/workflows/tests.yml/badge.svg)](https://github.com/awesbecher/masterclass-pipeline-gen/actions/workflows/tests.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-0A0A0A)](LICENSE)
 [![dependencies](https://img.shields.io/badge/dependencies-zero-4361EE)](engine/)
 [![skill](https://img.shields.io/badge/agent%20skill-portable-4361EE)](skills/nine-engines/SKILL.md)
 
+**Company parameters in. A budgeted engine portfolio, per-engine 90-day
+build orders, and a weekly operating loop out.**
+
+[Give it to Claude](#give-it-to-claude) ·
+[What you get](#what-you-get) ·
+[The engines](#the-nine-engines) ·
+[How it works](#how-the-brain-works) ·
+[Wire your stack](docs/CONNECTORS.md) ·
+[The operator](#the-brain-behind-it)
+
+</div>
+
+---
+
 Every first meeting a B2B company books comes out of one of nine
 engines. Most companies run two or three well, a few badly, and call
 the rest "marketing." Most playbooks that could fix this are PDFs that
 die in a downloads folder.
 
-This one is different: it is a repo your AI agent can run. Feed it your
-company's parameters (stage, ARR target, team, product shape, ACV,
-cycle, monthly cash for pipeline) and it builds your plan: which
-engines to run now, which to instrument for next year, which to skip
-and why, how the budget splits, the first 90 days per engine, and a
-weekly operating loop that compounds because the plan files are the
-memory. The math underneath is deterministic and tested. The reasoning
-is written down where you can argue with it.
+**The Masterclass Pipeline Generation Playbook** is different: it is a
+repo your AI agent can run. Feed it your company's parameters (stage,
+ARR target, team, product shape, ACV, cycle, monthly cash for pipeline)
+and it builds your plan: which engines to run now, which to instrument
+for next year, which to skip and why, how the budget splits, the first
+90 days per engine, and a weekly operating loop that compounds because
+the plan files are the memory. The math underneath is deterministic and
+tested. The reasoning is written down where you can argue with it.
+
+## What you get
+
+Real output, not a promise. This is `node engine/run.cjs` against the
+example company in `company/params.example.yaml`: an AI security
+startup at $120K ACV, a 178-day cycle, two ramped and two ramping AEs,
+and $25K a month for pipeline.
+
+| Engine | Verdict | Monthly | Why |
+|--------|---------|--------:|-----|
+| Automated Outbound | run now | $3,863 | The baseline layer: one GTM engineer, waterfall enrichment, warmed domains, human-approved sends. |
+| Product-Led Growth | defer | – | No self-serve surface. Revisit when a free tier or trial exists. |
+| Manual Outbound + Cold Calling | run now | $5,795 | ACV clears the bar for tiered, rep-led outbound. The deep-dive program is the operating manual. |
+| ABM | run now | $3,863 | Enterprise ACV and reps to route to: named list, signal architecture, stage scoring. |
+| Community + Partner Led | instrument now | $1,875 | Partner lane only: marketplace listing plus two or three co-sell relationships. |
+| Paid Media | run now | $1,931 | Named list exists and budget clears the floor: full-funnel creative, demo asks only at warm retargeting. |
+| SEO + AEO | instrument now | $1,875 | Start the clusters and versus pages now; AI-referred traffic converts about five times organic. |
+| Social Content | run now | $1,931 | Three founder posts a week plus daily comments; capture engaged accounts into outbound. |
+| Events | run now | $3,863 | Enterprise ICP: one or two ICP-dense events a quarter, half the meetings pre-booked. |
+
+And because a plan that funds engines but cannot staff the meetings
+fails in Q3, the same run checks the seat math:
+
+```text
+Steady-state per ramped AE: $999,996 a year.
+Gross bookings needed for the bridge: $6,960,000.
+Modeled gross capacity: $6,991,639 from 11 AEs (7 new: months 1, 1, 2, 2, 3, 3, 5).
+Modeled exit ARR: $7,022,147.
+Support build: 5 BDRs, 5 SEs. Sales payroll run rate: $6,465,000.
+```
+
+From there the skill writes `plan/PLAN.md` with the per-engine 90-day
+build orders, owners, KPI bars, and tripwires, and the weekly loop
+takes over.
 
 ## The nine engines
 
@@ -149,6 +199,7 @@ company/                 params.example.yaml, the intake schema
 docs/CONNECTORS.md       wiring Clay, Apollo, Attio, HubSpot, Stripe,
                          Instantly, HeyReach over MCP
 plan/                    your generated plan lives here (gitignored)
+assets/                  banner and social card, Electric Studio spec
 CLAUDE.md · AGENTS.md    the runtime brief, mirrored for both ecosystems
 ```
 
