@@ -37,9 +37,11 @@ and conversion sync)
 
 ## Run it when
 
-The ABM named list exists and monthly budget clears about $8K; under
-that, LinkedIn spend fragments below the learning threshold and the
-honest move is to bank it. Paid without a named list is spray.
+The ABM engine is running (list built AND routed to reps) and monthly
+budget clears about $8K; under that, LinkedIn spend fragments below the
+learning threshold and the honest move is to bank it. Paid without a
+named list is spray, and paid against a list nobody routes is spray
+with better targeting.
 
 ## First 90 days
 

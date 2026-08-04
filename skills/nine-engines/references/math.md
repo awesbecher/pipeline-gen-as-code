@@ -6,7 +6,7 @@ Two deterministic engines, zero dependencies, Node only.
 
     node engine/run.cjs              # company/params.yaml, markdown out
     node engine/run.cjs --json       # machine-readable
-    node engine/test-mix.cjs         # 18 scenario tests
+    node engine/test-mix.cjs         # 20 scenario tests
 
 `recommend(params)` returns per-engine verdicts (run_now,
 instrument_now, defer, blocked), a reason per verdict, and a budget

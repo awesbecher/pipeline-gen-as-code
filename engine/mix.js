@@ -114,6 +114,9 @@
         'Under about $8K a month, LinkedIn ABM spend fragments below the learning threshold. Bank it.');
     } else if (r.abm.verdict === 'defer') {
       r.paid_media = verdict('defer', 'Paid without a named list is spray. Stand up the ABM list first.');
+    } else if (r.abm.verdict === 'instrument_now') {
+      r.paid_media = verdict('defer',
+        'The named list is still being built and nobody routes yet; turn paid on when ABM runs.');
     } else {
       r.paid_media = verdict('run_now',
         'Named list exists and budget clears the floor: full-funnel creative, demo asks only at warm retargeting.', 1);

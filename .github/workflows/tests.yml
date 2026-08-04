@@ -1,0 +1,21 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Capacity model (29 tests)
+        run: node engine/test-engine.cjs
+      - name: Mix engine (20 tests)
+        run: node engine/test-mix.cjs
+      - name: Runner smoke test
+        run: node engine/run.cjs --json > /dev/null && node engine/run.cjs

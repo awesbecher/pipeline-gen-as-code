@@ -1,5 +1,6 @@
 ---
-description: Write this week's pipeline plan from the current PLAN.md
+name: monday
+description: Write this week's pipeline plan from the current PLAN.md. Use at the start of a work week or when the user says monday, weekly plan, or this week's pipeline touches.
 ---
 
 The Monday move of the nine-engines weekly loop.
