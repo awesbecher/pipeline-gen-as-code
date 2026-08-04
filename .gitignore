@@ -1,0 +1,10 @@
+# Generated plans and the company's own parameters stay out of git by
+# default so a public fork never leaks a real company's numbers. Running
+# a PRIVATE clone as your operating brain? Delete the three lines below
+# and commit your state; the files are the memory.
+plan/*
+!plan/README.md
+company/params.yaml
+
+node_modules/
+.DS_Store

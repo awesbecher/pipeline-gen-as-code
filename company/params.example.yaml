@@ -1,0 +1,58 @@
+# Nine Engines intake. Copy to company/params.yaml, edit, then:
+#   node engine/run.cjs
+# Strings with yes/no values are quoted on purpose; keep the quotes.
+
+# Who you are
+company: Acme Security
+stage: seed                     # pre-seed | seed | series-a | series-b-plus
+funding_usd: 8000000
+
+# The number
+arr_now_usd: 1200000
+arr_target_12mo_usd: 7000000
+
+# The team you have today
+team:
+  aes_ramped: 2                 # AEs at full productivity
+  aes_ramping: 2                # AEs hired in the last two quarters
+  bdrs: 1
+  gtm_engineer: true            # someone who can own the automation stack
+
+# The product
+product:
+  category: AI security
+  self_serve: "no"              # "yes" | "partial" | "no"
+  developer_facing: false
+
+# The market
+icp: Mid-market and enterprise security teams, US
+personas: [CISO, VP Security Engineering, Head of AppSec]
+
+# Deal shape
+acv: 120000                     # average contract value, USD
+cycle_days: 178                 # median sales cycle, days
+
+# Fuel
+cash_monthly_pipeline: 25000    # monthly budget for pipeline generation, USD
+                                # (tools, data, ads, events; not payroll)
+
+# Engines already running, if any. Keys:
+# automated_outbound plg manual_outbound abm community_partner
+# paid_media seo_aeo social_content events
+engines_running: [manual_outbound]
+
+# Hard constraints. Remove the ones that do not apply. Vocabulary:
+#   no_email                 email outbound is off the table
+#   no_phone                 no phone coverage for cold calling
+#   no_paid_budget           no ad spend allowed
+#   no_events_budget         no event sponsorship budget
+#   no_community_capacity    nobody available to host a community
+#   founder_wont_post        the founder will not write social content
+constraints: []
+
+# Optional: fills the seat math (engine/engine.js). Delete the block to
+# skip the capacity model.
+capacity:
+  base_arr_usd: 1200000
+  churn_pct: 0.06               # annual gross churn on the base
+  expansion_usd: 1000000        # expected expansion ARR, gross
