@@ -47,6 +47,16 @@ is('C: social deferred without the founder', c.engines.social_content.verdict, '
 is('C: manual outbound degrades, not dies, without phone', c.engines.manual_outbound.verdict, 'instrument_now');
 is('C: partial self-serve instruments PLG', c.engines.plg.verdict, 'instrument_now');
 
+// Scenario D: enterprise ACV and budget but no reps: ABM instruments, paid waits.
+const d = MIX.recommend({
+  acv: 100000, cash_monthly_pipeline: 12000,
+  team: { aes_ramped: 0, aes_ramping: 0, bdrs: 0, gtm_engineer: true },
+  product: { self_serve: 'no', developer_facing: false },
+  constraints: []
+});
+is('D: ABM instruments without reps', d.engines.abm.verdict, 'instrument_now');
+is('D: paid waits for ABM to run, not just exist', d.engines.paid_media.verdict, 'defer');
+
 // Budget sanity: shares sum to ~1 when both groups exist; dollars <= cash.
 const shares = MIX.ENGINES.reduce((s, e) => s + a.engines[e].budget_share, 0);
 ok('A: budget shares sum to ~1.0 (' + shares.toFixed(2) + ')', Math.abs(shares - 1.0) < 0.05);

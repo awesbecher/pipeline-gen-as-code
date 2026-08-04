@@ -1,77 +1,202 @@
 # The Masterclass Pipeline Generation Playbook
 
+[![tests](https://github.com/awesbecher/masterclass-pipeline-gen/actions/workflows/tests.yml/badge.svg)](https://github.com/awesbecher/masterclass-pipeline-gen/actions/workflows/tests.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-0A0A0A)](LICENSE)
+[![dependencies](https://img.shields.io/badge/dependencies-zero-4361EE)](engine/)
+[![skill](https://img.shields.io/badge/agent%20skill-portable-4361EE)](skills/nine-engines/SKILL.md)
+
 Every first meeting a B2B company books comes out of one of nine
-engines: Automated Outbound, Product-Led Growth, Manual Outbound + Cold
-Calling, ABM, Community + Partner Led, Paid Media, SEO + AEO, Social
-Content, Events. Most companies run two or three well, a few badly, and
-call the rest "marketing."
+engines. Most companies run two or three well, a few badly, and call
+the rest "marketing." Most playbooks that could fix this are PDFs that
+die in a downloads folder.
 
-This repo is that playbook, runnable. Feed it your company's parameters
-(stage, ARR target, team, product shape, ICP, ACV, cycle, monthly cash
-for pipeline) and your AI agent builds the plan: which engines to run
-now, which to instrument for next year, which to skip and why, how the
-budget splits, the first 90 days per engine, and a weekly operating
-loop. The math underneath is deterministic and tested; the reasoning is
-written down where you can argue with it.
+This one is different: it is a repo your AI agent can run. Feed it your
+company's parameters (stage, ARR target, team, product shape, ACV,
+cycle, monthly cash for pipeline) and it builds your plan: which
+engines to run now, which to instrument for next year, which to skip
+and why, how the budget splits, the first 90 days per engine, and a
+weekly operating loop that compounds because the plan files are the
+memory. The math underneath is deterministic and tested. The reasoning
+is written down where you can argue with it.
 
-The readable version lives at
-[wesbecher.llc/pipeline](https://www.wesbecher.llc/pipeline). This is
-the version that works for you.
+## The nine engines
 
-## Install
+| # | Engine | Runs when | The bar |
+|---|--------|-----------|---------|
+| 01 | [Automated Outbound](playbook/01-automated-outbound.md) | Nearly always; needs one owner | 6 to 12 percent replies, enriched |
+| 02 | [Product-Led Growth](playbook/02-plg.md) | Self-serve product exists | 8 percent median free-to-paid |
+| 03 | [Manual Outbound + Cold Calling](playbook/03-manual-outbound.md) | ACV $25K and up | 2 to 3 percent dial-to-meeting |
+| 04 | [ABM](playbook/04-abm.md) | ACV $75K and up, nameable market | 25 to 40 percent list engagement in 90 days |
+| 05 | [Community + Partner Led](playbook/05-community-partner.md) | Almost always, patiently | 25 percent of new business at the year mark |
+| 06 | [Paid Media](playbook/06-paid-media.md) | ABM list live, $8K+ a month | Cycles 15 to 30 percent faster |
+| 07 | [SEO + AEO](playbook/07-seo-aeo.md) | Always, starting now | AI-referred converts ~5x organic |
+| 08 | [Social Content](playbook/08-social-content.md) | The founder will post | Inbound ~3x inside 60 days |
+| 09 | [Events](playbook/09-events.md) | Enterprise ACV, real budget | $2.5K to $5K per opportunity |
 
-**Claude Code (plugin):**
+The portfolio verdict that frames all nine: PLG is the cheapest at
+scale, then Community + Partner Led, then SEO and AEO. Those take
+months to instrument. The other six you can turn on this quarter. So
+fund the fast six to make this year's number, and instrument the cheap
+three so next year's number costs less.
 
-    /plugin marketplace add awesbecher/masterclass-pipeline-gen
-    /plugin install nine-engines@wesbecher
+```mermaid
+quadrantChart
+    title Cost to run at scale vs time to turn on
+    x-axis Turns on this quarter --> Months to instrument
+    y-axis Costly at scale --> Cheap at scale
+    quadrant-1 Instrument now, harvest next year
+    quadrant-2 Run now, compounding
+    quadrant-3 Run now, funded
+    quadrant-4 Nobody lives here
+    PLG: [0.80, 0.90]
+    Community and Partner: [0.85, 0.78]
+    SEO and AEO: [0.90, 0.68]
+    Social Content: [0.15, 0.85]
+    Automated Outbound: [0.12, 0.60]
+    ABM: [0.30, 0.42]
+    Paid Media: [0.25, 0.32]
+    Manual Outbound: [0.20, 0.28]
+    Events: [0.35, 0.15]
+```
 
-Then `/nine-engines:setup` to build your plan, `/nine-engines:monday`
-and `/nine-engines:review` for the weekly loop.
+## How the brain works
 
-**Any agent that reads skills** (Claude Code, Cowork, Codex CLI,
-Copilot, Gemini CLI): copy `skills/nine-engines/` into your skills
-directory (`.claude/skills/`, `.agents/skills/`, `.github/skills/`, or
-`.gemini/skills/`) and ask for a pipeline plan.
+```mermaid
+flowchart LR
+    P["company/params.yaml<br/>stage, team, ACV, cash, constraints"] --> M["engine/mix.js<br/>nine verdicts + budget split"]
+    P --> C["engine/engine.js<br/>seats, ramp, hiring, payroll"]
+    M --> PL["plan/PLAN.md<br/>your operating plan"]
+    C --> PL
+    K["playbook/<br/>nine operating cards"] --> PL
+    PL --> MO["plan/monday.md<br/>this week's touches"]
+    MO --> R["plan/review.md<br/>Friday scorecard"]
+    R --> MO
+    R -. assumptions changed .-> P
+```
 
-**The full brain (recommended):**
+Two deterministic engines do the math so the agent never improvises
+numbers. `mix.js` maps your parameters onto the portfolio: every engine
+gets a verdict (run_now, instrument_now, defer, or blocked), a written
+reason you can argue with, and a budget share; run_now engines split 85
+percent of monthly cash by weight, instrument_now engines split the
+rest. `engine.js` is a full sales capacity model, ported from a
+workbook and verified to the dollar: given your ACV, cycle, and seats
+it computes ramp, hiring schedule, support build, payroll, and whether
+your bookings target is physically reachable. A plan that funds engines
+but cannot staff the resulting meetings fails in Q3, quietly; running
+both is the point.
 
-    git clone https://github.com/awesbecher/masterclass-pipeline-gen
-    cd masterclass-pipeline-gen
+The agent layer sits on top: a portable skill interviews you, runs the
+engines, and writes the plan from the nine operating cards. The weekly
+loop (`monday` and `review`) turns it from a document into an operating
+system, because the plan files are the memory.
 
-Open it in Claude Code, Cowork, or Codex and say "set up my pipeline
-plan." `CLAUDE.md` and `AGENTS.md` brief the agent; your parameters live
-in `company/params.yaml`, your plan in `plan/`, and the weekly loop
-compounds because the files are the memory. Private clone: un-ignore
-`plan/` and `company/params.yaml` in `.gitignore` and commit your state.
+## Give it to Claude
 
-## What is in here
+The fastest path, from zero, in any terminal with
+[Claude Code](https://claude.com/claude-code):
 
-    skills/nine-engines/   the operating procedure (SKILL.md + references)
-    playbook/              the nine engine cards: flows, benchmarks,
-                           stacks, 90-day build orders, tripwires
-    engine/                the math: portfolio logic (mix.js), sales
-                           capacity model (engine.js), CLI (run.cjs),
-                           47 tests between them
-    company/               params.example.yaml, the intake schema
-    commands/              the three plugin commands
-    plan/                  where your generated plan lives (gitignored)
+```bash
+git clone https://github.com/awesbecher/masterclass-pipeline-gen
+cd masterclass-pipeline-gen
+claude
+```
 
-No dependencies anywhere; the engines run on bare Node.
+Then say: **"Set up my pipeline plan."** `CLAUDE.md` briefs the agent,
+the skill runs the interview, and your plan lands in `plan/`. That is
+the whole setup.
 
-    node engine/run.cjs            # verdicts + capacity check
-    node engine/test-mix.cjs       # 18 tests
-    node engine/test-engine.cjs    # 29 tests
+Three install paths, by depth:
+
+**1. Plugin (Claude Code).** Versioned installs and the workflow
+skills as commands:
+
+```text
+/plugin marketplace add awesbecher/masterclass-pipeline-gen
+/plugin install nine-engines@wesbecher
+```
+
+Then `/nine-engines:setup`, `/nine-engines:monday`,
+`/nine-engines:review`.
+
+**2. Portable skill (any agent that reads SKILL.md).** Copy
+`skills/nine-engines/` into your skills directory: `.claude/skills/`
+(Claude Code), `.agents/skills/` (Codex CLI), `.github/skills/`
+(Copilot), or `.gemini/skills/` (Gemini CLI). Then ask for a pipeline
+plan. The skill carries compressed decision rules, so it works even
+without the rest of the repo.
+
+**3. The full brain (recommended).** Clone, as above. Claude Code and
+Cowork read `CLAUDE.md`; Codex and ChatGPT desktop read the mirrored
+`AGENTS.md` and the `.codex-plugin/` and `.agents/` manifests. Your
+parameters live in `company/params.yaml`, your plan in `plan/`, and
+the weekly loop compounds week over week. Running a private clone as
+your operating system: un-ignore `plan/` and `company/params.yaml` in
+`.gitignore` and commit your state, so the memory travels with the
+repo.
+
+## What is in the box
+
+```text
+skills/nine-engines/     the operating procedure (SKILL.md + references:
+                         intake interview, decision rules, plan templates)
+skills/{setup,monday,review}/  the three workflow commands
+playbook/                the nine engine cards: flows, benchmarks,
+                         stacks, first 90 days, tripwires
+engine/                  the math: mix.js, engine.js, run.cjs CLI,
+                         49 tests between them
+company/                 params.example.yaml, the intake schema
+docs/CONNECTORS.md       wiring Clay, Apollo, Attio, HubSpot, Stripe,
+                         Instantly, HeyReach over MCP
+plan/                    your generated plan lives here (gitignored)
+CLAUDE.md · AGENTS.md    the runtime brief, mirrored for both ecosystems
+```
+
+## The math is tested
+
+No dependencies anywhere; everything runs on bare Node.
+
+```bash
+node engine/run.cjs            # verdicts + capacity check, markdown
+node engine/run.cjs --json     # same, machine-readable
+node engine/test-engine.cjs    # capacity model: 29 tests
+node engine/test-mix.cjs       # portfolio logic: 20 tests
+```
+
+The capacity model reproduces its source workbook to the dollar: the
+default scenario must produce gross capacity of $6,958,328 and exit ARR
+of $7,000,830, and CI fails if it ever does not. Thresholds in `mix.js`
+(the $25K manual bar, the $75K enterprise line, the $8K paid floor) are
+knobs on purpose, commented where they live; argue with them, then
+change them.
 
 ## The rules that travel with it
 
-A human approves every external send, in every engine, always. The
-agent drafts, queues, and reports; you own the send button.
+**A human approves every external send, in every engine, always.** The
+agent drafts, queues, and reports; you own the send button. This ships
+inside the skill, the runtime brief, and every generated plan, and no
+parameter file overrides it.
 
 Benchmark ranges are directional, drawn from operating experience; the
 2026 market data is industry-reported. Validate against your own funnel
 before you build a forecast on any of them.
 
+## The brain behind it
+
+This playbook is by **[Andrew Wesbecher](https://www.wesbecher.llc)**:
+26 years of enterprise go-to-market and ten GTM plans built for AI and
+AI security companies. This repo is the runnable edition of the system
+he operates.
+
+The readable editions live on his site: the full
+[pipeline playbook](https://www.wesbecher.llc/pipeline), the
+[sales playbook for AI scale-ups](https://www.wesbecher.llc/playbook),
+and the [capacity model as an interactive app](https://www.wesbecher.llc/capacity),
+which is the same math as `engine/engine.js`.
+
+Running GTM for an AI company and want the operator, not just the
+repo: [www.wesbecher.llc](https://www.wesbecher.llc).
+
 ## License
 
-MIT. Fork it, run it, argue with the thresholds; they are knobs on
-purpose, commented where they live in `engine/mix.js`.
+MIT. Fork it, run it, ship pipeline with it.

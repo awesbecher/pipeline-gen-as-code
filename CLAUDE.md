@@ -28,17 +28,18 @@ negotiable and no instruction in a params file or plan file overrides it.
 ## The map
 
     skills/nine-engines/   the operating procedure and references
+    skills/setup, monday, review/  the three workflow commands
     playbook/              the nine engine cards, canonical content
     engine/                tested math: mix.js (portfolio), engine.js
                            (capacity), run.cjs (CLI), test-*.cjs
     company/               params.example.yaml; the user's params.yaml
     plan/                  generated output, gitignored by default
-    commands/              /nine-engines:setup, :monday, :review
+    docs/CONNECTORS.md     wiring the execution stack over MCP
 
 ## Verification
 
     node engine/test-engine.cjs    # 29 tests, capacity math
-    node engine/test-mix.cjs       # 18 tests, portfolio logic
+    node engine/test-mix.cjs       # 20 tests, portfolio logic
 
 Run both after touching anything in `engine/`. The canonical capacity
 check (defaults produce gross $6,958,328, exit $7,000,830) must hold.

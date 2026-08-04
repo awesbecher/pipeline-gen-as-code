@@ -1,5 +1,6 @@
 ---
-description: Interview the company parameters and generate the pipeline plan
+name: setup
+description: Interview the company parameters and generate the pipeline plan. Use when the user wants to set up, rebuild, or rerun their Nine Engines pipeline plan, or when company parameters (budget, team, ACV) have changed.
 ---
 
 Run the nine-engines skill end to end (skills/nine-engines/SKILL.md).

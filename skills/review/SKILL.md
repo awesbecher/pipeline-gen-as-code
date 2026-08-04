@@ -1,5 +1,6 @@
 ---
-description: Score the week against Monday's plan and roll what moved
+name: review
+description: Score the week against Monday's plan and roll what moved. Use at the end of a work week or when the user says review, Friday numbers, or how did the week go.
 ---
 
 The Friday move of the nine-engines weekly loop.

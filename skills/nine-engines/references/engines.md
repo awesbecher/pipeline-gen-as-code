@@ -70,10 +70,11 @@ graduation. Stack: Slack, Circle, Luma.
 
 ## 06 Paid Media · weight 1
 
-Rule: run_now only when the ABM named list exists AND monthly cash
-clears about $8K. Under either: defer (paid without a list is spray;
-under the floor, spend fragments below the learning threshold).
-no_paid_budget: defer.
+Rule: run_now only when ABM itself runs now AND monthly cash clears
+about $8K. ABM deferred: no list, so paid is spray. ABM instrumenting:
+the list exists but nobody routes yet, so paid waits. Under the cash
+floor, spend fragments below the learning threshold. no_paid_budget:
+defer.
 Card: matched audiences 300 to 1,500 accounts; thought-leader ads on
 top, proof to engagers, demo asks only at warm retargeting. Speed to
 lead: book the meeting on the form. KPI: cycles 15 to 30 percent faster,

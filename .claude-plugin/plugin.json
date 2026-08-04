@@ -1,7 +1,7 @@
 {
   "name": "nine-engines",
   "description": "Pipeline generation for AI scale-ups: map your company onto the Nine Engines, get a budgeted portfolio, per-engine 90-day build orders, and a weekly operating loop. A human approves every external send.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "Andrew Wesbecher",
     "email": "awesbecher@gmail.com",
