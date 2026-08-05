@@ -1,9 +1,8 @@
 # Release record
 
-## 0.3.1 (prepared, not published)
+## 0.3.1 (2026-08-05)
 
-Branch: `claude/v0.3.1-board-truth-hotfix`. Nothing is pushed, tagged,
-released, or resubmitted. This section is the checklist for the owner.
+Released from main at f9eccbe (PR #4). Tag v0.3.1. CI green across the Node 18, 20, and 22 Ubuntu legs and the Node 18 and 22 macOS legs.
 
 What it fixes: the board memo can no longer report that a plan clears
 while its support layer is over capacity, scenarios can no longer hide a
@@ -12,9 +11,9 @@ engines can no longer be reinterpreted as ES modules inside a plugin
 cache, and every leadership seat the plan assumes is priced. Full detail
 in CHANGELOG.md.
 
-Verification on this branch:
+Verification on the released commit:
 
-    npm test                       # 251 assertions across five suites
+    npm test                       # 276 assertions across five suites
     claude plugin validate .
     python3 validate_plugin.py .   # OpenAI's official Codex validator
 
@@ -23,15 +22,13 @@ Ubuntu and Node 18 and 22 on macOS.
 
 ### Waiting on the owner
 
-1. Review the branch and open the PR. Nothing here is published.
-2. Tag v0.3.1 and cut the release once the PR merges.
-3. Re-check the plugin directory listing. The 0.3.0 submission is under
+1. Re-check the plugin directory listing. The 0.3.0 submission is under
    review; if it publishes against the old manifest, resubmit at
    platform.claude.com/plugins/submit.
-4. Codex: the manifest now passes the official validator, but a clean
+2. Codex: the manifest now passes the official validator, but a clean
    end-to-end install through the Codex CLI has not been run on the
    owner's machine. The README stays clone-first until it has.
-5. Design-partner phase: five to ten CEO and VC readers pressure-test the
+3. Design-partner phase: five to ten CEO and VC readers pressure-test the
    board memo and the override flow before any broad announcement.
 
 ### Known deviation from the brief
