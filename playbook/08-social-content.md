@@ -14,9 +14,12 @@ cadence beats bursts every time.
 
 ## How the best run it
 
-The founder's profile is the channel; personal profiles pull roughly
-three times the engagement of company pages, and buyers arrive pre-sold
-from weeks of reading. The cadence that works is small and relentless:
+The founder's profile is the channel. Personal profiles run a 2.60
+percent engagement rate against 1.74 percent for company pages, about
+1.5x, on effectively equal impressions per post. The often-quoted 5x
+comes from a 2023 comparison of seven employees against one company
+page, so treat the direction as settled and the magnitude as small.
+Buyers still arrive pre-sold from weeks of reading. The cadence that works is small and relentless:
 three posts a week in one lane, plus daily comments where the ICP
 already argues. Pipeline forms in the signals, not the impressions:
 repeat commenters and profile viewers from target accounts get a warm
@@ -27,8 +30,12 @@ engine.
 
 ## The number
 
-Consistent founder-led programs see inbound conversations roughly triple
-inside 60 days; inbound closes an order of magnitude better than cold.
+Personal profiles engage at about 1.5x company pages. The two numbers
+operators quote next are Andrew operator heuristics with no external
+source: consistent founder-led programs seeing inbound conversations
+roughly triple inside 60 days, and inbound closing an order of magnitude
+better than cold. Run the engine on them if you like the logic; do not
+present either as a benchmark.
 
 Sources: claims SC-1 to SC-3 in docs/SOURCES.md (evidence class and
 confidence per claim; unsourced values are Andrew operator heuristics).

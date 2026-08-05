@@ -23,7 +23,33 @@ trusting with an API key.
 | HubSpot | CRM for any | Official, OAuth app | Create an MCP auth app at app.hubspot.com/l/mcp-auth-apps, then connect `https://mcp.hubspot.com` |
 | Stripe | 02 | Official, OAuth | `claude mcp add --transport http stripe https://mcp.stripe.com/` |
 | Instantly | 01, 09 | Community | Remote `https://mcp.instantly.ai/mcp` with your API key (Growth plan or above) |
-| HeyReach | 01, 03 | Community | `claude mcp add heyreach -e HEYREACH_API_KEY -- npx heyreach-mcp-server@2.0.5 --api-key="$HEYREACH_API_KEY"` (pinned; key from env, not history) |
+| HeyReach | 01, 03 | Community | `claude mcp add heyreach -- npx -y heyreach-mcp-server@2.0.5 '--api-key=${HEYREACH_API_KEY}'` (pinned; see the note below, the single quotes matter) |
+
+### The HeyReach command, exactly
+
+Verified against heyreach-mcp-server@2.0.5 and Claude Code 2.1.x. Three
+things about it are easy to get wrong:
+
+1. That server reads no environment variable for the key. Its stdio
+   entry point accepts `--api-key` on the command line only, so
+   `-e HEYREACH_API_KEY=...` adds a variable it never reads.
+2. Your shell expands `"$HEYREACH_API_KEY"` before the CLI sees it,
+   which writes the literal secret into `~/.claude.json` and into the
+   process arguments. Single quotes stop the shell and let Claude Code
+   expand `${HEYREACH_API_KEY}` at launch instead, so the stored config
+   holds the variable name rather than the key.
+3. `claude mcp add -e` requires `KEY=value`. The bare form errors out
+   and adds nothing.
+
+Export the key from your shell profile or a secret manager first:
+
+    export HEYREACH_API_KEY=...
+    claude mcp add heyreach -- npx -y heyreach-mcp-server@2.0.5 '--api-key=${HEYREACH_API_KEY}'
+
+If the variable is unset at launch, the server still reports as
+connected while holding the literal `${HEYREACH_API_KEY}` string, and
+every call returns 401. Verify with the server's `check-api-key` tool
+before you trust a campaign to it.
 
 On claude.ai and Cowork, use Settings, then Connectors; Clay and Attio
 are in the connector directory, and the rest add as custom connectors

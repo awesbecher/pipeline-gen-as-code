@@ -5,7 +5,7 @@ description: Build and run a company-specific pipeline generation plan from the 
 
 # The Nine Engines
 
-Every first meeting a B2B company books comes out of one of nine pipeline
+In this model, every new-logo first meeting maps to one of nine pipeline
 engines: Automated Outbound, Product-Led Growth, Manual Outbound + Cold
 Calling, ABM, Community + Partner Led, Paid Media, SEO + AEO, Social
 Content, Events. This skill maps a specific company onto that portfolio
@@ -34,13 +34,27 @@ to `company/params.yaml` matching `company/params.example.yaml`.
 
 ### 2. Verdicts
 
-If the engine directory is present (repo clone, or the plugin's
-${CLAUDE_PLUGIN_ROOT}), run it with the user's params path passed
-explicitly; there is no implicit fallback to sample data:
+Resolve the bundle root from THIS FILE's own location. This skill file
+sits at `<root>/skills/nine-engines/SKILL.md`, so the root is two
+directories up from the directory holding this file. That rule works
+from a clone, a Claude plugin cache, and a Codex plugin cache alike. No
+environment variable is required: `CLAUDE_PLUGIN_ROOT`,
+`CLAUDE_PROJECT_DIR`, slash commands, and `$ARGUMENTS` are
+Claude-specific and may not exist. If `CLAUDE_PLUGIN_ROOT` happens to be
+set, it points at the same root.
 
-    node "${CLAUDE_PLUGIN_ROOT:-.}/engine/run.cjs" "${CLAUDE_PROJECT_DIR:-.}/company/params.yaml"
+Run the wrapper, which locates the runner from its own path:
+
+    <root>/bin/nine-engines <path/to/company/params.yaml>
+    # or, equivalently:
+    node <root>/engine/run.cjs <path/to/company/params.yaml>
     # add --json for machine-readable, --board for the board memo
     # --example runs the bundled illustrative Acme fixture, on request only
+
+Company state (`company/params.yaml`, `plan/`) belongs to the user's
+project directory, which is the directory you are working in, never the
+bundle root. Pass the params path explicitly; there is no implicit
+fallback to sample data. Never write a plan into the bundle.
 
 Invalid input exits nonzero with field-specific errors; fix the named
 fields with the user rather than working around validation. The

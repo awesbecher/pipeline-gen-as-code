@@ -1,6 +1,6 @@
 {
   "generated_by": "engine/gen-fixtures.cjs (run deliberately; tests pin these exactly)",
-  "model_version": "0.3.0",
+  "model_version": "0.3.1",
   "workbook_schedule": {
     "description": "Forced workbook hire schedule (8 new hires), $120K ACV, 178-day cycle",
     "forced_hire_months": [
@@ -40,7 +40,26 @@
       5
     ],
     "existing_gross_usd": 3616652,
-    "shortfall_usd": 0
+    "shortfall_usd": 0,
+    "total_bdrs": 6,
+    "new_bdr_hire_months": [
+      1,
+      2,
+      3,
+      5
+    ],
+    "total_ses": 5,
+    "bdr_meetings_required": 777,
+    "bdr_capacity_points": 780,
+    "bdr_capacity_utilization": 0.997,
+    "bdr_hiring_bound_by": "meeting_volume",
+    "sales_payroll_run_rate_usd": 6585000,
+    "year1_sales_comp_usd": 4986829,
+    "status": {
+      "ae_bookings": "clears",
+      "bdr_support": "clears",
+      "overall": "clears"
+    }
   },
   "acme_example": {
     "description": "company/params.example.yaml through run.cjs (illustrative Acme Security fixture, team.bdrs=1 supplied)",
@@ -50,35 +69,35 @@
       "manual_outbound": "run_now",
       "abm": "run_now",
       "community_partner": "instrument_now",
-      "paid_media": "run_now",
+      "paid_media": "defer",
       "seo_aeo": "instrument_now",
       "social_content": "run_now",
-      "events": "run_now"
+      "events": "defer"
     },
     "budget_monthly": {
-      "automated_outbound": 3865,
+      "automated_outbound": 5312,
       "plg": 0,
-      "manual_outbound": 5795,
-      "abm": 3862,
+      "manual_outbound": 7970,
+      "abm": 5312,
       "community_partner": 1875,
-      "paid_media": 1932,
+      "paid_media": 0,
       "seo_aeo": 1875,
-      "social_content": 1932,
-      "events": 3862
+      "social_content": 2655,
+      "events": 0
     },
     "budget_share_bps": {
-      "automated_outbound": 1546,
+      "automated_outbound": 2125,
       "plg": 0,
-      "manual_outbound": 2318,
-      "abm": 1545,
+      "manual_outbound": 3188,
+      "abm": 2125,
       "community_partner": 750,
-      "paid_media": 773,
+      "paid_media": 0,
       "seo_aeo": 750,
-      "social_content": 773,
-      "events": 1545
+      "social_content": 1062,
+      "events": 0
     },
-    "allocated_total_usd": 24998,
-    "unallocated_total_usd": 2,
+    "allocated_total_usd": 24999,
+    "unallocated_total_usd": 1,
     "capacity": {
       "steady_state_per_ae_usd": 999996,
       "gross_needed_usd": 6960000,
@@ -96,12 +115,13 @@
         5
       ],
       "total_aes": 11,
-      "total_bdrs": 5,
+      "total_bdrs": 6,
       "total_ses": 5,
       "new_bdr_hire_months": [
         1,
         1,
         2,
+        3,
         5
       ],
       "new_se_hire_months": [
@@ -109,6 +129,9 @@
         2,
         5
       ],
+      "carried_sales_leaders": 0,
+      "carried_bdr_managers": 0,
+      "carried_se_leads": 0,
       "leadership_hires": [
         {
           "role": "avp",
@@ -123,11 +146,89 @@
           "month": 1
         }
       ],
-      "sales_payroll_run_rate_usd": 6465000,
-      "year1_sales_comp_usd": 4895579,
+      "sales_payroll_run_rate_usd": 6585000,
+      "year1_sales_comp_usd": 4986829,
       "meetings_required_year1": 1166,
-      "bdr_capacity_utilization": 1.178
+      "bdr_meetings_required_year1": 777,
+      "bdr_capacity_points_year1": 780,
+      "bdr_capacity_utilization": 0.997,
+      "bdr_support_status": "clears",
+      "bdr_hiring_bound_by": "meeting_volume",
+      "bdr_additional_needed": 0,
+      "bdr_fix_by_month": null
     },
-    "target_clearance": "clears"
+    "target_clearance": {
+      "ae_bookings": "clears",
+      "bdr_support": "clears",
+      "overall": "clears"
+    },
+    "scenarios_fixed_plan": [
+      {
+        "scenario": "downside",
+        "factor": 0.85,
+        "new_aes": 7,
+        "gross_capacity_usd": 5942893,
+        "exit_arr_usd": 6288025,
+        "shortfall_usd": 1017107,
+        "bdr_capacity_utilization": 0.847,
+        "status": "shortfall"
+      },
+      {
+        "scenario": "base",
+        "factor": 1,
+        "new_aes": 7,
+        "gross_capacity_usd": 6991639,
+        "exit_arr_usd": 7022147,
+        "shortfall_usd": 0,
+        "bdr_capacity_utilization": 0.997,
+        "status": "clears"
+      },
+      {
+        "scenario": "upside",
+        "factor": 1.1,
+        "new_aes": 7,
+        "gross_capacity_usd": 7690803,
+        "exit_arr_usd": 7511562,
+        "shortfall_usd": 0,
+        "bdr_capacity_utilization": 1.097,
+        "status": "support_gap"
+      }
+    ],
+    "scenarios_reoptimized": [
+      {
+        "scenario": "downside",
+        "factor": 0.85,
+        "new_aes": 12,
+        "total_bdrs": 7,
+        "total_ses": 7,
+        "sales_payroll_run_rate_usd": 9245000,
+        "year1_sales_comp_usd": 6233646,
+        "exit_arr_usd": 7011939,
+        "status": "clears"
+      },
+      {
+        "scenario": "base",
+        "factor": 1,
+        "new_aes": 7,
+        "total_bdrs": 6,
+        "total_ses": 5,
+        "sales_payroll_run_rate_usd": 6585000,
+        "year1_sales_comp_usd": 4986829,
+        "exit_arr_usd": 7022147,
+        "status": "clears"
+      },
+      {
+        "scenario": "upside",
+        "factor": 1.1,
+        "new_aes": 6,
+        "total_bdrs": 6,
+        "total_ses": 4,
+        "sales_payroll_run_rate_usd": 5995000,
+        "year1_sales_comp_usd": 4578558,
+        "exit_arr_usd": 7030314,
+        "status": "clears"
+      }
+    ],
+    "json_bytes": 14108
   }
 }

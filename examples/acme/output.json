@@ -1,6 +1,6 @@
 {
-  "output_schema_version": 2,
-  "model_version": "0.3.0",
+  "output_schema_version": 3,
+  "model_version": "0.3.1",
   "mix_version": "0.3.0",
   "params_schema_version": 1,
   "params_file": "company/params.example.yaml",
@@ -8,17 +8,26 @@
   "units": {
     "currency": "USD",
     "budget_share": "basis_points",
-    "months": "plan month, 1-12"
+    "months": "plan month, 1-12",
+    "bdr_capacity": "SAO points, 12 per BDR month"
   },
   "status": {
-    "target_clearance": "clears",
+    "target_clearance": {
+      "ae_bookings": "clears",
+      "bdr_support": "clears",
+      "overall": "clears"
+    },
     "warnings": [
       "Running the bundled illustrative example (Acme Security), not your data."
     ],
     "assumptions": [
       "Ramping AE tenure not supplied; assumed a 4/3-month stagger (set team.aes_ramping_tenure_months to use real cohorts).",
       "Current SE count not supplied; derived 2 from the 2.5 AE-per-SE ratio (set team.ses to use the real number).",
-      "Current sales leadership not supplied; derived from AE count (set team.sales_leaders to use the real number). Carried leadership is only priced when supplied."
+      "BDR hiring is set by the meeting plan, not the 2.5 AE-per-BDR ratio: 1 of 5 new BDRs exist to source the 777 first meetings the bookings plan implies.",
+      "Current sales leadership not supplied; the plan assumes none is in place and prices every leader it adds (set team.sales_leaders to carry existing leaders).",
+      "Current BDR management not supplied; the plan hires and prices a BDR manager (set team.bdr_managers if one is already in seat).",
+      "Current SE leadership not supplied; the plan hires and prices an SE lead (set team.se_leads if one is already in seat).",
+      "Board sensitivities move one stated input: steady-state productivity per ramped AE at downside 0.85x, base 1.00x, upside 1.10x. Fixed-plan rows hold the approved hiring schedule constant; reoptimized rows re-solve it and report the headcount and payroll that change."
     ]
   },
   "decision_input_groups": {
@@ -41,6 +50,8 @@
       "team.bdrs",
       "team.ses",
       "team.sales_leaders",
+      "team.bdr_managers",
+      "team.se_leads",
       "team.aes_ramping_tenure_months",
       "capacity.base_arr_usd",
       "capacity.churn_pct",
@@ -109,8 +120,8 @@
           "constraints"
         ],
         "already_running": false,
-        "budget_share_bps": 1546,
-        "budget_monthly": 3865,
+        "budget_share_bps": 2125,
+        "budget_monthly": 5312,
         "label": "Automated Outbound"
       },
       "plg": {
@@ -134,8 +145,8 @@
           "constraints"
         ],
         "already_running": true,
-        "budget_share_bps": 2318,
-        "budget_monthly": 5795,
+        "budget_share_bps": 3188,
+        "budget_monthly": 7970,
         "label": "Manual Outbound + Cold Calling"
       },
       "abm": {
@@ -148,8 +159,8 @@
           "team.aes_ramping"
         ],
         "already_running": false,
-        "budget_share_bps": 1545,
-        "budget_monthly": 3862,
+        "budget_share_bps": 2125,
+        "budget_monthly": 5312,
         "label": "ABM"
       },
       "community_partner": {
@@ -166,18 +177,16 @@
         "label": "Community + Partner Led"
       },
       "paid_media": {
-        "verdict": "run_now",
-        "reason": "Named list exists and budget clears the floor: full-funnel creative, demo asks only at warm retargeting.",
-        "weight": 1,
+        "verdict": "defer",
+        "reason": "Qualifies on ICP and budget, but the split funds it at $1,932 a month against its own $8,000 floor: below the learning threshold, paid spend fragments across audiences and teaches nothing. Not funded this cycle; raise the pipeline budget or concentrate it here deliberately.",
+        "weight": 0,
         "decision_inputs": [
           "cash_monthly_pipeline",
-          "acv",
-          "team.aes_ramped",
-          "team.aes_ramping"
+          "acv"
         ],
         "already_running": false,
-        "budget_share_bps": 773,
-        "budget_monthly": 1932,
+        "budget_share_bps": 0,
+        "budget_monthly": 0,
         "label": "Paid Media"
       },
       "seo_aeo": {
@@ -198,22 +207,21 @@
           "constraints"
         ],
         "already_running": false,
-        "budget_share_bps": 773,
-        "budget_monthly": 1932,
+        "budget_share_bps": 1062,
+        "budget_monthly": 2655,
         "label": "Social Content"
       },
       "events": {
-        "verdict": "run_now",
-        "reason": "Enterprise ICP: one or two ICP-dense events a quarter, list built six weeks out, half the meetings pre-booked.",
-        "weight": 2,
+        "verdict": "defer",
+        "reason": "Qualifies on ICP and budget, but the split funds it at $4,250 a month against its own $15,000 floor: below a sponsorship-grade program, the spend buys a booth and no pipeline. Not funded this cycle; raise the pipeline budget or concentrate it here deliberately.",
+        "weight": 0,
         "decision_inputs": [
-          "acv",
           "cash_monthly_pipeline",
-          "constraints"
+          "acv"
         ],
         "already_running": false,
-        "budget_share_bps": 1545,
-        "budget_monthly": 3862,
+        "budget_share_bps": 0,
+        "budget_monthly": 0,
         "label": "Events"
       }
     },
@@ -221,20 +229,20 @@
       "automated_outbound",
       "manual_outbound",
       "abm",
-      "paid_media",
-      "social_content",
-      "events"
+      "social_content"
     ],
     "instrument_now": [
       "community_partner",
       "seo_aeo"
     ],
-    "allocated_total": 24998,
-    "unallocated_total": 2,
+    "allocated_total": 24999,
+    "unallocated_total": 1,
     "notes": [
       "Weights and thresholds are knobs; argue with them in the reasons.",
-      "The split is a starting allocation hypothesis, not a forecast. Engine spend is not yet converted into meetings or bookings; the capacity model in engine.js answers staffing separately.",
-      "A human approves every external send, in every engine, always."
+      "The split is a starting allocation hypothesis, not a forecast. Engine spend is not yet converted into meetings or bookings; the capacity model in engine.cjs answers staffing separately.",
+      "A human approves every external send, in every engine, always.",
+      "Paid Media qualified but the split could only fund it at $1,932 against a $8,000 floor, so it is deferred and its share went back to the engines that clear their own bar.",
+      "Events qualified but the split could only fund it at $4,250 against a $15,000 floor, so it is deferred and its share went back to the engines that clear their own bar."
     ]
   },
   "capacity": {
@@ -254,12 +262,13 @@
       5
     ],
     "total_aes": 11,
-    "total_bdrs": 5,
+    "total_bdrs": 6,
     "total_ses": 5,
     "new_bdr_hire_months": [
       1,
       1,
       2,
+      3,
       5
     ],
     "new_se_hire_months": [
@@ -267,6 +276,9 @@
       2,
       5
     ],
+    "carried_sales_leaders": 0,
+    "carried_bdr_managers": 0,
+    "carried_se_leads": 0,
     "leadership_hires": [
       {
         "role": "avp",
@@ -281,10 +293,177 @@
         "month": 1
       }
     ],
-    "sales_payroll_run_rate_usd": 6465000,
-    "year1_sales_comp_usd": 4895579,
+    "sales_payroll_run_rate_usd": 6585000,
+    "year1_sales_comp_usd": 4986829,
     "meetings_required_year1": 1166,
-    "bdr_capacity_utilization": 1.178
+    "bdr_meetings_required_year1": 777,
+    "bdr_capacity_points_year1": 780,
+    "bdr_capacity_utilization": 0.997,
+    "bdr_support_status": "clears",
+    "bdr_hiring_bound_by": "meeting_volume",
+    "bdr_additional_needed": 0,
+    "bdr_fix_by_month": null
+  },
+  "scenarios": {
+    "method": "One stated input moves: steady-state productivity per ramped AE. Fixed-plan holds the approved hiring schedule; reoptimized re-solves it.",
+    "fixed_plan": [
+      {
+        "scenario": "downside",
+        "delta": "rep productivity 15 percent below plan",
+        "factor": 0.85,
+        "new_aes": 7,
+        "new_ae_hire_months": [
+          1,
+          1,
+          2,
+          2,
+          3,
+          3,
+          5
+        ],
+        "total_bdrs": 6,
+        "total_ses": 5,
+        "leadership_hires": 3,
+        "sales_payroll_run_rate_usd": 6585000,
+        "year1_sales_comp_usd": 4986829,
+        "gross_capacity_usd": 5942893,
+        "exit_arr_usd": 6288025,
+        "shortfall_usd": 1017107,
+        "bdr_capacity_utilization": 0.847,
+        "status": "shortfall"
+      },
+      {
+        "scenario": "base",
+        "delta": "plan assumptions as entered",
+        "factor": 1,
+        "new_aes": 7,
+        "new_ae_hire_months": [
+          1,
+          1,
+          2,
+          2,
+          3,
+          3,
+          5
+        ],
+        "total_bdrs": 6,
+        "total_ses": 5,
+        "leadership_hires": 3,
+        "sales_payroll_run_rate_usd": 6585000,
+        "year1_sales_comp_usd": 4986829,
+        "gross_capacity_usd": 6991639,
+        "exit_arr_usd": 7022147,
+        "shortfall_usd": 0,
+        "bdr_capacity_utilization": 0.997,
+        "status": "clears"
+      },
+      {
+        "scenario": "upside",
+        "delta": "rep productivity 10 percent above plan",
+        "factor": 1.1,
+        "new_aes": 7,
+        "new_ae_hire_months": [
+          1,
+          1,
+          2,
+          2,
+          3,
+          3,
+          5
+        ],
+        "total_bdrs": 6,
+        "total_ses": 5,
+        "leadership_hires": 3,
+        "sales_payroll_run_rate_usd": 6585000,
+        "year1_sales_comp_usd": 4986829,
+        "gross_capacity_usd": 7690803,
+        "exit_arr_usd": 7511562,
+        "shortfall_usd": 0,
+        "bdr_capacity_utilization": 1.097,
+        "status": "support_gap"
+      }
+    ],
+    "reoptimized": [
+      {
+        "scenario": "downside",
+        "delta": "rep productivity 15 percent below plan",
+        "factor": 0.85,
+        "new_aes": 12,
+        "new_ae_hire_months": [
+          1,
+          1,
+          2,
+          2,
+          3,
+          3,
+          4,
+          4,
+          5,
+          5,
+          6,
+          9
+        ],
+        "total_bdrs": 7,
+        "total_ses": 7,
+        "leadership_hires": 4,
+        "sales_payroll_run_rate_usd": 9245000,
+        "year1_sales_comp_usd": 6233646,
+        "gross_capacity_usd": 6977055,
+        "exit_arr_usd": 7011939,
+        "shortfall_usd": 0,
+        "bdr_capacity_utilization": 0.951,
+        "status": "clears"
+      },
+      {
+        "scenario": "base",
+        "delta": "plan assumptions as entered",
+        "factor": 1,
+        "new_aes": 7,
+        "new_ae_hire_months": [
+          1,
+          1,
+          2,
+          2,
+          3,
+          3,
+          5
+        ],
+        "total_bdrs": 6,
+        "total_ses": 5,
+        "leadership_hires": 3,
+        "sales_payroll_run_rate_usd": 6585000,
+        "year1_sales_comp_usd": 4986829,
+        "gross_capacity_usd": 6991639,
+        "exit_arr_usd": 7022147,
+        "shortfall_usd": 0,
+        "bdr_capacity_utilization": 0.997,
+        "status": "clears"
+      },
+      {
+        "scenario": "upside",
+        "delta": "rep productivity 10 percent above plan",
+        "factor": 1.1,
+        "new_aes": 6,
+        "new_ae_hire_months": [
+          1,
+          1,
+          2,
+          2,
+          3,
+          8
+        ],
+        "total_bdrs": 6,
+        "total_ses": 4,
+        "leadership_hires": 3,
+        "sales_payroll_run_rate_usd": 5995000,
+        "year1_sales_comp_usd": 4578558,
+        "gross_capacity_usd": 7003305,
+        "exit_arr_usd": 7030314,
+        "shortfall_usd": 0,
+        "bdr_capacity_utilization": 0.998,
+        "status": "clears"
+      }
+    ]
   },
   "sources": "docs/SOURCES.md carries every benchmark claim with source, evidence class, and confidence. Unsourced numbers are labeled operator heuristics."
 }

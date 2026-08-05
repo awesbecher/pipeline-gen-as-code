@@ -18,10 +18,13 @@ Pick one lane first; the flywheels are different machines. Community-led
 means practitioners get real value with no purchase anywhere in sight,
 and the pipeline signal is who shows up, asks, and answers. Partner-led
 means tiers, certifications, co-marketing funds, and marketplace
-listings; Wiz grew its integration network past 300 partners by running
-it inside product rather than sales, and dbt's marketplace transactions
-grew 190 percent in a year once cloud-marketplace buying unlocked stuck
-procurement. Either lane, the value engine has to pay members before it
+listings; the Wiz Integration Network reached 300 partner integrations in
+three years, moving 100 to 200 to 300, and those integrations feed the
+Wiz Security Graph as external connections rather than shipping as
+product features. dbt Labs reported marketplace transactions growing more
+than 190 percent year over year once cloud-marketplace buying unlocked
+stuck procurement; that is a growth rate with no disclosed base, so read
+it as direction, not as a bar. Either lane, the value engine has to pay members before it
 pays you: certifications people put on their profile, access they cannot
 get elsewhere. Capture is quiet: who attended, who asked, who brought a
 colleague, routed to a human only when the signal stacks.
@@ -29,7 +32,8 @@ colleague, routed to a human only when the signal stacks.
 ## The number
 
 This quarter it produces nothing; run it for the year and channel
-clearing 25 percent of new business is the graduation bar.
+clearing 25 percent of new business is the graduation bar. That 25
+percent is an Andrew operator heuristic, not an industry figure.
 
 Sources: claims CP-1 to CP-3 in docs/SOURCES.md (evidence class and
 confidence per claim; unsourced values are Andrew operator heuristics).

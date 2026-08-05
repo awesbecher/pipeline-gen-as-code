@@ -11,8 +11,8 @@
  * the format is small enough to validate completely.
  *
  * Field groups (the product contract):
- *   portfolio drivers  -> deterministic engine verdicts (mix.js)
- *   capacity drivers   -> sales capacity model (engine.js)
+ *   portfolio drivers  -> deterministic engine verdicts (mix.cjs)
+ *   capacity drivers   -> sales capacity model (engine.cjs)
  *   narrative context  -> carried into outputs, drives no verdict
  */
 'use strict';
@@ -68,13 +68,42 @@ function parseScalar(raw, where, errors) {
   return { kind: 'string', value: v };
 }
 
+/* Split an inline list on commas that sit outside quotes, so a value
+ * like "VP Sales, Americas" survives as one member. An unterminated
+ * quote is an error, not a silent split. */
+function splitInline(inner, where, errors) {
+  var parts = [], cur = '', inQ = null;
+  for (var i = 0; i < inner.length; i++) {
+    var ch = inner[i];
+    if (inQ) { cur += ch; if (ch === inQ) inQ = null; continue; }
+    if (ch === '"' || ch === "'") { inQ = ch; cur += ch; continue; }
+    if (ch === ',') { parts.push(cur); cur = ''; continue; }
+    cur += ch;
+  }
+  if (inQ) {
+    errors.push(where + ': unterminated ' + inQ + ' quote in the inline list; quote both ends of every value that contains a comma');
+    return null;
+  }
+  parts.push(cur);
+  return parts;
+}
+
 function parseInline(list, where, errors) {
   var inner = list.slice(1, -1).trim();
   if (inner === '') return [];
-  return inner.split(',').map(function (s) {
+  var parts = splitInline(inner, where, errors);
+  if (parts === null) return [];
+  var out = [];
+  parts.forEach(function (s, i) {
     var r = parseScalar(s, where, errors);
-    return r.kind === 'error' || r.kind === 'empty' ? null : wrap(r);
-  }).filter(function (x) { return x !== null; });
+    if (r.kind === 'error') return;
+    if (r.kind === 'empty') {
+      errors.push(where + ': empty item at position ' + (i + 1) + ' in the inline list; remove the stray comma');
+      return;
+    }
+    out.push(wrap(r));
+  });
+  return out;
 }
 
 function wrap(r) {
@@ -231,8 +260,14 @@ function takeList(v, obj, field, opts) {
   if (!Array.isArray(w)) { v.err(field, 'expected a list'); return []; }
   var out = [];
   w.forEach(function (item, i) {
-    if (!isWrapped(item)) return;
+    /* Every member is checked. A member that is null, a nested list, or
+     * a map is an error, never a silently dropped entry: a constraint
+     * that disappears would fund a channel the caller tried to forbid. */
+    if (item === null) { v.err(field + '[' + i + ']', 'null is not a valid list item'); return; }
+    if (Array.isArray(item)) { v.err(field + '[' + i + ']', 'nested lists are not supported'); return; }
+    if (!isWrapped(item)) { v.err(field + '[' + i + ']', 'expected a plain value, not a map'); return; }
     if (opts.kind === 'string' && item.__kind !== 'string') { v.err(field + '[' + i + ']', 'expected text'); return; }
+    if (opts.kind === 'string' && String(item.value).trim() === '') { v.err(field + '[' + i + ']', 'empty text is not a valid list item'); return; }
     if (opts.kind === 'int') {
       if (item.__kind !== 'number' || item.value !== Math.trunc(item.value)) { v.err(field + '[' + i + ']', 'expected a whole number'); return; }
       if (opts.min !== undefined && item.value < opts.min) { v.err(field + '[' + i + ']', 'must be at least ' + opts.min); return; }
@@ -260,7 +295,8 @@ function rejectUnknown(v, obj, path, known) {
 var TOP_KEYS = ['schema_version', 'company', 'stage', 'funding_usd', 'arr_now_usd',
   'arr_target_12mo_usd', 'team', 'product', 'icp', 'personas', 'acv', 'cycle_days',
   'cash_monthly_pipeline', 'engines_running', 'constraints', 'capacity'];
-var TEAM_KEYS = ['aes_ramped', 'aes_ramping', 'bdrs', 'gtm_engineer', 'ses', 'sales_leaders', 'aes_ramping_tenure_months'];
+var TEAM_KEYS = ['aes_ramped', 'aes_ramping', 'bdrs', 'gtm_engineer', 'ses', 'sales_leaders',
+  'bdr_managers', 'se_leads', 'aes_ramping_tenure_months'];
 var PRODUCT_KEYS = ['category', 'self_serve', 'developer_facing'];
 var CAPACITY_KEYS = ['base_arr_usd', 'churn_pct', 'expansion_usd'];
 
@@ -296,12 +332,24 @@ function validate(doc) {
       gtm_engineer: takeBool(v, doc.team, 'team.gtm_engineer', { required: true }),
       ses: takeNumber(v, doc.team, 'team.ses', { int: true, min: 0, max: 500 }),
       sales_leaders: takeNumber(v, doc.team, 'team.sales_leaders', { int: true, min: 0, max: 100 }),
-      aes_ramping_tenure_months: takeList(v, doc.team, 'team.aes_ramping_tenure_months', { kind: 'int', min: 1, max: 11 })
+      bdr_managers: takeNumber(v, doc.team, 'team.bdr_managers', { int: true, min: 0, max: 100 }),
+      se_leads: takeNumber(v, doc.team, 'team.se_leads', { int: true, min: 0, max: 100 }),
+      aes_ramping_tenure_months: takeList(v, doc.team, 'team.aes_ramping_tenure_months', { kind: 'int', min: 1, max: 12 })
     };
     if (p.team.aes_ramping_tenure_months.length &&
         p.team.aes_ramping !== undefined &&
         p.team.aes_ramping_tenure_months.length !== p.team.aes_ramping) {
       v.err('team.aes_ramping_tenure_months', 'must list one tenure per ramping AE (' + p.team.aes_ramping + ')');
+    }
+    /* A tenure at or past the ramp length for this cycle means the rep is
+     * already ramped; counting it as ramping understates capacity. */
+    if (p.team.aes_ramping_tenure_months.length && p.cycle_days !== undefined) {
+      var rampMonths = p.cycle_days < 120 ? 6 : (p.cycle_days <= 220 ? 9 : 12);
+      p.team.aes_ramping_tenure_months.forEach(function (t, i) {
+        if (t >= rampMonths) v.warnings.push('team.aes_ramping_tenure_months[' + i + ']: ' + t +
+          ' months is at or past the ' + rampMonths + '-month ramp for a ' + p.cycle_days +
+          '-day cycle; that rep is fully ramped and belongs in team.aes_ramped');
+      });
     }
   }
 
@@ -371,7 +419,8 @@ var GROUPS = {
   portfolio_drivers: ['acv', 'cash_monthly_pipeline', 'team.aes_ramped', 'team.aes_ramping',
     'team.gtm_engineer', 'product.self_serve', 'product.developer_facing', 'constraints'],
   capacity_drivers: ['acv', 'cycle_days', 'arr_target_12mo_usd', 'team.aes_ramped', 'team.aes_ramping',
-    'team.bdrs', 'team.ses', 'team.sales_leaders', 'team.aes_ramping_tenure_months',
+    'team.bdrs', 'team.ses', 'team.sales_leaders', 'team.bdr_managers', 'team.se_leads',
+    'team.aes_ramping_tenure_months',
     'capacity.base_arr_usd', 'capacity.churn_pct', 'capacity.expansion_usd'],
   narrative_context: ['company', 'stage', 'funding_usd', 'arr_now_usd', 'icp', 'personas',
     'product.category', 'engines_running']

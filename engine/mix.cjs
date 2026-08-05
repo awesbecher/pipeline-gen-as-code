@@ -158,10 +158,14 @@
     }
 
     /* 06 Paid Media: an accelerant that needs a routed list and budget. */
-    if (has(cons, 'no_paid_budget') || cash < 8000) {
+    if (has(cons, 'no_paid_budget')) {
+      r.paid_media = verdict('defer',
+        'Paid media is off by constraint (no_paid_budget), whatever the pipeline budget allows.',
+        0, ['constraints']);
+    } else if (cash < 8000) {
       r.paid_media = verdict('defer',
         'Under about $8K a month, LinkedIn ABM spend fragments below the learning threshold. Bank it.',
-        0, ['constraints', 'cash_monthly_pipeline']);
+        0, ['cash_monthly_pipeline']);
     } else if (r.abm.verdict === 'defer') {
       r.paid_media = verdict('defer', 'Paid without a named list is spray. Stand up the ABM list first.',
         0, ['cash_monthly_pipeline', 'acv']);
@@ -205,25 +209,9 @@
         0, ['acv', 'cash_monthly_pipeline']);
     }
 
-    /* Already-running annotation. This flags continuity; it does not
-     * change the verdict. Current engine performance is not yet a
-     * model input, and pretending otherwise would be dishonest. */
-    ENGINES.forEach(function (e) {
-      r[e].already_running = has(running, e);
-      if (r[e].already_running) {
-        r[e].reason += ' Already running per your intake; this verdict applies to continued funding.';
-      }
-    });
-
     /* Budget split in basis points, largest-remainder, exact totals.
      * run_now engines share 8500 bps by weight; instrument_now engines
      * split 1500 bps equally. Unfunded pools are reported, not hidden. */
-    var runs = [], instruments = [];
-    ENGINES.forEach(function (e) {
-      if (r[e].verdict === 'run_now') runs.push(e);
-      if (r[e].verdict === 'instrument_now') instruments.push(e);
-    });
-
     function apportion(keys, pool, weightOf) {
       var totalW = keys.reduce(function (s, k) { return s + weightOf(k); }, 0);
       if (!keys.length || totalW <= 0) return {};
@@ -236,8 +224,54 @@
       return floors;
     }
 
-    var runBps = apportion(runs, 8500, function (k) { return r[k].weight; });
-    var instBps = apportion(instruments, 1500, function () { return 1; });
+    /* Spend floors, enforced against the ALLOCATION rather than the
+     * total pipeline budget. Qualifying on total cash and then funding
+     * an engine below the floor its own reason cites is a contradiction:
+     * a $15K sponsorship program funded at $3,862 buys nothing. When the
+     * split cannot carry a floor, the engine is not funded this cycle
+     * and the split is recomputed without it. */
+    var SPEND_FLOORS = { paid_media: 8000, events: 15000 };
+    var FLOOR_WHY = {
+      paid_media: 'below the learning threshold, paid spend fragments across audiences and teaches nothing',
+      events: 'below a sponsorship-grade program, the spend buys a booth and no pipeline'
+    };
+    var runs, instruments, runBps, instBps;
+    var floorCuts = [];
+    var guard = 0;
+    while (true) {
+      runs = []; instruments = [];
+      ENGINES.forEach(function (e) {
+        if (r[e].verdict === 'run_now') runs.push(e);
+        if (r[e].verdict === 'instrument_now') instruments.push(e);
+      });
+      runBps = apportion(runs, 8500, function (k) { return r[k].weight; });
+      instBps = apportion(instruments, 1500, function () { return 1; });
+
+      var worst = null, worstRatio = 1;
+      runs.forEach(function (e) {
+        if (SPEND_FLOORS[e] === undefined) return;
+        var monthly = Math.floor(cash * (runBps[e] || 0) / 10000);
+        var ratio = monthly / SPEND_FLOORS[e];
+        if (ratio < 1 && ratio < worstRatio) { worst = { key: e, monthly: monthly, ratio: ratio }; worstRatio = ratio; }
+      });
+      if (!worst || guard++ > ENGINES.length) break;
+      floorCuts.push(worst);
+      r[worst.key] = verdict('defer',
+        'Qualifies on ICP and budget, but the split funds it at $' + worst.monthly.toLocaleString('en-US') +
+        ' a month against its own $' + SPEND_FLOORS[worst.key].toLocaleString('en-US') +
+        ' floor: ' + FLOOR_WHY[worst.key] + '. Not funded this cycle; raise the pipeline budget or concentrate it here deliberately.',
+        0, ['cash_monthly_pipeline', 'acv']);
+    }
+
+    /* Already-running annotation. This flags continuity; it does not
+     * change the verdict. Current engine performance is not yet a
+     * model input, and pretending otherwise would be dishonest. */
+    ENGINES.forEach(function (e) {
+      r[e].already_running = has(running, e);
+      if (r[e].already_running) {
+        r[e].reason += ' Already running per your intake; this verdict applies to continued funding.';
+      }
+    });
 
     var allocated = 0;
     ENGINES.forEach(function (e) {
@@ -250,9 +284,14 @@
 
     var notes = [
       'Weights and thresholds are knobs; argue with them in the reasons.',
-      'The split is a starting allocation hypothesis, not a forecast. Engine spend is not yet converted into meetings or bookings; the capacity model in engine.js answers staffing separately.',
+      'The split is a starting allocation hypothesis, not a forecast. Engine spend is not yet converted into meetings or bookings; the capacity model in engine.cjs answers staffing separately.',
       'A human approves every external send, in every engine, always.'
     ];
+    floorCuts.forEach(function (c) {
+      notes.push(LABELS[c.key] + ' qualified but the split could only fund it at $' + c.monthly.toLocaleString('en-US') +
+        ' against a $' + SPEND_FLOORS[c.key].toLocaleString('en-US') +
+        ' floor, so it is deferred and its share went back to the engines that clear their own bar.');
+    });
     if (!runs.length) notes.push('No engine cleared run_now, so the 85 percent run pool ($' + Math.floor(cash * 0.85) + ') is intentionally unallocated. Fix the blockers before spending it.');
     if (!instruments.length) notes.push('No engine is instrumenting, so the 15 percent instrument pool is unallocated.');
 

@@ -7,8 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
-require('./engine.js');
-const E = globalThis.ENGINE;
+const E = require('./engine.cjs');
 
 const prof = E.profileFor(178);
 const steadyMo = 1000000 / 12;
@@ -41,11 +40,30 @@ const solver = {
   new_ae_hires: r.newSeats.length,
   new_ae_hire_months: r.newSeats.map(s => s.hireMonth),
   existing_gross_usd: Math.round(r.existingGross),
-  shortfall_usd: Math.round(r.shortfall)
+  shortfall_usd: Math.round(r.shortfall),
+  total_bdrs: r.team.totalBdrs,
+  new_bdr_hire_months: r.team.bdrHires,
+  total_ses: r.team.totalSes,
+  bdr_meetings_required: Math.round(r.bdrCheck.needed),
+  bdr_capacity_points: r.bdrCheck.capacity,
+  bdr_capacity_utilization: Math.round(r.bdrCheck.util * 1000) / 1000,
+  bdr_hiring_bound_by: r.bdrCheck.boundBy,
+  sales_payroll_run_rate_usd: Math.round(r.burn.runRate),
+  year1_sales_comp_usd: Math.round(r.burn.totalCost),
+  status: r.status
 };
 
-/* Fixture 3: the committed Acme example through the full runner. */
-const out = JSON.parse(execFileSync('node', [path.join(__dirname, 'run.cjs'), '--example', '--json'], { encoding: 'utf8' }));
+/* Fixture 3: the committed Acme example through the full runner.
+ * Captured the same way a consumer captures it (a pipe, not a file
+ * redirect), so a truncating runner fails here first. */
+const captured = execFileSync('node', [path.join(__dirname, 'run.cjs'), '--example', '--json'],
+  { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+let out;
+try { out = JSON.parse(captured); }
+catch (e) {
+  throw new Error('captured --json did not parse at ' + Buffer.byteLength(captured) +
+    ' bytes; the runner is truncating stdout: ' + e.message);
+}
 const acme = {
   description: 'company/params.example.yaml through run.cjs (illustrative Acme Security fixture, team.bdrs=1 supplied)',
   verdicts: Object.fromEntries(Object.entries(out.mix.engines).map(([k, v]) => [k, v.verdict])),
@@ -54,7 +72,21 @@ const acme = {
   allocated_total_usd: out.mix.allocated_total,
   unallocated_total_usd: out.mix.unallocated_total,
   capacity: out.capacity,
-  target_clearance: out.status.target_clearance
+  target_clearance: out.status.target_clearance,
+  scenarios_fixed_plan: out.scenarios.fixed_plan.map(s => ({
+    scenario: s.scenario, factor: s.factor, new_aes: s.new_aes,
+    gross_capacity_usd: s.gross_capacity_usd, exit_arr_usd: s.exit_arr_usd,
+    shortfall_usd: s.shortfall_usd, bdr_capacity_utilization: s.bdr_capacity_utilization,
+    status: s.status
+  })),
+  scenarios_reoptimized: out.scenarios.reoptimized.map(s => ({
+    scenario: s.scenario, factor: s.factor, new_aes: s.new_aes,
+    total_bdrs: s.total_bdrs, total_ses: s.total_ses,
+    sales_payroll_run_rate_usd: s.sales_payroll_run_rate_usd,
+    year1_sales_comp_usd: s.year1_sales_comp_usd, exit_arr_usd: s.exit_arr_usd,
+    status: s.status
+  })),
+  json_bytes: Buffer.byteLength(captured)
 };
 
 const fixtures = {

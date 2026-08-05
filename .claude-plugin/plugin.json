@@ -1,7 +1,7 @@
 {
   "name": "nine-engines",
   "description": "Explainable pipeline engine allocation and sales capacity for AI startups: validated company parameters in, engine verdicts with reasons, exact budget split, tested staffing math, a board memo, and a weekly operating loop. A human approves every external send.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": {
     "name": "Andrew Wesbecher",
     "email": "andrew@wesbecher.llc",

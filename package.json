@@ -1,0 +1,17 @@
+{
+  "name": "pipeline-gen-as-code",
+  "version": "0.3.1",
+  "private": true,
+  "description": "Explainable pipeline engine allocation and sales capacity for AI startups. Deterministic Node calculators, no runtime dependencies.",
+  "type": "commonjs",
+  "engines": { "node": ">=18" },
+  "bin": { "nine-engines": "./bin/nine-engines" },
+  "scripts": {
+    "test": "node engine/test-engine.cjs && node engine/test-mix.cjs && node engine/test-params.cjs && node engine/test-docs.cjs && node engine/test-packaging.cjs",
+    "example": "node engine/run.cjs --example",
+    "board": "node engine/run.cjs --example --board"
+  },
+  "license": "MIT",
+  "author": "Andrew Wesbecher (https://www.wesbecher.llc)",
+  "repository": { "type": "git", "url": "https://github.com/awesbecher/pipeline-gen-as-code" }
+}

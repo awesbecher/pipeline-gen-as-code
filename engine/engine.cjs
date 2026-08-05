@@ -96,7 +96,37 @@
    *   inp.rampingTenures  tenure in months, one per ramping AE, as of
    *                       plan month 1 (defaults to a 4/3 stagger)
    * Every derivation is recorded in the returned assumptions list. */
+  /* Public boundary check. run.cjs validates against the params schema
+   * before it gets here, but compute() is exported, so it refuses
+   * nonsense rather than returning quietly broken numbers. */
+  function requireFinite(name, x, opts) {
+    opts = opts || {};
+    if (typeof x !== 'number' || !isFinite(x)) {
+      throw new TypeError('ENGINE.compute: ' + name + ' must be a finite number, got ' + JSON.stringify(x));
+    }
+    if (opts.gt !== undefined && x <= opts.gt) throw new RangeError('ENGINE.compute: ' + name + ' must be greater than ' + opts.gt);
+    if (opts.min !== undefined && x < opts.min) throw new RangeError('ENGINE.compute: ' + name + ' must be at least ' + opts.min);
+    if (opts.int && x !== Math.trunc(x)) throw new RangeError('ENGINE.compute: ' + name + ' must be a whole number');
+  }
+
   function compute(inp) {
+    if (!inp || typeof inp !== 'object') throw new TypeError('ENGINE.compute: expected an input object');
+    requireFinite('baseArr', inp.baseArr, { min: 0 });
+    requireFinite('churnPct', inp.churnPct, { min: 0 });
+    requireFinite('expansion', inp.expansion, { min: 0 });
+    requireFinite('targetArr', inp.targetArr, { min: 0 });
+    requireFinite('acv', inp.acv, { gt: 0 });
+    requireFinite('cycleDays', inp.cycleDays, { gt: 0 });
+    requireFinite('rampedAes', inp.rampedAes, { min: 0, int: true });
+    requireFinite('rampingAes', inp.rampingAes, { min: 0, int: true });
+    if (!inp.adv || typeof inp.adv !== 'object') throw new TypeError('ENGINE.compute: adv assumptions object is required');
+    requireFinite('adv.haircut', inp.adv.haircut, { min: 0 });
+    if (inp.adv.haircut >= 1) throw new RangeError('ENGINE.compute: adv.haircut must be below 1');
+    requireFinite('adv.maxPerMonth', inp.adv.maxPerMonth, { gt: 0, int: true });
+    ['bdrs', 'ses', 'salesLeaders', 'bdrManagers', 'seLeads'].forEach(function (k) {
+      if (inp[k] != null) requireFinite(k, inp[k], { min: 0, int: true });
+    });
+
     var adv = inp.adv;
     var assumptions = [];
     var prof = profileFor(inp.cycleDays);
@@ -110,11 +140,15 @@
     var netNewNeeded = inp.targetArr - inp.baseArr - expansionNet;
     var grossNeeded = netNewNeeded > 0 ? netNewNeeded / (1 - adv.haircut) : 0;
 
-    /* carried seats: ramped at tenure 11+ (full productivity by
-     * definition), ramping placed by real tenure when supplied */
+    /* Carried seats. A ramped AE is fully productive by definition, so
+     * its notional hire month sits far enough back that every plan month
+     * scores at the full rate for THIS ramp profile. A fixed -9 left
+     * enterprise reps at 90 percent on the 12-month profile. */
+    var rampLength = prof.months[0] + prof.months[1] + prof.months[2];
+    var rampedHireMonth = 1 - rampLength;
     var seats = [];
     var i;
-    for (i = 0; i < inp.rampedAes; i++) seats.push({ kind: 'ramped', hireMonth: -9 });
+    for (i = 0; i < inp.rampedAes; i++) seats.push({ kind: 'ramped', hireMonth: rampedHireMonth });
     var tenures = inp.rampingTenures && inp.rampingTenures.length === inp.rampingAes
       ? inp.rampingTenures.slice()
       : null;
@@ -128,10 +162,21 @@
     var existingGross = 0;
     seats.forEach(function (s) { existingGross += seatYear1(s.hireMonth, steadyMo, prof); });
 
+    /* A caller can freeze an approved plan (inp.plan) instead of solving.
+     * Board sensitivity runs need the approved schedule held constant
+     * while an assumption moves, which is a different question from
+     * "what would we hire instead". */
+    var frozen = inp.plan && Array.isArray(inp.plan.newSeatMonths) ? inp.plan : null;
+    if (frozen) {
+      frozen.newSeatMonths.forEach(function (m) { requireFinite('plan.newSeatMonths', m, { gt: 0, int: true }); });
+    }
+
     /* greedy front-loaded hiring, then slide trailing seats later while the target still clears */
     var newSeats = [];
     var shortfall = 0;
-    if (grossNeeded > existingGross && steadyMo > 0) {
+    if (frozen) {
+      frozen.newSeatMonths.forEach(function (m) { newSeats.push({ kind: 'new', hireMonth: m }); });
+    } else if (grossNeeded > existingGross && steadyMo > 0) {
       var cum = existingGross, m, k, y;
       outer:
       for (m = 1; m <= 12; m++) {
@@ -249,26 +294,72 @@
       existingBdrs = Math.ceil(existingAes / adv.aePerBdr);
       assumptions.push('Current BDR count not supplied; derived ' + existingBdrs + ' from the ' + adv.aePerBdr + ' AE-per-BDR ratio (set team.bdrs to use the real number).');
     }
-    var seHires = schedule(adv.aePerSe, existingSes);
-    var bdrHires = schedule(adv.aePerBdr, existingBdrs);
+    /* BDR pods carry 12 SAO points a month each and source two of every
+     * three first meetings. Capacity has to satisfy BOTH the coverage
+     * ratio and the meeting plan the AE build implies; scheduling on the
+     * ratio alone is what let a plan report "clears" at 118 percent BDR
+     * utilization. New hires are prorated: a month-9 BDR works 4 months. */
+    var BDR_POINTS_MO = 12;
+    var BDR_MEETING_SHARE = 2 / 3;
+    var bdrMeetingsNeeded = meetings * BDR_MEETING_SHARE;
+    function bdrCapacityOf(hires, existing) {
+      var c = existing * 12 * BDR_POINTS_MO;
+      hires.forEach(function (m) { c += (13 - m) * BDR_POINTS_MO; });
+      return c;
+    }
+
+    var seHires, bdrHires, bdrRatioHires, bdrMeetingHires = [];
+    if (frozen) {
+      seHires = (frozen.seHires || []).slice();
+      bdrHires = (frozen.bdrHires || []).slice();
+      bdrRatioHires = bdrHires.slice();
+    } else {
+      seHires = schedule(adv.aePerSe, existingSes);
+      bdrRatioHires = schedule(adv.aePerBdr, existingBdrs);
+      bdrHires = bdrRatioHires.slice();
+      /* Fewest additional BDRs that cover the meeting plan, each started
+       * as late as it can be and still close the remaining gap. Mirrors
+       * the AE solver objective. */
+      var guard = 0;
+      while (bdrCapacityOf(bdrHires, existingBdrs) < bdrMeetingsNeeded && guard++ < 500) {
+        var gap = bdrMeetingsNeeded - bdrCapacityOf(bdrHires, existingBdrs);
+        var m = 13 - Math.ceil(gap / BDR_POINTS_MO);
+        if (m < 1) m = 1;
+        if (m > 12) m = 12;
+        bdrMeetingHires.push(m);
+        bdrHires.push(m);
+      }
+      bdrHires.sort(function (a, b) { return a - b; });
+      if (bdrMeetingHires.length) assumptions.push(
+        'BDR hiring is set by the meeting plan, not the ' + adv.aePerBdr + ' AE-per-BDR ratio: ' +
+        bdrMeetingHires.length + ' of ' + bdrHires.length + ' new BDRs exist to source the ' +
+        Math.round(bdrMeetingsNeeded) + ' first meetings the bookings plan implies.');
+    }
     var totalSes = existingSes + seHires.length;
     var totalBdrs = existingBdrs + bdrHires.length;
 
-    /* leadership: AVP at 5+ AEs (1 per 8), BDR manager at 3+ BDRs, SE lead at 3+ SEs */
+    /* Leadership: AVP at 5+ AEs (1 per 8), BDR manager at 3+ BDRs, SE
+     * lead at 3+ SEs. Carried managers count ONLY when the caller states
+     * them. Inferring an existing manager from headcount and then leaving
+     * the salary out understated payroll by six figures. */
     var leaders = [];
     var suppliedLeaders = inp.salesLeaders != null ? inp.salesLeaders : null;
+    var carriedAvps = suppliedLeaders != null ? suppliedLeaders : 0;
+    var carriedBdrMgrs = inp.bdrManagers != null ? inp.bdrManagers : 0;
+    var carriedSeLeads = inp.seLeads != null ? inp.seLeads : 0;
     if (adv.leadership) {
       var avpNeed = totalAes >= 5 ? Math.max(1, Math.floor(totalAes / 8)) : 0;
-      var avpHave = suppliedLeaders != null
-        ? Math.min(suppliedLeaders, Math.max(avpNeed, suppliedLeaders))
-        : (existingAes >= 5 ? Math.max(1, Math.floor(existingAes / 8)) : 0);
-      if (suppliedLeaders == null && adv.leadership) assumptions.push(
-        'Current sales leadership not supplied; derived from AE count (set team.sales_leaders to use the real number). Carried leadership is only priced when supplied.');
-      for (i = avpHave; i < avpNeed; i++) leaders.push({ role: 'avp', month: newSeats.length ? newSeats[0].hireMonth : 1 });
-      var bmNeed = totalBdrs >= 3 ? 1 : 0, bmHave = existingBdrs >= 3 ? 1 : 0;
-      for (i = bmHave; i < bmNeed; i++) leaders.push({ role: 'bdrMgr', month: bdrHires.length ? bdrHires[Math.min(bdrHires.length - 1, Math.max(0, 2 - existingBdrs))] : 1 });
-      var slNeed = totalSes >= 3 ? 1 : 0, slHave = existingSes >= 3 ? 1 : 0;
-      for (i = slHave; i < slNeed; i++) leaders.push({ role: 'seLead', month: seHires.length ? seHires[Math.min(seHires.length - 1, Math.max(0, 2 - existingSes))] : 1 });
+      if (suppliedLeaders == null) assumptions.push(
+        'Current sales leadership not supplied; the plan assumes none is in place and prices every leader it adds (set team.sales_leaders to carry existing leaders).');
+      for (i = carriedAvps; i < avpNeed; i++) leaders.push({ role: 'avp', month: newSeats.length ? newSeats[0].hireMonth : 1 });
+      var bmNeed = totalBdrs >= 3 ? 1 : 0;
+      if (inp.bdrManagers == null && bmNeed) assumptions.push(
+        'Current BDR management not supplied; the plan hires and prices a BDR manager (set team.bdr_managers if one is already in seat).');
+      for (i = carriedBdrMgrs; i < bmNeed; i++) leaders.push({ role: 'bdrMgr', month: bdrHires.length ? bdrHires[Math.min(bdrHires.length - 1, Math.max(0, 2 - existingBdrs))] : 1 });
+      var slNeed = totalSes >= 3 ? 1 : 0;
+      if (inp.seLeads == null && slNeed) assumptions.push(
+        'Current SE leadership not supplied; the plan hires and prices an SE lead (set team.se_leads if one is already in seat).');
+      for (i = carriedSeLeads; i < slNeed; i++) leaders.push({ role: 'seLead', month: seHires.length ? seHires[Math.min(seHires.length - 1, Math.max(0, 2 - existingSes))] : 1 });
     }
 
     /* ---------- burn ---------- */
@@ -303,10 +394,10 @@
 
     /* Carried leadership is priced only when the count is supplied;
      * a derived count would invent payroll for people who may not exist. */
-    var carriedLeaderCost = 0;
-    if (suppliedLeaders != null && suppliedLeaders > 0) {
-      carriedLeaderCost = suppliedLeaders * (comp.avp.base + comp.avp.variable * attain);
-    }
+    var carriedLeaderCost =
+        carriedAvps * (comp.avp.base + comp.avp.variable * attain) +
+        carriedBdrMgrs * (comp.bdrMgr.base + comp.bdrMgr.variable * attain) +
+        carriedSeLeads * (comp.seLead.base + comp.seLead.variable * attain);
     var buildCost = (newAeBase + aeVarNew + seCostNew.total + bdrCostNew.total + leaderCost.total) * load;
     var carriedCost = (carriedAeBase + aeVarCarried + seCostCarried.total + bdrCostCarried.total + carriedLeaderCost) * load;
     var totalCost = buildCost + carriedCost;
@@ -315,16 +406,26 @@
                + totalSes * (comp.se.base + comp.se.variable)
                + totalBdrs * (comp.bdr.base + comp.bdr.variable);
     leaders.forEach(function (l) { oteAll += comp[l.role].base + comp[l.role].variable; });
-    if (suppliedLeaders != null) oteAll += suppliedLeaders * (comp.avp.base + comp.avp.variable);
+    /* Every seat the plan assumes is priced, carried or hired. */
+    oteAll += carriedAvps * (comp.avp.base + comp.avp.variable);
+    oteAll += carriedBdrMgrs * (comp.bdrMgr.base + comp.bdrMgr.variable);
+    oteAll += carriedSeLeads * (comp.seLead.base + comp.seLead.variable);
     var runRate = oteAll * load;
 
-    /* BDR capacity check: 12 SAO points a month per BDR, pods source
-     * 2 of 3 meetings. New hires are prorated by months active in the
-     * plan year; a month-9 BDR contributes 4 months, not 12. */
-    var bdrMeetingsNeeded = meetings * (2 / 3);
-    var bdrFleetCapacity = existingBdrs * 12 * 12;
-    bdrHires.forEach(function (m) { bdrFleetCapacity += (13 - m) * 12; });
-    var bdrUtil = bdrFleetCapacity > 0 ? bdrMeetingsNeeded / bdrFleetCapacity : 0;
+    /* Support capacity is reported as its own verdict. A staffing plan
+     * whose support layer runs above 100 percent has not cleared, whatever
+     * the AE bookings math says. */
+    var bdrFleetCapacity = bdrCapacityOf(bdrHires, existingBdrs);
+    var bdrUtil = bdrFleetCapacity > 0 ? bdrMeetingsNeeded / bdrFleetCapacity : (bdrMeetingsNeeded > 0 ? Infinity : 0);
+    var bdrShortPoints = Math.max(0, bdrMeetingsNeeded - bdrFleetCapacity);
+    var bdrStatus = bdrMeetingsNeeded === 0 ? 'not_required'
+                  : (bdrUtil > 1 ? 'over_capacity' : 'clears');
+    /* The extra full-year BDRs it would take to close a gap, when one
+     * survives (a frozen plan, or the hire cap). */
+    var bdrAdditionalNeeded = Math.ceil(bdrShortPoints / (12 * BDR_POINTS_MO));
+    var bdrEarliestFixMonth = bdrShortPoints > 0
+      ? Math.max(1, Math.min(12, 13 - Math.ceil(bdrShortPoints / BDR_POINTS_MO)))
+      : null;
 
     /* Shortfall as a final invariant over actual computed capacity,
      * covering zero-productivity and forced-schedule cases. */
@@ -351,7 +452,18 @@
       team: { totalAes: totalAes, existingAes: existingAes, newAes: newSeats.length,
               totalSes: totalSes, newSes: seHires.length, seHires: seHires,
               totalBdrs: totalBdrs, newBdrs: bdrHires.length, bdrHires: bdrHires,
+              carriedAvps: carriedAvps, carriedBdrMgrs: carriedBdrMgrs, carriedSeLeads: carriedSeLeads,
               leaders: leaderRows },
+      /* The approved plan, in the shape compute() accepts back as
+       * inp.plan, so a sensitivity run can hold it fixed. */
+      plan: { newSeatMonths: newSeats.map(function (s) { return s.hireMonth; }),
+              bdrHires: bdrHires.slice(), seHires: seHires.slice() },
+      /* Per-layer verdicts. Overall clears only when both clear. */
+      status: {
+        ae_bookings: shortfallFinal > 0 ? 'shortfall' : 'clears',
+        bdr_support: bdrStatus,
+        overall: shortfallFinal > 0 ? 'shortfall' : (bdrStatus === 'over_capacity' ? 'support_gap' : 'clears')
+      },
       burn: { newAeBase: newAeBase * load, aeVarNew: aeVarNew * load, aeVarPool: aeVarPool * load,
               seNew: seCostNew.total * load, bdrNew: bdrCostNew.total * load,
               leadership: leaderCost.total * load,
@@ -359,7 +471,12 @@
               runRate: runRate, runRateMo: runRate / 12,
               perDollar: netNewLogo > 0 ? totalCost / netNewLogo : 0,
               pctOfExit: exitArr > 0 ? totalCost / exitArr : 0 },
-      bdrCheck: { needed: bdrMeetingsNeeded, capacity: bdrFleetCapacity, util: bdrUtil }
+      bdrCheck: { needed: bdrMeetingsNeeded, capacity: bdrFleetCapacity, util: bdrUtil,
+                  status: bdrStatus, shortPoints: bdrShortPoints,
+                  additionalBdrsNeeded: bdrAdditionalNeeded, fixByMonth: bdrEarliestFixMonth,
+                  ratioHires: bdrRatioHires.slice(), meetingHires: bdrMeetingHires.slice(),
+                  boundBy: bdrMeetingHires.length ? 'meeting_volume' : 'ae_ratio',
+                  pointsPerBdrMonth: BDR_POINTS_MO, meetingShare: BDR_MEETING_SHARE }
     };
   }
 
@@ -369,10 +486,17 @@
    * 2. Then push each hire as late as possible while the target still
    *    clears and no month exceeds adv.maxPerMonth.
    * Objective: fewest hires, then latest feasible start dates. */
-  root.ENGINE = {
-    MODEL_VERSION: '0.3.0',
+  var api = {
+    MODEL_VERSION: '0.3.1',
     DEFAULTS: DEFAULTS, FUNNEL: FUNNEL, ANCHOR: ANCHOR,
     profileFor: profileFor, steadyAnnual: steadyAnnual,
     seatYear1: seatYear1, seatMonths: seatMonths, compute: compute
   };
+  /* CommonJS is the contract. The file extension is .cjs and the plugin
+   * root declares "type": "commonjs" so an ancestor package.json with
+   * "type": "module" cannot turn these files into ES modules, which is
+   * what produced "MIX.recommend is not a function" inside an installed
+   * plugin cache. The global assignment stays for browser use. */
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.ENGINE = api;
 })(typeof window !== 'undefined' ? window : globalThis);

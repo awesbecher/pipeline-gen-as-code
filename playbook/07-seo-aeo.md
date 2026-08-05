@@ -17,19 +17,26 @@ to instrument, then it pays on every query forever.
 Vanta is the reference case: topic clusters organized around what buyers
 research, comparison and versus pages for the shortlist prompts, and
 dense internal linking so a model can trace the whole argument. The data
-says versus pages are the single strongest predictor of AI-search
-traffic, and sites with 21 plus comparison pages see roughly nine times
-the median AI referrals of sites with a handful. Structure for
-extraction: question-shaped headings, FAQ schema, answers in the first
-sentences. Then measure what analytics hides: most AI-referred traffic
-shows up as Direct, so the "how did you hear about us" field on the demo
-form is the attribution layer, and a fixed prompt set run weekly is the
-rank tracker.
+says versus pages are the content type most correlated with AI-search
+traffic, and B2B sites with 21 or more comparison pages show 900 percent
+more median AI search sessions than sites with one to five. Content
+explains only about 28 percent of the variance, so brand authority and
+category fit carry the rest. Structure for extraction: question-shaped
+headings, FAQ schema, answers in the first sentences. Then measure what
+analytics hides: AI-referred clicks often land as Direct because AI
+platforms do not consistently pass a referrer, and no source quantifies
+how often, so the "how did you hear about us" field on the demo form is
+the attribution layer and a fixed prompt set run weekly is the rank
+tracker.
 
 ## The number
 
-AI-referred visitors convert around five times organic search; the catch
-is months of instrumentation before the flywheel pays.
+For a B2B SaaS audience, AI-referred visitors convert at 1.05x organic,
+which is parity, and AI referrals run 0.2 to 3 percent of sessions.
+Instrument the channel because it is growing and because versus pages pay
+on both surfaces, not because the traffic converts better. Anyone quoting
+a multiplier above 2x for B2B SaaS is quoting a retail or IT-services
+cohort.
 
 Sources: claims SEO-1 to SEO-4 in docs/SOURCES.md (evidence class and
 confidence per claim; unsourced values are Andrew operator heuristics).

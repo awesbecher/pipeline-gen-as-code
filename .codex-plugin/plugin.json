@@ -1,6 +1,6 @@
 {
   "name": "nine-engines",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Explainable pipeline engine allocation and sales capacity for AI startups: company parameters in, budgeted engine verdicts, staffing math, and a weekly operating loop out. A human approves every external send.",
   "author": {
     "name": "Andrew Wesbecher",
@@ -13,7 +13,14 @@
     "longDescription": "Feed it your company parameters (ACV, cycle, team, budget, constraints) and it returns nine engine verdicts with written reasons, an exact budget split, a tested sales-capacity check against your ARR target, and a Monday-to-Friday operating loop. Deterministic models, pinned fixtures, field-validated inputs. Built by Andrew Wesbecher from the playbook at wesbecher.llc/pipeline.",
     "developerName": "Andrew Wesbecher",
     "category": "sales",
-    "capabilities": ["skills"],
+    "capabilities": [
+      "skills"
+    ],
+    "defaultPrompt": [
+      "Build my pipeline engine mix and 90-day plan.",
+      "Check my sales capacity against my ARR target.",
+      "Write the board memo for my pipeline plan."
+    ],
     "websiteURL": "https://www.wesbecher.llc/pipeline",
     "privacyPolicyURL": "https://github.com/awesbecher/pipeline-gen-as-code/blob/main/docs/PRIVACY.md",
     "termsOfServiceURL": "https://github.com/awesbecher/pipeline-gen-as-code/blob/main/LICENSE"
