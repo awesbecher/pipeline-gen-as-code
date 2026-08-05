@@ -21,17 +21,21 @@ staffing model; narrative context (stage, funding, ICP, personas) is
 carried into outputs and drives no verdict. The engine budget split is
 a starting allocation hypothesis; engine spend is not converted into
 meetings or bookings in this model version, and you never imply
-otherwise. Management overrides are persisted (recommendation,
-approved verdict, budget, rationale, approver, date) and re-applied on
-rerun.
+otherwise. An engine with a published minimum monthly spend (paid media
+$8K, events $15K) is only funded when the split actually reaches that
+floor; otherwise it defers and says so. Staffing reports three
+verdicts, AE bookings capacity, BDR support capacity, and overall:
+overall never says clears while a support layer is over capacity.
+Management overrides are persisted (recommendation, approved verdict,
+approved budget, rationale, approver, date) and re-applied on rerun.
 
 ## The loop
 
-1. `company/params.yaml` holds the parameters (in the user's project;
-   under an installed plugin that is `${CLAUDE_PROJECT_DIR}`, never
-   the plugin directory). Missing: run the intake interview.
+1. `company/params.yaml` holds the parameters, in the user's working
+   directory, never in the bundle root. Missing: run the intake
+   interview.
 2. Run with the path explicit; there is no fallback to sample data:
-   `node "${CLAUDE_PLUGIN_ROOT:-.}/engine/run.cjs" "${CLAUDE_PROJECT_DIR:-.}/company/params.yaml"`
+   `bin/nine-engines company/params.yaml` (or `node engine/run.cjs <path>`)
    (`--json`, `--board`, `--example` as needed). Validation errors
    exit 2 with field names; fix fields with the user, never bypass.
 3. `plan/PLAN.md` and `plan/BOARD.md` are generated per
@@ -41,14 +45,26 @@ rerun.
    `plan/review.md`, overrides roll forward. The plan files are the
    memory; read last week before writing this week.
 
+## Portability
+
+The implementation files are CommonJS with `.cjs` extensions and the
+root `package.json` declares `"type": "commonjs"`, so an ancestor
+package cannot reinterpret them as ES modules. Skills resolve the
+bundle root from their own file location. `CLAUDE_PLUGIN_ROOT`,
+`CLAUDE_PROJECT_DIR`, slash commands, and `$ARGUMENTS` are
+Claude-specific: they may be present, but nothing may depend on them.
+Never write output through `process.exit()` after a stdout write; it
+truncates captured output at the pipe buffer.
+
 ## The map
 
     skills/nine-engines/   the operating procedure and references
     skills/setup, monday, review/  the three workflow commands
     playbook/              the nine engine cards, canonical content
-    engine/                params.cjs (schema), mix.js (verdicts),
-                           engine.js (capacity), run.cjs (CLI),
+    engine/                params.cjs (schema), mix.cjs (verdicts),
+                           engine.cjs (capacity), run.cjs (CLI),
                            fixtures.json (pinned), test-*.cjs
+    bin/nine-engines       portable entry point; resolves its own root
     company/               params.example.yaml, the documented schema
     examples/acme/         the committed illustrative fixture
     docs/                  SOURCES.md (claim registry), CONNECTORS.md,
@@ -58,12 +74,13 @@ rerun.
 ## Verification
 
     node engine/test-engine.cjs    # capacity: named, pinned fixtures
-    node engine/test-mix.cjs       # verdicts, thresholds, constraint sweep
+    node engine/test-mix.cjs       # verdicts, floors, constraint sweep
     node engine/test-params.cjs    # schema: fail-closed battery
     node engine/test-docs.cjs      # docs agree with fixtures
+    node engine/test-packaging.cjs # captured stdout, ESM ancestor, manifests
 
-Run all four after touching anything in `engine/`. The fixtures in
-`engine/fixtures.json` are exact pins; regenerating them
+Run all five after touching anything in `engine/`; `npm test` runs the
+chain. The fixtures in `engine/fixtures.json` are exact pins; regenerating them
 (`node engine/gen-fixtures.cjs`) is a deliberate, reviewed act, and
 the workbook-schedule fixture's $50 parity tolerance exists because
 the source workbook rounds monthly cells (the model's own numbers are

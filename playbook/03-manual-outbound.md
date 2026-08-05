@@ -16,20 +16,23 @@ The tiering decides how much personalization an account earns.
 
 ## How the best run it
 
-The tier ladder in practice: a Dream-150 worked strictly by hand, Tier 1
-on calls plus semi-automated sequences, Tier 2 on automated email and
-LinkedIn, Tier 3 on email only. Then the below-the-line calling pattern:
-parallel-dial the practitioners first, log what they say, then call the
-decision maker quoting the org's own words. Connect rates are a data
-problem before they are a skill problem; the average is around 5 percent
-and the top quartile 13 on the same effort, the gap being verified mobile
-numbers. It takes about eight attempts to reach one person. Plan for that
-or donate the pipeline to whoever does.
+Andrew's tier ladder, an operator heuristic rather than a published
+structure: a Dream-150 worked strictly by hand, Tier 1 on calls plus
+semi-automated sequences, Tier 2 on automated email and LinkedIn, Tier 3
+on email only. Then the below-the-line calling pattern: parallel-dial the
+practitioners first, log what they say, then call the decision maker
+quoting the org's own words. Connect rates are a data problem before they
+are a skill problem. Belkins measured about 10 percent connect per dial
+and about 25 percent per prospect across 175,000 dials, on an average of
+three attempts per prospect. A team that needs eight attempts has a data
+problem, not a benchmark.
 
 ## The number
 
-A disciplined phone-first cadence books meetings at 2 to 3 percent of
-dials; coached teams on clean data run 5 to 8.
+Cold dialing books roughly one meeting per 370 dials, about 0.27 percent
+dial-to-meeting. Of the conversations that do connect, 4.6 percent
+produce a booked meeting. Plan cold-calling capacity off the 0.27
+percent, not off the connect rate.
 
 Sources: claims MO-1 to MO-5 in docs/SOURCES.md (evidence class and
 confidence per claim; unsourced values are Andrew operator heuristics).
@@ -58,13 +61,13 @@ training. Set the touch pattern per tier.
 Weeks 5 to 8: run the below-the-line pattern on the first hundred
 accounts. Log practitioner language verbatim; it becomes the
 decision-maker script.
-Weeks 9 to 12: hold the eight-attempt discipline, inspect
+Weeks 9 to 12: hold three attempts per prospect as the floor, inspect
 dial-to-meeting weekly, and move accounts between tiers on evidence, not
 sentiment.
 
 ## Tripwires
 
-Connect rate stuck at the 5 percent average while effort holds: buy
-better numbers, not more dials. Dial-to-meeting under the 2 to 3 percent
-band on clean data: it is a coaching problem now; fix the talk track
+Connect rate stuck under the 10 percent per-dial measure while effort
+holds: buy better numbers, not more dials. Dial-to-meeting under 0.27
+percent on clean data: it is a coaching problem now; fix the talk track
 before adding headcount.

@@ -1,0 +1,20 @@
+#!/bin/sh
+# Nine Engines runner, portable entry point.
+#
+# Resolves the repository (or installed plugin) root from this script's
+# own location, following symlinks. It needs no environment variables:
+# CLAUDE_PLUGIN_ROOT, CLAUDE_PROJECT_DIR, and slash-command context are
+# Claude-specific and are not assumed to exist. Works from a clone, a
+# Claude plugin cache, or a Codex plugin cache.
+#
+#   bin/nine-engines company/params.yaml --board
+#   bin/nine-engines --example --json
+set -e
+src="$0"
+while [ -L "$src" ]; do
+  dir=$(cd -P "$(dirname "$src")" && pwd)
+  src=$(readlink "$src")
+  case "$src" in /*) ;; *) src="$dir/$src" ;; esac
+done
+root=$(cd -P "$(dirname "$src")/.." && pwd)
+exec node "$root/engine/run.cjs" "$@"

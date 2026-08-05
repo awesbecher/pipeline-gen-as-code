@@ -68,9 +68,21 @@ ok('registry labels operator heuristics', (sources.match(/OPERATOR HEURISTIC/g) 
 
 console.log('--- plan artifact validation (committed example) ---');
 const plan = read('examples/acme/PLAN.md');
-ok('PLAN.md names an owner per funded engine', (plan.match(/Owner: /g) || []).length >= 8);
-ok('PLAN.md carries tripwires', (plan.match(/Tripwire:/g) || []).length >= 5);
+ok('PLAN.md names an owner per funded engine', (plan.match(/Owner: /g) || []).length >= 6);
+ok('PLAN.md carries tripwires', (plan.match(/Tripwire:/g) || []).length >= 4);
 ok('PLAN.md has the Approved Overrides section', plan.includes('## Approved overrides'));
+
+console.log('--- PLAN.md dollar figures come from fixtures ---');
+Object.keys(A.budget_monthly).filter(e => A.budget_monthly[e] > 0).forEach(e => {
+  ok('PLAN.md quotes ' + e + ' budget ' + money(A.budget_monthly[e]), plan.includes(money(A.budget_monthly[e])));
+});
+ok('PLAN.md quotes allocated total ' + money(A.allocated_total_usd), plan.includes(money(A.allocated_total_usd)));
+const CAP = A.capacity;
+[['gross capacity', CAP.gross_capacity_usd], ['gross needed', CAP.gross_needed_usd],
+ ['exit ARR', CAP.exit_arr_usd], ['payroll run rate', CAP.sales_payroll_run_rate_usd],
+ ['year-1 sales comp', CAP.year1_sales_comp_usd]].forEach(pair => {
+  ok('PLAN.md quotes ' + pair[0] + ' ' + money(pair[1]), plan.includes(money(pair[1])));
+});
 ok('review.md persists an override with all fields', ['Model recommendation', 'Approved verdict', 'Rationale', 'Approver'].every(k => read('examples/acme/review.md').includes(k)));
 ok('monday.md ends on the standing rule', read('examples/acme/monday.md').includes('A human approves every external send'));
 

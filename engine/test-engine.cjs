@@ -7,7 +7,7 @@
  * Plus behavior tests: current-team inputs, ramp cohorts, proration,
  * shortfall invariant, and the solver objective.
  */
-require('./engine.js');
+require('./engine.cjs');
 const E = globalThis.ENGINE;
 const FX = require('./fixtures.json');
 const D = () => JSON.parse(JSON.stringify(E.DEFAULTS));
@@ -101,7 +101,7 @@ const s3 = E.compute(Object.assign(D(), { ses: 3 }));
 okTrue('SE count supplied is respected', s3.team.totalSes >= 3 && s3.team.newSes <= Math.max(0, s3.team.totalSes - 3));
 const led = E.compute(Object.assign(D(), { salesLeaders: 1 }));
 okTrue('supplied leadership is priced into carried payroll', led.burn.carriedCost > r.burn.carriedCost + 200000);
-okTrue('no derived-leadership assumption when supplied', !led.assumptions.join(' ').includes('leadership not supplied'));
+okTrue('no derived sales-leadership assumption when supplied', !led.assumptions.join(' ').includes('sales leadership not supplied'));
 
 console.log('--- ramp cohorts ---');
 const cohortEqual = E.compute(Object.assign(D(), { rampingTenures: [4, 3] }));
@@ -141,6 +141,84 @@ okTrue('every returned number is finite', (() => {
   })(r);
   return good;
 })());
+
+console.log('--- invariants that hold for every input, not just the fixture ---');
+/* The board-truth rule: a plan may never report that it clears while a
+ * support layer is over capacity. Swept, not assumed. */
+const GRID = [];
+[60000, 120000, 400000].forEach(acv =>
+  [90, 178, 280].forEach(cycleDays =>
+    [0, 2, 8].forEach(rampedAes =>
+      [0, 3].forEach(bdrs =>
+        [3000000, 7000000, 25000000].forEach(targetArr =>
+          GRID.push({ acv, cycleDays, rampedAes, bdrs, targetArr }))))));
+let clearsWhileOver = [], negativeSupport = [], payrollGaps = [];
+const comp = E.DEFAULTS.adv.comp;
+GRID.forEach(g => {
+  const out = E.compute(Object.assign(D(), g, { rampingAes: 0, rampingTenures: null }));
+  if (out.status.overall === 'clears' && out.bdrCheck.util > 1) {
+    clearsWhileOver.push(JSON.stringify(g) + ' util ' + out.bdrCheck.util.toFixed(3));
+  }
+  if (out.bdrCheck.util < 0 || !isFinite(out.bdrCheck.capacity)) negativeSupport.push(JSON.stringify(g));
+  /* Payroll completeness: the run rate must equal the OTE of every seat
+   * the plan assumes, carried or hired. A role that appears in the plan
+   * and not in this sum is a role someone forgot to pay. */
+  let expected = out.team.totalAes * (comp.ae.base + comp.ae.variable)
+               + out.team.totalSes * (comp.se.base + comp.se.variable)
+               + out.team.totalBdrs * (comp.bdr.base + comp.bdr.variable)
+               + out.team.carriedAvps * (comp.avp.base + comp.avp.variable)
+               + out.team.carriedBdrMgrs * (comp.bdrMgr.base + comp.bdrMgr.variable)
+               + out.team.carriedSeLeads * (comp.seLead.base + comp.seLead.variable);
+  out.team.leaders.forEach(l => { expected += comp[l.role].base + comp[l.role].variable; });
+  if (Math.abs(expected - out.burn.runRate) > 0.5) {
+    payrollGaps.push(JSON.stringify(g) + ' expected ' + Math.round(expected) + ' got ' + Math.round(out.burn.runRate));
+  }
+});
+okTrue('no input reports overall clearance while BDR support is over capacity (' + GRID.length + ' cases)',
+  clearsWhileOver.length === 0);
+if (clearsWhileOver.length) console.log('      ' + clearsWhileOver.slice(0, 3).join(' | '));
+okTrue('support capacity is always finite and non-negative', negativeSupport.length === 0);
+okTrue('sales payroll run rate prices every seat the plan assumes', payrollGaps.length === 0);
+if (payrollGaps.length) console.log('      ' + payrollGaps.slice(0, 3).join(' | '));
+
+/* Carried managers are priced whether they are hired or already in seat. */
+const noMgrs = E.compute(Object.assign(D(), { rampedAes: 8, rampingAes: 0, bdrs: 3, ses: 3, salesLeaders: 1 }));
+const withMgrs = E.compute(Object.assign(D(), { rampedAes: 8, rampingAes: 0, bdrs: 3, ses: 3, salesLeaders: 1, bdrManagers: 1, seLeads: 1 }));
+okTrue('an assumed BDR manager and SE lead are hired and priced when not supplied',
+  noMgrs.team.leaders.some(l => l.role === 'bdrMgr') && noMgrs.team.leaders.some(l => l.role === 'seLead'));
+okTrue('supplying those managers carries them instead, at the same run rate',
+  Math.abs(noMgrs.burn.runRate - withMgrs.burn.runRate) < 0.5 &&
+  withMgrs.team.carriedBdrMgrs === 1 && withMgrs.team.carriedSeLeads === 1);
+okTrue('the BDR manager and SE lead OTE reaches the run rate ($565,000 was missing in 0.3.0)',
+  noMgrs.burn.runRate >= 565000);
+
+/* A frozen plan is the board sensitivity path. */
+const basePlan = E.compute(D());
+const frozen = E.compute(Object.assign(D(), { plan: basePlan.plan }));
+ok('a frozen plan reproduces its own capacity exactly', Math.round(frozen.grossCapacity), Math.round(basePlan.grossCapacity));
+okTrue('a frozen plan keeps the same hire months', frozen.plan.newSeatMonths.join(',') === basePlan.plan.newSeatMonths.join(','));
+const advSlow = JSON.parse(JSON.stringify(E.DEFAULTS.adv));
+advSlow.steadyOverride = E.steadyAnnual(120000, 178, 0) * 0.85;
+const frozenSlow = E.compute(Object.assign(D(), { plan: basePlan.plan, adv: advSlow }));
+okTrue('a frozen plan under lower productivity misses instead of quietly rehiring',
+  frozenSlow.newSeats.length === basePlan.newSeats.length && frozenSlow.shortfall > 0);
+
+/* Ramped reps are fully productive on every profile, including the
+ * 12-month enterprise ramp where they used to score 90 percent. */
+[75, 178, 280, 400].forEach(cycleDays => {
+  const one = E.compute(Object.assign(D(), { cycleDays, rampedAes: 1, rampingAes: 0 }));
+  okTrue('a ramped AE is exactly 100 percent productive at ' + cycleDays + ' days',
+    Math.abs(one.seats[0].year1 - one.steady) < 0.01);
+});
+
+/* Boundary guards: the module refuses nonsense instead of returning it. */
+[['acv', { acv: 'x' }], ['cycleDays', { cycleDays: 0 }], ['rampedAes', { rampedAes: 1.5 }],
+ ['baseArr', { baseArr: NaN }], ['adv', { adv: null }]].forEach(([field, bad]) => {
+  okTrue('compute() throws on invalid ' + field, (() => {
+    try { E.compute(Object.assign(D(), bad)); return false; } catch (e) { return /ENGINE\.compute/.test(e.message); }
+  })());
+});
+
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

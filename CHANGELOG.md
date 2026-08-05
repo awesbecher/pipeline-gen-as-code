@@ -1,5 +1,101 @@
 # Changelog
 
+## 0.3.1 (unreleased, branch claude/v0.3.1-board-truth-hotfix)
+
+Board truth and portability. Two independent test passes, a post-release
+audit and an OpenAI install test, found defects that a board reader or an
+installed agent would hit before anyone noticed internally. Every one is
+fixed with a regression test that fails on the old code.
+
+### The board memo tells the truth
+- Staffing reports three verdicts instead of one: AE bookings capacity,
+  BDR support capacity, and overall. Overall never reads "clears" while a
+  support layer is over capacity. The 0.3.0 example said the plan cleared
+  while BDR utilization sat at 118 percent.
+- BDR hiring is scheduled against the larger of the AE coverage ratio and
+  the meeting volume the bookings plan implies, so the recommended plan
+  can source its own meetings. Support that still cannot clear reports the
+  exact additional headcount and the month it is needed.
+- Scenarios answer the question a board actually asks. The default table
+  holds the approved hiring plan fixed and shows the ARR miss: the example
+  downside now shows a $1,017,107 gap instead of three near-identical
+  outcomes. A second table re-solves the plan and exposes every headcount
+  and payroll change it took to hold the target, which was $2,660,000 of
+  run-rate payroll the old memo hid.
+- Engine spend floors bind on the money the split actually allocates, not
+  on the total budget. An engine that qualifies but cannot be funded to
+  its own floor defers and says so, and its share returns to the engines
+  that clear their bar. At $25K a month the example now funds four engines
+  properly instead of nine thinly; it no longer offers to run a $15,000
+  sponsorship program on $4,250.
+- Every leadership seat the plan assumes is priced. Carried BDR managers
+  and SE leads are inputs (team.bdr_managers, team.se_leads); when they
+  are not supplied the model hires and prices them instead of assuming
+  they exist for free, which had been omitting $565,000 of run-rate OTE.
+- no_paid_budget gets its own reason instead of borrowing the
+  under-$8K explanation.
+- Board prose clamps an already-covered target instead of printing a
+  negative net-new requirement.
+
+### It runs where it is installed
+- Implementation files are `.cjs` and the plugin root declares
+  `"type": "commonjs"`. An ancestor package.json with `"type": "module"`
+  had turned the engines into ES modules inside a plugin cache, failing
+  with "MIX.recommend is not a function".
+- Successful output paths no longer call process.exit after writing.
+  stdout was truncating at the 8,192-byte pipe buffer under execFileSync
+  and spawnSync on macOS, so captured --json was invalid while a file
+  redirect looked fine. CI now runs on macOS and parses captured output
+  instead of discarding it.
+- Skills resolve the bundle root from their own file location. Nothing
+  depends on CLAUDE_PLUGIN_ROOT, CLAUDE_PROJECT_DIR, slash commands, or
+  $ARGUMENTS, all of which are Claude-specific. Claude support is
+  unchanged.
+- New `bin/nine-engines` wrapper resolves its own root and needs no
+  environment.
+- `.agents/skills/nine-engines/SKILL.md` makes the skill discoverable
+  from a fresh clone.
+- Codex manifest carries interface.defaultPrompt and passes OpenAI's
+  official validator. CI runs both official validators, Claude's and
+  Codex's, instead of shape checks.
+
+### Inputs and evidence
+- Lists fail closed on null, nested list, map, and empty members. Invalid
+  JSON constraints had normalized to an empty list, which could fund a
+  channel the caller forbade.
+- Inline list parsing is quote-aware: "VP Sales, Americas" survives as
+  one value.
+- Ramped AEs are exactly fully productive on every ramp profile; the
+  enterprise profile had been scoring them at 90 percent.
+- ENGINE.compute and the runner reject nonsense at the module boundary
+  with named fields instead of returning quiet garbage.
+- docs/SOURCES.md rebuilt with direct URLs, sample sizes, cohorts,
+  methods, access dates, and evidence classes. Claims that no longer
+  survive their sources are corrected in the playbook, not just in the
+  registry: dial-to-meeting moves from 2 to 3 percent to the measured
+  0.27 percent, visitor match separates company-level from person-level,
+  and founder-content engagement drops from 3x to about 1.5x. Claims with
+  no resolvable source are labeled operator judgment.
+- Conflicting evidence is presented as conflicting: no universal
+  AI-referral conversion multiplier is claimed, and the B2B SaaS figure
+  is parity.
+
+### Docs and claims
+- Lacework proof uses the supported title, first global sales leader.
+- The repo is described as built from the operating principles used in
+  those roles, not as the system that produced those outcomes.
+- Engine scope is stated as a model claim, not a universal one.
+- Privacy language separates the local calculators from the assistant and
+  connectors that process what you share with them under their own
+  policies, with guidance to confirm an approved AI environment first.
+- company/params.json and local variants are gitignored alongside the
+  YAML.
+- The HeyReach setup command is corrected and verified: that server reads
+  no environment variable, `claude mcp add -e` needs KEY=value, and single
+  quotes keep the secret out of the stored config.
+- 251 assertions across five suites, on Node 18, 20, and 22, Ubuntu and
+  macOS.
+
 ## 0.3.0 (2026-08-05)
 
 Release-hardening pass against the August 2026 S-tier audit. The

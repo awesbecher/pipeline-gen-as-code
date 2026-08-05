@@ -88,7 +88,7 @@ ok('--json emits versioned finite output', (() => {
   const r = cli([tmp, '--json']);
   if (r.status !== 0) return false;
   const d = JSON.parse(r.stdout);
-  return d.output_schema_version === 2 && d.params_schema_version === 1 && d.capacity === null;
+  return d.output_schema_version === 3 && d.params_schema_version === 1 && d.capacity === null;
 })());
 ok('markdown escapes pipe in company name', (() => {
   fs.writeFileSync(tmp, GOOD.replace('company: X', 'company: "Acme | DROP"'));

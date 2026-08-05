@@ -6,6 +6,10 @@
 plan/*
 !plan/README.md
 company/params.yaml
+company/params.yml
+company/params.json
+company/*.local.yaml
+company/*.local.json
 
 node_modules/
 .DS_Store

@@ -10,10 +10,21 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # macOS is in the matrix because the stdout truncation that broke
+    # captured --json in 0.3.0 only reproduced there: Linux drains the
+    # pipe differently, so an Ubuntu-only matrix stayed green while
+    # installed agents got 8,192 bytes of invalid JSON.
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         node: [18, 20, 22]
+        include:
+          - os: macos-latest
+            node: 22
+          - os: macos-latest
+            node: 18
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -21,20 +32,35 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Capacity model (named, pinned fixtures)
         run: node engine/test-engine.cjs
-      - name: Mix engine (thresholds + constraint sweep)
+      - name: Mix engine (thresholds, floors, constraint sweep)
         run: node engine/test-mix.cjs
       - name: Input schema (fail-closed battery)
         run: node engine/test-params.cjs
       - name: Docs agree with fixtures
         run: node engine/test-docs.cjs
+      - name: Packaging and portability (captured stdout, ESM ancestor, manifests)
+        run: node engine/test-packaging.cjs
       - name: Runner contract smoke
         run: |
           node engine/run.cjs --help > /dev/null
           node engine/run.cjs --version
           node engine/run.cjs --example > /dev/null
-          node engine/run.cjs --example --json > /dev/null
           node engine/run.cjs --example --board > /dev/null
           if node engine/run.cjs 2> /dev/null; then echo "should have exited 2"; exit 1; fi
+      - name: Captured JSON is parsed, not discarded
+        # Redirecting to /dev/null hid the truncation bug for a whole
+        # release. Capture it the way a consumer does and parse it.
+        run: |
+          node -e "
+            const {execFileSync} = require('child_process');
+            const fs = require('fs');
+            const out = execFileSync('node', ['engine/run.cjs','--example','--json'], {encoding:'utf8', maxBuffer: 64*1024*1024});
+            const parsed = JSON.parse(out);
+            const committed = fs.readFileSync('examples/acme/output.json','utf8');
+            if (out !== committed) throw new Error('captured output differs from the committed fixture');
+            if (!parsed.capacity || !parsed.scenarios) throw new Error('output is missing sections');
+            console.log('captured ' + Buffer.byteLength(out) + ' bytes, parsed clean');
+          "
 
   install-paths:
     runs-on: ubuntu-latest
@@ -53,26 +79,69 @@ jobs:
           cd "$WORK/repo"
           node engine/run.cjs --example > /dev/null
           node engine/run.cjs company/params.example.yaml --json > /dev/null
-      - name: Plugin path resolution (CLAUDE_PLUGIN_ROOT and CLAUDE_PROJECT_DIR)
+          ./bin/nine-engines --example > /dev/null
+      - name: Runs with no Claude environment variables at all
+        # Codex and a bare shell have neither variable. The wrapper and
+        # the skills must resolve their own root.
         run: |
           set -e
-          PLUGIN=$(mktemp -d)/plugin
+          BUNDLE=$(mktemp -d)/bundle
           PROJECT=$(mktemp -d)/project
-          mkdir -p "$PLUGIN" "$PROJECT/company"
-          cp -r . "$PLUGIN"
+          mkdir -p "$BUNDLE" "$PROJECT/company"
+          cp -r . "$BUNDLE"
           cp company/params.example.yaml "$PROJECT/company/params.yaml"
-          export CLAUDE_PLUGIN_ROOT="$PLUGIN"
-          export CLAUDE_PROJECT_DIR="$PROJECT"
           cd /tmp
-          node "${CLAUDE_PLUGIN_ROOT}/engine/run.cjs" "${CLAUDE_PROJECT_DIR}/company/params.yaml" > /dev/null
-          if node "${CLAUDE_PLUGIN_ROOT}/engine/run.cjs" 2> /dev/null; then echo "implicit fallback must not exist"; exit 1; fi
+          env -u CLAUDE_PLUGIN_ROOT -u CLAUDE_PROJECT_DIR \
+            "$BUNDLE/bin/nine-engines" "$PROJECT/company/params.yaml" > /dev/null
+          env -u CLAUDE_PLUGIN_ROOT -u CLAUDE_PROJECT_DIR \
+            node "$BUNDLE/engine/run.cjs" "$PROJECT/company/params.yaml" --board > /dev/null
+          if env -u CLAUDE_PLUGIN_ROOT -u CLAUDE_PROJECT_DIR node "$BUNDLE/engine/run.cjs" 2> /dev/null; then
+            echo "implicit fallback must not exist"; exit 1
+          fi
+      - name: Survives an ancestor package.json declaring type module
+        run: |
+          set -e
+          ANCESTOR=$(mktemp -d)
+          echo '{"name":"hostile","type":"module","version":"1.0.0"}' > "$ANCESTOR/package.json"
+          cp -r . "$ANCESTOR/cache"
+          rm -f "$ANCESTOR/cache/package.json"
+          node "$ANCESTOR/cache/engine/run.cjs" --example --json \
+            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{JSON.parse(s);console.log('parsed '+Buffer.byteLength(s)+' bytes through a pipe under an ESM ancestor')})"
       - name: Portable skill bundle is self-contained
         run: |
           test -f skills/nine-engines/references/params.example.yaml
           test -f skills/nine-engines/references/engines.md
-      - name: Manifests parse
+          test -f .agents/skills/nine-engines/SKILL.md
+          test -x bin/nine-engines
+
+  manifests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: Official Claude plugin validator
+        # Local schema check: no auth, no network, no model call.
         run: |
-          node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json','utf8'))"
-          node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/marketplace.json','utf8'))"
-          node -e "const p=JSON.parse(require('fs').readFileSync('.codex-plugin/plugin.json','utf8')); if(!p.interface||!p.interface.displayName) throw new Error('codex interface missing')"
+          npm install -g @anthropic-ai/claude-code
+          claude plugin validate .
+          claude plugin validate .claude-plugin/plugin.json
+      - name: Official OpenAI Codex plugin validator
+        # Tracks main today. If OpenAI moves the spec, this gate is where
+        # we find out; pin CODEX_VALIDATOR_REF to a commit SHA if that
+        # becomes noisy.
+        env:
+          CODEX_VALIDATOR_REF: main
+        run: |
+          set -e
+          python3 -m pip install --quiet --break-system-packages pyyaml \
+            || python3 -m pip install --quiet pyyaml
+          curl -sSLo /tmp/validate_plugin.py \
+            "https://raw.githubusercontent.com/openai/codex/${CODEX_VALIDATOR_REF}/codex-rs/skills/src/assets/samples/plugin-creator/scripts/validate_plugin.py"
+          python3 /tmp/validate_plugin.py .
+      - name: Marketplace shapes
+        run: |
           node -e "const m=JSON.parse(require('fs').readFileSync('.agents/plugins/marketplace.json','utf8')); const e=m.plugins[0]; if(!e.source.source||!e.policy.installation) throw new Error('codex marketplace shape missing')"

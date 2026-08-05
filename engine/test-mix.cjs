@@ -1,6 +1,6 @@
 /* Mix engine verification: scenario verdicts, threshold boundaries,
  * the full constraint sweep, and exact allocation conservation. */
-const MIX = require('./mix.js');
+const MIX = require('./mix.cjs');
 
 let pass = 0, fail = 0;
 function is(name, got, want) {
@@ -23,7 +23,9 @@ const a = MIX.recommend(base({ team: { aes_ramped: 1, aes_ramping: 0, bdrs: 1, g
 is('A: automated outbound runs', a.engines.automated_outbound.verdict, 'run_now');
 is('A: manual outbound runs', a.engines.manual_outbound.verdict, 'run_now');
 is('A: ABM runs', a.engines.abm.verdict, 'run_now');
-is('A: events run at enterprise ACV + budget', a.engines.events.verdict, 'run_now');
+is('A: events qualify but defer at $25K, unfundable to their floor', a.engines.events.verdict, 'defer');
+ok('A: events defer reason names the floor and the offered amount',
+  /\$15,000 floor/.test(a.engines.events.reason) && /funds it at \$/.test(a.engines.events.reason));
 is('A: PLG deferred with no self-serve', a.engines.plg.verdict, 'defer');
 is('A: SEO instruments', a.engines.seo_aeo.verdict, 'instrument_now');
 
@@ -67,10 +69,35 @@ is('manual at $24,999 defers', verdictAt('acv', 24999, 'manual_outbound'), 'defe
 is('manual at $25,000 runs', verdictAt('acv', 25000, 'manual_outbound'), 'run_now');
 is('ABM at $74,999 defers', verdictAt('acv', 74999, 'abm'), 'defer');
 is('ABM at $75,000 runs (with a rep)', verdictAt('acv', 75000, 'abm'), 'run_now');
-is('events at $14,999 cash defers', verdictAt('cash', 14999, 'events'), 'defer');
-is('events at $15,000 cash runs', verdictAt('cash', 15000, 'events'), 'run_now');
-is('paid at $7,999 cash defers', verdictAt('cash', 7999, 'paid_media'), 'defer');
-is('paid at $8,000 cash runs (ABM running)', verdictAt('cash', 8000, 'paid_media'), 'run_now');
+/* Qualification gates on total budget are necessary but not sufficient:
+ * the engine also has to be funded to its own floor by the split. */
+is('events at $14,999 cash defers on the qualification gate', verdictAt('cash', 14999, 'events'), 'defer');
+is('events at $15,000 cash still defers: the split cannot reach the floor', verdictAt('cash', 15000, 'events'), 'defer');
+is('events run once the split can carry $15,000', verdictAt('cash', 90000, 'events'), 'run_now');
+is('paid at $7,999 cash defers on the qualification gate', verdictAt('cash', 7999, 'paid_media'), 'defer');
+is('paid at $8,000 cash still defers: the split cannot reach the floor', verdictAt('cash', 8000, 'paid_media'), 'defer');
+is('paid runs once the split can carry $8,000', verdictAt('cash', 120000, 'paid_media'), 'run_now');
+
+console.log('--- spend floors bind on the allocation, not the total budget ---');
+const FLOORS = { paid_media: 8000, events: 15000 };
+let floorViolations = [];
+[6000, 8000, 12000, 15000, 25000, 40000, 60000, 75000, 90000, 120000, 250000, 1000000].forEach(cash => {
+  const m = MIX.recommend(base({ cash_monthly_pipeline: cash }));
+  Object.keys(FLOORS).forEach(e => {
+    const g = m.engines[e];
+    if (g.verdict === 'run_now' && g.budget_monthly < FLOORS[e]) {
+      floorViolations.push(e + ' funded $' + g.budget_monthly + ' at cash $' + cash);
+    }
+    if (g.verdict !== 'run_now' && g.budget_monthly !== 0) {
+      floorViolations.push(e + ' unfunded verdict carried $' + g.budget_monthly);
+    }
+  });
+});
+ok('no engine with a floor is ever funded below it', floorViolations.length === 0, floorViolations.slice(0, 3).join('; '));
+const cut = MIX.recommend(base({ cash_monthly_pipeline: 25000 }));
+ok('the demotion is explained in the notes', cut.notes.some(n => /floor, so it is deferred/.test(n)));
+ok('cash freed by a floor demotion is reallocated, not lost',
+  cut.allocated_total >= 24990 && cut.allocated_total <= 25000, 'allocated ' + cut.allocated_total);
 const plgLo = MIX.recommend(base({ acv: 49999, product: { self_serve: 'yes', developer_facing: false } }));
 const plgHi = MIX.recommend(base({ acv: 50000, product: { self_serve: 'yes', developer_facing: false } }));
 is('PLG at $49,999 runs', plgLo.engines.plg.verdict, 'run_now');
@@ -107,8 +134,10 @@ is('no_email+no_phone: manual defers (LinkedIn-only fails the bar)', both.engine
 is('no_email+no_phone: automated blocked', both.engines.automated_outbound.verdict, 'blocked');
 ok('no_email alone: manual runs on phone+LinkedIn, reason names no email leg',
   MIX.recommend(base({ constraints: ['no_email'] })).engines.manual_outbound.reason.includes('email leg is off'));
-ok('events reason adapts channels under no_email',
-  !/pre-booked\.$/.test('') && /phone and LinkedIn/.test(MIX.recommend(base({ constraints: ['no_email'] })).engines.events.reason));
+ok('events reason adapts channels under no_email (at a budget that funds events)',
+  /phone and LinkedIn/.test(MIX.recommend(base({ constraints: ['no_email'], cash_monthly_pipeline: 90000 })).engines.events.reason));
+ok('no_paid_budget gives paid media its own reason, not the budget-floor one',
+  /off by constraint/.test(MIX.recommend(base({ constraints: ['no_paid_budget'], cash_monthly_pipeline: 120000 })).engines.paid_media.reason));
 
 console.log('--- allocation conservation, exact ---');
 [a, b, c, d, both].forEach((out, i) => {

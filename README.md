@@ -57,8 +57,11 @@ of enterprise go-to-market and ten GTM plans built for AI and AI
 security companies. From his record at
 [wesbecher.llc/about](https://www.wesbecher.llc/about/): took
 Traceable AI from $700K to $12M ARR in five quarters, and grew
-Lacework from 2 accounts to more than 80 as its first sales hire.
-This repo is the runnable edition of the system behind those numbers.
+Lacework from 2 accounts to more than 80 as its first global sales
+leader. This repo is built from the operating principles he used in
+those roles. The model did not produce those results and does not
+claim it would; it encodes how he decides where pipeline comes from
+and whether the team can carry it.
 
 ## Inputs, outputs, and limits
 
@@ -106,26 +109,40 @@ model.
 
 | Engine | Verdict | Monthly | Why (abridged; full reasons in the memo) |
 |--------|---------|--------:|------------------------------------------|
-| Automated Outbound | run now | $3,865 | Baseline layer; one owner exists |
+| Automated Outbound | run now | $5,312 | Baseline layer; one owner exists |
 | Product-Led Growth | defer | – | No self-serve surface |
-| Manual Outbound + Cold Calling | run now | $5,795 | ACV clears the rep-led bar; already running |
-| ABM | run now | $3,862 | Enterprise ACV, reps to route to |
+| Manual Outbound + Cold Calling | run now | $7,970 | ACV clears the rep-led bar; already running |
+| ABM | run now | $5,312 | Enterprise ACV, reps to route to |
 | Community + Partner Led | instrument now | $1,875 | Slow flywheel; pays next year |
-| Paid Media | run now | $1,932 | Named list live, budget clears floor |
+| Paid Media | defer | – | Split lands under its $8,000 learning floor |
 | SEO + AEO | instrument now | $1,875 | No fast mode exists |
-| Social Content | run now | $1,932 | The founder will post |
-| Events | run now | $3,862 | Enterprise ICP, budget above floor |
+| Social Content | run now | $2,655 | The founder will post |
+| Events | defer | – | Split lands under its $15,000 sponsorship floor |
 
-Allocated $24,998 of $25,000; $2 unallocated rounding remainder,
-reported, never hidden. The capacity check on the same inputs: gross
-capacity $6,991,639 against $6,960,000 needed, exit ARR $7,022,147,
-seven AE hires (months 1, 1, 2, 2, 3, 3, 5), support build to 5 BDRs
-and 5 SEs, payroll run rate $6,465,000, with every derived assumption
-disclosed in the output.
+Allocated $24,999 of $25,000; $1 unallocated rounding remainder,
+reported, never hidden.
+
+Read the two defers, because they are the change in this version. An
+engine now has to clear its own minimum spend floor against the money
+the split actually hands it, not merely qualify on ICP and budget. At
+$25,000 a month, Events ($15,000 floor) and Paid Media ($8,000 floor)
+never get there, so both drop to $0 and their share moves to the four
+engines that clear their bar. Plainly: the model refuses to fund a
+sponsorship program at $4,250.
+
+The capacity check on the same inputs: gross capacity $6,991,639
+against $6,960,000 needed, exit ARR $7,022,147, seven AE hires
+(months 1, 1, 2, 2, 3, 3, 5), support build to 6 BDRs and 5 SEs,
+sales payroll run rate $6,585,000, with every derived assumption
+disclosed in the output. The board memo reports status per layer, AE
+bookings capacity, BDR support, and overall staffing, so a plan that
+books the number but cannot source the meetings shows up as its own
+failure. BDR hiring follows the meeting plan the bookings target
+implies, not the AE coverage ratio alone.
 
 ## The Nine Engines methodology
 
-Every first meeting a B2B company books comes out of one of nine
+In this model, every new-logo first meeting maps to one of nine
 engines. The playbook behind this repo covers all nine, how strong AI
 companies run each one, and the numbers that say each is working,
 with each claim indexed to a source or labeled an operator heuristic
@@ -151,8 +168,8 @@ edition lives at
 
 ```mermaid
 flowchart LR
-    P["company/params.yaml<br/>validated, schema v1"] --> M["engine/mix.js<br/>nine verdicts + exact split"]
-    P --> C["engine/engine.js<br/>seats, ramp, hiring, payroll"]
+    P["company/params.yaml<br/>validated, schema v1"] --> M["engine/mix.cjs<br/>nine verdicts + exact split"]
+    P --> C["engine/engine.cjs<br/>seats, ramp, hiring, payroll"]
     M --> PL["plan/PLAN.md + BOARD.md<br/>with overrides persisted"]
     C --> PL
     K["playbook/<br/>nine operating cards"] --> PL
@@ -178,10 +195,14 @@ Say: **"Set up my pipeline plan."** The skill interviews you, writes
 plan and board memo. Or skip the agent entirely:
 
 ```bash
-node engine/run.cjs company/params.yaml           # verdicts + capacity
-node engine/run.cjs company/params.yaml --board   # your BOARD.md
-node engine/run.cjs --example                     # the Acme fixture, explicitly
+bin/nine-engines company/params.yaml              # verdicts + capacity
+bin/nine-engines company/params.yaml --board      # your BOARD.md
+bin/nine-engines --example                        # the Acme fixture, explicitly
 ```
+
+The wrapper finds the engine from its own location, so it works from
+any directory and needs no environment variables. `node
+engine/run.cjs <path>` does the same thing.
 
 **Claude Code plugin** (versioned installs, `/nine-engines:setup`,
 `:monday`, `:review`; plugin code and your project state resolve
@@ -198,24 +219,36 @@ data by accident):
 schema and decision rules, so it works standalone.
 
 **Codex and ChatGPT desktop:** clone the repo; `AGENTS.md` briefs the
-agent. Codex-format manifests ship in `.codex-plugin/` and
-`.agents/`, pending validation against the Codex CLI before we claim
-plugin-install support.
+agent and `.agents/skills/nine-engines/` makes the skill discoverable
+from a fresh clone. The manifest in `.codex-plugin/` passes OpenAI's
+official plugin validator, which CI runs on every commit. We still say
+clone-first rather than claiming plugin-install support, because a
+clean end-to-end install through the Codex CLI has not been run yet.
 
-Privacy: everything runs locally, nothing is sent anywhere, and your
-parameters and plans are gitignored by default. Details in
+Privacy, scoped honestly. The calculators are dependency-free Node
+and run locally. They make no network calls, and your parameters and
+plans stay on your disk, gitignored by default.
+
+The assistant layer is a separate question. When you run this through
+Claude Code, Cowork, Codex, or any MCP connector, that assistant and
+those connectors process whatever you share with them under their own
+provider policies, account tier, and retention settings. Confirm you
+are working in an approved AI environment before you enter real ARR,
+payroll, hiring, customer, or pipeline data. Details in
 [docs/PRIVACY.md](docs/PRIVACY.md).
 
 ## Tests and evidence
 
-No runtime dependencies; the engines run on bare Node (18, 20, 22 in
-CI).
+No runtime dependencies; the engines run on bare Node (18, 20, and 22
+on Ubuntu, 18 and 22 on macOS, all in CI).
 
 ```bash
-node engine/test-engine.cjs   # capacity model: named, pinned fixtures
-node engine/test-mix.cjs      # verdict logic, thresholds, constraint sweep
-node engine/test-params.cjs   # schema: every fail-open case fails closed
-node engine/test-docs.cjs     # README numbers must match the fixtures
+npm test                        # all five suites
+node engine/test-engine.cjs     # capacity: pinned fixtures plus swept invariants
+node engine/test-mix.cjs        # verdicts, spend floors, constraint sweep
+node engine/test-params.cjs     # schema: every fail-open case fails closed
+node engine/test-docs.cjs       # README and plan numbers must match the fixtures
+node engine/test-packaging.cjs  # captured stdout, ESM ancestor, manifests, skills
 ```
 
 Two fixtures anchor the capacity model, by name. The
@@ -256,4 +289,4 @@ of them are required; the plugin deliberately ships no MCP config.
 ## License
 
 MIT. Fork it, run it, argue with the thresholds; they are knobs on
-purpose, commented where they live in `engine/mix.js`.
+purpose, commented where they live in `engine/mix.cjs`.
