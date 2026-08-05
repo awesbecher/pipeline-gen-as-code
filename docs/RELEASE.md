@@ -1,8 +1,9 @@
 # Release plan · 0.3.0
 
-Everything in this file is PREPARED, NOT APPLIED. Publication actions
-(merge to main, GitHub settings, release creation, directory
-resubmission, any announcement) wait for Andrew's explicit approval.
+Status 2026-08-05: applied. The merge, the GitHub settings below,
+the v0.3.0 release, and a directory resubmission under the current
+URL are live. Steps 5 and 6 are deferred by owner decision;
+andrew@wesbecher.llc is confirmed live.
 
 ## Sequence
 
