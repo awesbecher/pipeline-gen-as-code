@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="assets/banner.svg" alt="The Nine Engines: the Masterclass Pipeline Generation Playbook, by Andrew Wesbecher" width="100%">
+<img src="assets/banner.svg" alt="Pipeline gen as code: The Nine Engines playbook by Andrew Wesbecher" width="100%">
 
-[![tests](https://github.com/awesbecher/masterclass-pipeline-gen/actions/workflows/tests.yml/badge.svg)](https://github.com/awesbecher/masterclass-pipeline-gen/actions/workflows/tests.yml)
+[![tests](https://github.com/awesbecher/pipeline-gen-as-code/actions/workflows/tests.yml/badge.svg)](https://github.com/awesbecher/pipeline-gen-as-code/actions/workflows/tests.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-0A0A0A)](LICENSE)
 [![dependencies](https://img.shields.io/badge/dependencies-zero-4361EE)](engine/)
 [![skill](https://img.shields.io/badge/agent%20skill-portable-4361EE)](skills/nine-engines/SKILL.md)
@@ -28,7 +28,7 @@ PLG, manual outbound, ABM, community and partner, paid media, SEO and
 AEO, social content, events. Most teams run the two their last company
 ran and call the rest experiments.
 
-**The Masterclass Pipeline Generation Playbook** is the correction,
+**Pipeline gen as code** is the correction: the Nine Engines playbook,
 built to be run rather than read. Hand it to Claude with your
 parameters (stage, ARR target, team, ACV, cycle, monthly budget) and
 it returns the portfolio: which engines run now with what budget,
@@ -149,8 +149,8 @@ The fastest path, from zero, in any terminal with
 [Claude Code](https://claude.com/claude-code):
 
 ```bash
-git clone https://github.com/awesbecher/masterclass-pipeline-gen
-cd masterclass-pipeline-gen
+git clone https://github.com/awesbecher/pipeline-gen-as-code
+cd pipeline-gen-as-code
 claude
 ```
 
@@ -164,7 +164,7 @@ Three install paths, by depth:
 skills as commands:
 
 ```text
-/plugin marketplace add awesbecher/masterclass-pipeline-gen
+/plugin marketplace add awesbecher/pipeline-gen-as-code
 /plugin install nine-engines@wesbecher
 ```
 
