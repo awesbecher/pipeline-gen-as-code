@@ -7,9 +7,8 @@
 [![dependencies](https://img.shields.io/badge/dependencies-zero-4361EE)](engine/)
 [![skill](https://img.shields.io/badge/agent%20skill-portable-4361EE)](skills/nine-engines/SKILL.md)
 
-**Pipeline generation as code: a portable skill, a Claude Code plugin,
-and a tested, zero-dependency model that turn your company's parameters
-into a budgeted engine portfolio and a weekly operating loop.**
+**The pipeline system I run at AI scale-ups, published as a repo your
+AI agent can execute.**
 
 [Give it to Claude](#give-it-to-claude) ·
 [What you get](#what-you-get) ·
@@ -22,19 +21,21 @@ into a budgeted engine portfolio and a weekly operating loop.**
 
 ---
 
-Every first meeting a B2B company books comes out of one of nine
-engines. Most companies run two or three well, a few badly, and call
-the rest "marketing." Most playbooks that could fix this are PDFs that
-die in a downloads folder.
+Ask a founder how pipeline gets made and you get a channel list. Ask
+where next quarter's meetings come from and the room gets quiet. Every
+first meeting comes out of one of nine engines: automated outbound,
+PLG, manual outbound, ABM, community and partner, paid media, SEO and
+AEO, social content, events. Most teams run the two their last company
+ran and call the rest experiments.
 
-**The Masterclass Pipeline Generation Playbook** is different: it is a
-repo your AI agent can run. Feed it your company's parameters (stage,
-ARR target, team, product shape, ACV, cycle, monthly cash for pipeline)
-and it builds your plan: which engines to run now, which to instrument
-for next year, which to skip and why, how the budget splits, the first
-90 days per engine, and a weekly operating loop that compounds because
-the plan files are the memory. The math underneath is deterministic and
-tested. The reasoning is written down where you can argue with it.
+**The Masterclass Pipeline Generation Playbook** is the correction,
+built to be run rather than read. Hand it to Claude with your
+parameters (stage, ARR target, team, ACV, cycle, monthly budget) and
+it returns the portfolio: which engines run now with what budget,
+which get instrumented for next year, which get skipped with the
+reason written down. A tested capacity model checks the plan is
+staffable before you believe it, and a weekly loop keeps it honest
+after you start.
 
 ## What you get
 
