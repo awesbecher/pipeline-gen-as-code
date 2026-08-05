@@ -7,8 +7,9 @@
 [![dependencies](https://img.shields.io/badge/dependencies-zero-4361EE)](engine/)
 [![skill](https://img.shields.io/badge/agent%20skill-portable-4361EE)](skills/nine-engines/SKILL.md)
 
-**Company parameters in. A budgeted engine portfolio, per-engine 90-day
-build orders, and a weekly operating loop out.**
+**Pipeline generation as code: a portable skill, a Claude Code plugin,
+and a tested, zero-dependency model that turn your company's parameters
+into a budgeted engine portfolio and a weekly operating loop.**
 
 [Give it to Claude](#give-it-to-claude) ·
 [What you get](#what-you-get) ·
