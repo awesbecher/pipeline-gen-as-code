@@ -1,0 +1,290 @@
+{
+  "output_schema_version": 2,
+  "model_version": "0.3.0",
+  "mix_version": "0.3.0",
+  "params_schema_version": 1,
+  "params_file": "company/params.example.yaml",
+  "illustrative_example": true,
+  "units": {
+    "currency": "USD",
+    "budget_share": "basis_points",
+    "months": "plan month, 1-12"
+  },
+  "status": {
+    "target_clearance": "clears",
+    "warnings": [
+      "Running the bundled illustrative example (Acme Security), not your data."
+    ],
+    "assumptions": [
+      "Ramping AE tenure not supplied; assumed a 4/3-month stagger (set team.aes_ramping_tenure_months to use real cohorts).",
+      "Current SE count not supplied; derived 2 from the 2.5 AE-per-SE ratio (set team.ses to use the real number).",
+      "Current sales leadership not supplied; derived from AE count (set team.sales_leaders to use the real number). Carried leadership is only priced when supplied."
+    ]
+  },
+  "decision_input_groups": {
+    "portfolio_drivers": [
+      "acv",
+      "cash_monthly_pipeline",
+      "team.aes_ramped",
+      "team.aes_ramping",
+      "team.gtm_engineer",
+      "product.self_serve",
+      "product.developer_facing",
+      "constraints"
+    ],
+    "capacity_drivers": [
+      "acv",
+      "cycle_days",
+      "arr_target_12mo_usd",
+      "team.aes_ramped",
+      "team.aes_ramping",
+      "team.bdrs",
+      "team.ses",
+      "team.sales_leaders",
+      "team.aes_ramping_tenure_months",
+      "capacity.base_arr_usd",
+      "capacity.churn_pct",
+      "capacity.expansion_usd"
+    ],
+    "narrative_context": [
+      "company",
+      "stage",
+      "funding_usd",
+      "arr_now_usd",
+      "icp",
+      "personas",
+      "product.category",
+      "engines_running"
+    ]
+  },
+  "inputs_normalized": {
+    "schema_version": 1,
+    "company": "Acme Security",
+    "stage": "seed",
+    "funding_usd": 8000000,
+    "arr_now_usd": 1200000,
+    "arr_target_12mo_usd": 7000000,
+    "acv": 120000,
+    "cycle_days": 178,
+    "cash_monthly_pipeline": 25000,
+    "icp": "Mid-market and enterprise security teams, US",
+    "personas": [
+      "CISO",
+      "VP Security Engineering",
+      "Head of AppSec"
+    ],
+    "engines_running": [
+      "manual_outbound"
+    ],
+    "constraints": [],
+    "team": {
+      "aes_ramped": 2,
+      "aes_ramping": 2,
+      "bdrs": 1,
+      "gtm_engineer": true,
+      "aes_ramping_tenure_months": []
+    },
+    "product": {
+      "category": "AI security",
+      "self_serve": "no",
+      "developer_facing": false
+    },
+    "capacity": {
+      "base_arr_usd": 1200000,
+      "churn_pct": 0.06,
+      "expansion_usd": 1000000
+    }
+  },
+  "mix": {
+    "mix_version": "0.3.0",
+    "engines": {
+      "automated_outbound": {
+        "verdict": "run_now",
+        "reason": "The baseline layer: one GTM engineer, waterfall enrichment, warmed domains, human-approved sends.",
+        "weight": 2,
+        "decision_inputs": [
+          "team.gtm_engineer",
+          "team.aes_ramped",
+          "team.aes_ramping",
+          "constraints"
+        ],
+        "already_running": false,
+        "budget_share_bps": 1546,
+        "budget_monthly": 3865,
+        "label": "Automated Outbound"
+      },
+      "plg": {
+        "verdict": "defer",
+        "reason": "No self-serve surface. Revisit when a free tier or trial exists.",
+        "weight": 0,
+        "decision_inputs": [
+          "product.self_serve"
+        ],
+        "already_running": false,
+        "budget_share_bps": 0,
+        "budget_monthly": 0,
+        "label": "Product-Led Growth"
+      },
+      "manual_outbound": {
+        "verdict": "run_now",
+        "reason": "ACV clears the bar for tiered, rep-led outbound. The deep-dive program is the operating manual. Already running per your intake; this verdict applies to continued funding.",
+        "weight": 3,
+        "decision_inputs": [
+          "acv",
+          "constraints"
+        ],
+        "already_running": true,
+        "budget_share_bps": 2318,
+        "budget_monthly": 5795,
+        "label": "Manual Outbound + Cold Calling"
+      },
+      "abm": {
+        "verdict": "run_now",
+        "reason": "Enterprise ACV and reps to route to: named list, signal architecture, stage scoring.",
+        "weight": 2,
+        "decision_inputs": [
+          "acv",
+          "team.aes_ramped",
+          "team.aes_ramping"
+        ],
+        "already_running": false,
+        "budget_share_bps": 1545,
+        "budget_monthly": 3862,
+        "label": "ABM"
+      },
+      "community_partner": {
+        "verdict": "instrument_now",
+        "reason": "Partner lane only: marketplace listing plus two or three co-sell relationships; the 25 percent channel bar is the graduation gate.",
+        "weight": 1,
+        "decision_inputs": [
+          "product.developer_facing",
+          "product.self_serve"
+        ],
+        "already_running": false,
+        "budget_share_bps": 750,
+        "budget_monthly": 1875,
+        "label": "Community + Partner Led"
+      },
+      "paid_media": {
+        "verdict": "run_now",
+        "reason": "Named list exists and budget clears the floor: full-funnel creative, demo asks only at warm retargeting.",
+        "weight": 1,
+        "decision_inputs": [
+          "cash_monthly_pipeline",
+          "acv",
+          "team.aes_ramped",
+          "team.aes_ramping"
+        ],
+        "already_running": false,
+        "budget_share_bps": 773,
+        "budget_monthly": 1932,
+        "label": "Paid Media"
+      },
+      "seo_aeo": {
+        "verdict": "instrument_now",
+        "reason": "Start the clusters and versus pages now; the flywheel pays months from now (see the source registry for the conversion claim).",
+        "weight": 1,
+        "decision_inputs": [],
+        "already_running": false,
+        "budget_share_bps": 750,
+        "budget_monthly": 1875,
+        "label": "SEO + AEO"
+      },
+      "social_content": {
+        "verdict": "run_now",
+        "reason": "Three founder posts a week plus daily comments; capture engaged accounts into outbound.",
+        "weight": 1,
+        "decision_inputs": [
+          "constraints"
+        ],
+        "already_running": false,
+        "budget_share_bps": 773,
+        "budget_monthly": 1932,
+        "label": "Social Content"
+      },
+      "events": {
+        "verdict": "run_now",
+        "reason": "Enterprise ICP: one or two ICP-dense events a quarter, list built six weeks out, half the meetings pre-booked.",
+        "weight": 2,
+        "decision_inputs": [
+          "acv",
+          "cash_monthly_pipeline",
+          "constraints"
+        ],
+        "already_running": false,
+        "budget_share_bps": 1545,
+        "budget_monthly": 3862,
+        "label": "Events"
+      }
+    },
+    "run_now": [
+      "automated_outbound",
+      "manual_outbound",
+      "abm",
+      "paid_media",
+      "social_content",
+      "events"
+    ],
+    "instrument_now": [
+      "community_partner",
+      "seo_aeo"
+    ],
+    "allocated_total": 24998,
+    "unallocated_total": 2,
+    "notes": [
+      "Weights and thresholds are knobs; argue with them in the reasons.",
+      "The split is a starting allocation hypothesis, not a forecast. Engine spend is not yet converted into meetings or bookings; the capacity model in engine.js answers staffing separately.",
+      "A human approves every external send, in every engine, always."
+    ]
+  },
+  "capacity": {
+    "steady_state_per_ae_usd": 999996,
+    "gross_needed_usd": 6960000,
+    "gross_capacity_usd": 6991639,
+    "net_new_arr_usd": 4894147,
+    "exit_arr_usd": 7022147,
+    "shortfall_usd": 0,
+    "new_ae_hire_months": [
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      5
+    ],
+    "total_aes": 11,
+    "total_bdrs": 5,
+    "total_ses": 5,
+    "new_bdr_hire_months": [
+      1,
+      1,
+      2,
+      5
+    ],
+    "new_se_hire_months": [
+      1,
+      2,
+      5
+    ],
+    "leadership_hires": [
+      {
+        "role": "avp",
+        "month": 1
+      },
+      {
+        "role": "bdrMgr",
+        "month": 1
+      },
+      {
+        "role": "seLead",
+        "month": 1
+      }
+    ],
+    "sales_payroll_run_rate_usd": 6465000,
+    "year1_sales_comp_usd": 4895579,
+    "meetings_required_year1": 1166,
+    "bdr_capacity_utilization": 1.178
+  },
+  "sources": "docs/SOURCES.md carries every benchmark claim with source, evidence class, and confidence. Unsourced numbers are labeled operator heuristics."
+}

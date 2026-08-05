@@ -2,20 +2,27 @@
   "name": "wesbecher",
   "owner": {
     "name": "Andrew Wesbecher",
-    "email": "awesbecher@gmail.com",
+    "email": "andrew@wesbecher.llc",
     "url": "https://www.wesbecher.llc"
   },
   "metadata": {
     "description": "Playbooks from wesbecher.llc, runnable.",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "plugins": [
     {
       "name": "nine-engines",
       "source": "./",
-      "description": "The Nine Engines pipeline generation playbook: company parameters in, budgeted engine portfolio and weekly operating loop out.",
+      "description": "Explainable pipeline engine allocation and sales capacity for AI startups, with a weekly operating loop.",
       "category": "sales",
-      "keywords": ["pipeline-generation", "gtm", "sales", "outbound", "abm", "plg"]
+      "keywords": [
+        "pipeline-generation",
+        "gtm",
+        "sales",
+        "outbound",
+        "abm",
+        "plg"
+      ]
     }
   ]
 }

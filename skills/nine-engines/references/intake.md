@@ -57,7 +57,11 @@ paid_media · seo_aeo · social_content · events
 
 If the user wants the plan tied to seats and payroll (they should), also
 collect: base ARR being carried, expected annual gross churn on it
-(default 6 percent), and expected expansion ARR (default $0 if unknown).
+(default 6 percent), and expected expansion ARR (default $0 if
+unknown). Also worth collecting when known: current SEs (team.ses),
+current sales leaders (team.sales_leaders), and each ramping AE's
+tenure in months (team.aes_ramping_tenure_months); the model derives
+and discloses assumptions when these are absent.
 Write these under `capacity:` in the params file; `engine/run.cjs` then
 appends the seat math, hiring schedule, and payroll run rate to the
 verdicts.

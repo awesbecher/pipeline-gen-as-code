@@ -31,6 +31,9 @@ or donate the pipeline to whoever does.
 A disciplined phone-first cadence books meetings at 2 to 3 percent of
 dials; coached teams on clean data run 5 to 8.
 
+Sources: claims MO-1 to MO-5 in docs/SOURCES.md (evidence class and
+confidence per claim; unsourced values are Andrew operator heuristics).
+
 ## Stack
 
 Clay (tiering and research) · Perplexity (account research) · Nooks

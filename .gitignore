@@ -1,7 +1,8 @@
-# Generated plans and the company's own parameters stay out of git by
-# default so a public fork never leaks a real company's numbers. Running
-# a PRIVATE clone as your operating brain? Delete the three lines below
-# and commit your state; the files are the memory.
+# Generated plans and the company's own parameters are confidential
+# business data and stay out of git by default, so a public fork never
+# leaks a real company's numbers. To version them, use a PRIVATE
+# repository or protected storage and delete the three lines below
+# deliberately.
 plan/*
 !plan/README.md
 company/params.yaml

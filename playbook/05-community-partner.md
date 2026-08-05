@@ -31,6 +31,9 @@ colleague, routed to a human only when the signal stacks.
 This quarter it produces nothing; run it for the year and channel
 clearing 25 percent of new business is the graduation bar.
 
+Sources: claims CP-1 to CP-3 in docs/SOURCES.md (evidence class and
+confidence per claim; unsourced values are Andrew operator heuristics).
+
 ## Stack
 
 Slack (community home) · Circle (structured community) · Luma (events

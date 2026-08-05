@@ -30,6 +30,9 @@ the account did; cold "book a demo" against a PQL wastes the signal.
 Median free-to-paid is 8 percent; PQL-to-enterprise runs 10 to 25 percent
 when sales actually works the queue.
 
+Sources: claims PLG-1 to PLG-5 in docs/SOURCES.md (evidence class and
+confidence per claim; unsourced values are Andrew operator heuristics).
+
 ## Stack
 
 Segment (usage sync) · Amplitude (product analytics) · Stripe (billing

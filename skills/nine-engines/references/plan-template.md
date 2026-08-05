@@ -46,12 +46,22 @@ accident.
     {the capacity section from engine/run.cjs when params include the
     capacity block: steady-state, bridge, hires by month, payroll}
 
+    ## Approved overrides
+
+    One block per management override, persisted across reruns and
+    re-applied on top of fresh model output:
+    - Engine: {name}
+    - Model recommendation: {verdict at $X}
+    - Approved verdict: {verdict at $Y}
+    - Rationale: {one sentence}
+    - Approver: {name}, {date}
+
     ## The standing rule
 
     A human approves every external send, in every engine, always.
 
-    Benchmark ranges are directional, drawn from operating experience;
-    the 2026 market data is industry-reported.
+    Benchmark claims cite their docs/SOURCES.md IDs; unsourced numbers
+    are labeled Andrew operator heuristics.
 
 ## plan/monday.md
 

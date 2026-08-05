@@ -1,0 +1,133 @@
+{
+  "generated_by": "engine/gen-fixtures.cjs (run deliberately; tests pin these exactly)",
+  "model_version": "0.3.0",
+  "workbook_schedule": {
+    "description": "Forced workbook hire schedule (8 new hires), $120K ACV, 178-day cycle",
+    "forced_hire_months": [
+      -9,
+      -9,
+      -2,
+      -1,
+      1,
+      1,
+      2,
+      2,
+      3,
+      4,
+      6,
+      7
+    ],
+    "computed_gross_usd": 6958333,
+    "computed_net_new_usd": 4870833,
+    "computed_exit_arr_usd": 7000833,
+    "workbook_reported_gross_usd": 6958328,
+    "workbook_reported_exit_arr_usd": 7000830,
+    "parity_tolerance_usd": 50,
+    "parity_note": "The workbook rounds monthly cells to whole dollars; the model computes exactly. Parity holds within the stated tolerance, not to the dollar."
+  },
+  "solver_default": {
+    "description": "Solver at DEFAULTS: $1.2M base, 6% churn, $1.0M expansion, $7.0M target, $120K ACV, 178d, 2 ramped + 2 ramping AEs, support derived",
+    "gross_capacity_usd": 6991639,
+    "exit_arr_usd": 7022147,
+    "new_ae_hires": 7,
+    "new_ae_hire_months": [
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      5
+    ],
+    "existing_gross_usd": 3616652,
+    "shortfall_usd": 0
+  },
+  "acme_example": {
+    "description": "company/params.example.yaml through run.cjs (illustrative Acme Security fixture, team.bdrs=1 supplied)",
+    "verdicts": {
+      "automated_outbound": "run_now",
+      "plg": "defer",
+      "manual_outbound": "run_now",
+      "abm": "run_now",
+      "community_partner": "instrument_now",
+      "paid_media": "run_now",
+      "seo_aeo": "instrument_now",
+      "social_content": "run_now",
+      "events": "run_now"
+    },
+    "budget_monthly": {
+      "automated_outbound": 3865,
+      "plg": 0,
+      "manual_outbound": 5795,
+      "abm": 3862,
+      "community_partner": 1875,
+      "paid_media": 1932,
+      "seo_aeo": 1875,
+      "social_content": 1932,
+      "events": 3862
+    },
+    "budget_share_bps": {
+      "automated_outbound": 1546,
+      "plg": 0,
+      "manual_outbound": 2318,
+      "abm": 1545,
+      "community_partner": 750,
+      "paid_media": 773,
+      "seo_aeo": 750,
+      "social_content": 773,
+      "events": 1545
+    },
+    "allocated_total_usd": 24998,
+    "unallocated_total_usd": 2,
+    "capacity": {
+      "steady_state_per_ae_usd": 999996,
+      "gross_needed_usd": 6960000,
+      "gross_capacity_usd": 6991639,
+      "net_new_arr_usd": 4894147,
+      "exit_arr_usd": 7022147,
+      "shortfall_usd": 0,
+      "new_ae_hire_months": [
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        5
+      ],
+      "total_aes": 11,
+      "total_bdrs": 5,
+      "total_ses": 5,
+      "new_bdr_hire_months": [
+        1,
+        1,
+        2,
+        5
+      ],
+      "new_se_hire_months": [
+        1,
+        2,
+        5
+      ],
+      "leadership_hires": [
+        {
+          "role": "avp",
+          "month": 1
+        },
+        {
+          "role": "bdrMgr",
+          "month": 1
+        },
+        {
+          "role": "seLead",
+          "month": 1
+        }
+      ],
+      "sales_payroll_run_rate_usd": 6465000,
+      "year1_sales_comp_usd": 4895579,
+      "meetings_required_year1": 1166,
+      "bdr_capacity_utilization": 1.178
+    },
+    "target_clearance": "clears"
+  }
+}

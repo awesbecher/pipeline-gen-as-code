@@ -88,9 +88,17 @@
     return s;
   }
 
-  /* ---------- the full model ---------- */
+  /* ---------- the full model ----------
+   * Optional current-team inputs (all integers):
+   *   inp.bdrs          current BDR count (derived from AE ratio if absent)
+   *   inp.ses           current SE count (derived from AE ratio if absent)
+   *   inp.salesLeaders  current sales leaders (derived if absent)
+   *   inp.rampingTenures  tenure in months, one per ramping AE, as of
+   *                       plan month 1 (defaults to a 4/3 stagger)
+   * Every derivation is recorded in the returned assumptions list. */
   function compute(inp) {
     var adv = inp.adv;
+    var assumptions = [];
     var prof = profileFor(inp.cycleDays);
     var steady = steadyAnnual(inp.acv, inp.cycleDays, adv.steadyOverride);
     var steadyMo = steady / 12;
@@ -102,11 +110,21 @@
     var netNewNeeded = inp.targetArr - inp.baseArr - expansionNet;
     var grossNeeded = netNewNeeded > 0 ? netNewNeeded / (1 - adv.haircut) : 0;
 
-    /* carried seats: ramped at tenure 11+, ramping staggered like the workbook (prior Oct / prior Nov) */
+    /* carried seats: ramped at tenure 11+ (full productivity by
+     * definition), ramping placed by real tenure when supplied */
     var seats = [];
     var i;
     for (i = 0; i < inp.rampedAes; i++) seats.push({ kind: 'ramped', hireMonth: -9 });
-    for (i = 0; i < inp.rampingAes; i++) seats.push({ kind: 'ramping', hireMonth: (i % 2 === 0) ? -2 : -1 });
+    var tenures = inp.rampingTenures && inp.rampingTenures.length === inp.rampingAes
+      ? inp.rampingTenures.slice()
+      : null;
+    if (!tenures) {
+      tenures = [];
+      for (i = 0; i < inp.rampingAes; i++) tenures.push(i % 2 === 0 ? 4 : 3);
+      if (inp.rampingAes > 0) assumptions.push(
+        'Ramping AE tenure not supplied; assumed a 4/3-month stagger (set team.aes_ramping_tenure_months to use real cohorts).');
+    }
+    tenures.forEach(function (t) { seats.push({ kind: 'ramping', hireMonth: 2 - t, tenure: t }); });
     var existingGross = 0;
     seats.forEach(function (s) { existingGross += seatYear1(s.hireMonth, steadyMo, prof); });
 
@@ -160,7 +178,7 @@
       s.quarters = [sum(s.months.slice(0,3)), sum(s.months.slice(3,6)), sum(s.months.slice(6,9)), sum(s.months.slice(9,12))];
       s.year1 = sum(s.months);
       s.status = s.kind === 'ramped' ? 'carried in, ramped'
-               : s.kind === 'ramping' ? 'carried, hired ' + (s.hireMonth === -2 ? 'prior Oct' : 'prior Nov')
+               : s.kind === 'ramping' ? 'carried, ramp month ' + (s.tenure || (1 - s.hireMonth + 1))
                : 'hire, month ' + s.hireMonth;
       for (var c = 0; c < 12; c++) monthly[c] += s.months[c];
     });
@@ -220,8 +238,17 @@
       }
       return hires;
     }
-    var existingSes = Math.ceil(existingAes / adv.aePerSe);
-    var existingBdrs = Math.ceil(existingAes / adv.aePerBdr);
+    var existingSes, existingBdrs;
+    if (inp.ses != null) existingSes = inp.ses;
+    else {
+      existingSes = Math.ceil(existingAes / adv.aePerSe);
+      assumptions.push('Current SE count not supplied; derived ' + existingSes + ' from the ' + adv.aePerSe + ' AE-per-SE ratio (set team.ses to use the real number).');
+    }
+    if (inp.bdrs != null) existingBdrs = inp.bdrs;
+    else {
+      existingBdrs = Math.ceil(existingAes / adv.aePerBdr);
+      assumptions.push('Current BDR count not supplied; derived ' + existingBdrs + ' from the ' + adv.aePerBdr + ' AE-per-BDR ratio (set team.bdrs to use the real number).');
+    }
     var seHires = schedule(adv.aePerSe, existingSes);
     var bdrHires = schedule(adv.aePerBdr, existingBdrs);
     var totalSes = existingSes + seHires.length;
@@ -229,9 +256,14 @@
 
     /* leadership: AVP at 5+ AEs (1 per 8), BDR manager at 3+ BDRs, SE lead at 3+ SEs */
     var leaders = [];
+    var suppliedLeaders = inp.salesLeaders != null ? inp.salesLeaders : null;
     if (adv.leadership) {
       var avpNeed = totalAes >= 5 ? Math.max(1, Math.floor(totalAes / 8)) : 0;
-      var avpHave = existingAes >= 5 ? Math.max(1, Math.floor(existingAes / 8)) : 0;
+      var avpHave = suppliedLeaders != null
+        ? Math.min(suppliedLeaders, Math.max(avpNeed, suppliedLeaders))
+        : (existingAes >= 5 ? Math.max(1, Math.floor(existingAes / 8)) : 0);
+      if (suppliedLeaders == null && adv.leadership) assumptions.push(
+        'Current sales leadership not supplied; derived from AE count (set team.sales_leaders to use the real number). Carried leadership is only priced when supplied.');
       for (i = avpHave; i < avpNeed; i++) leaders.push({ role: 'avp', month: newSeats.length ? newSeats[0].hireMonth : 1 });
       var bmNeed = totalBdrs >= 3 ? 1 : 0, bmHave = existingBdrs >= 3 ? 1 : 0;
       for (i = bmHave; i < bmNeed; i++) leaders.push({ role: 'bdrMgr', month: bdrHires.length ? bdrHires[Math.min(bdrHires.length - 1, Math.max(0, 2 - existingBdrs))] : 1 });
@@ -269,20 +301,35 @@
       leaderRows.push({ role: l.role, label: c.label, month: l.month, cost: r.total * load, ote: c.base + c.variable });
     });
 
+    /* Carried leadership is priced only when the count is supplied;
+     * a derived count would invent payroll for people who may not exist. */
+    var carriedLeaderCost = 0;
+    if (suppliedLeaders != null && suppliedLeaders > 0) {
+      carriedLeaderCost = suppliedLeaders * (comp.avp.base + comp.avp.variable * attain);
+    }
     var buildCost = (newAeBase + aeVarNew + seCostNew.total + bdrCostNew.total + leaderCost.total) * load;
-    var carriedCost = (carriedAeBase + aeVarCarried + seCostCarried.total + bdrCostCarried.total) * load;
+    var carriedCost = (carriedAeBase + aeVarCarried + seCostCarried.total + bdrCostCarried.total + carriedLeaderCost) * load;
     var totalCost = buildCost + carriedCost;
 
     var oteAll = totalAes * (comp.ae.base + comp.ae.variable)
                + totalSes * (comp.se.base + comp.se.variable)
                + totalBdrs * (comp.bdr.base + comp.bdr.variable);
     leaders.forEach(function (l) { oteAll += comp[l.role].base + comp[l.role].variable; });
+    if (suppliedLeaders != null) oteAll += suppliedLeaders * (comp.avp.base + comp.avp.variable);
     var runRate = oteAll * load;
 
-    /* BDR capacity check: 12 SAO points a month per BDR, pods source 2 of 3 meetings */
+    /* BDR capacity check: 12 SAO points a month per BDR, pods source
+     * 2 of 3 meetings. New hires are prorated by months active in the
+     * plan year; a month-9 BDR contributes 4 months, not 12. */
     var bdrMeetingsNeeded = meetings * (2 / 3);
-    var bdrFleetCapacity = totalBdrs * 12 * 12;
+    var bdrFleetCapacity = existingBdrs * 12 * 12;
+    bdrHires.forEach(function (m) { bdrFleetCapacity += (13 - m) * 12; });
     var bdrUtil = bdrFleetCapacity > 0 ? bdrMeetingsNeeded / bdrFleetCapacity : 0;
+
+    /* Shortfall as a final invariant over actual computed capacity,
+     * covering zero-productivity and forced-schedule cases. */
+    var shortfallFinal = Math.max(0, grossNeeded - grossCapacity);
+    if (shortfallFinal < 1) shortfallFinal = 0;
 
     return {
       inputs: inp, prof: prof, steady: steady, steadyMo: steadyMo,
@@ -296,7 +343,8 @@
       existingGross: existingGross, newSeats: newSeats, seats: seats, rows: rows,
       monthly: monthly, grossCapacity: grossCapacity, haircutD: haircutD,
       netNewLogo: netNewLogo, logos: logos, exitArr: exitArr, exitRunRate: exitRunRate,
-      shortfall: shortfall, covered: grossNeeded <= existingGross,
+      shortfall: shortfallFinal, covered: grossNeeded <= existingGross,
+      assumptions: assumptions,
       lastHireMonth: newSeats.length ? newSeats[newSeats.length - 1].hireMonth : 0,
       activity: { meetings: meetings, quals: quals, povs: povs, wins: wins,
                   weekly: meetings / SELL_WEEKS, seatMeetingsY1: seatMeetingsY1, funnel: FUNNEL },
@@ -315,7 +363,14 @@
     };
   }
 
+  /* Hiring solver contract, tested in test-engine.cjs:
+   * 1. Add up to adv.maxPerMonth seats per month, front-loaded, until
+   *    year-1 gross clears grossNeeded.
+   * 2. Then push each hire as late as possible while the target still
+   *    clears and no month exceeds adv.maxPerMonth.
+   * Objective: fewest hires, then latest feasible start dates. */
   root.ENGINE = {
+    MODEL_VERSION: '0.3.0',
     DEFAULTS: DEFAULTS, FUNNEL: FUNNEL, ANCHOR: ANCHOR,
     profileFor: profileFor, steadyAnnual: steadyAnnual,
     seatYear1: seatYear1, seatMonths: seatMonths, compute: compute
