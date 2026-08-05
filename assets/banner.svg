@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 300" width="1280" height="300" role="img" aria-label="The Nine Engines: the Masterclass Pipeline Generation Playbook, by Andrew Wesbecher">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 300" width="1280" height="300" role="img" aria-label="Pipeline gen as code: The Nine Engines playbook by Andrew Wesbecher">
   <rect width="1280" height="300" fill="#0A0A0A"/>
   <rect width="1280" height="6" fill="#4361EE"/>
   <g transform="translate(64,58) scale(1.05)">
     <path d="M 23.68 35.20 L 45.28 94.72 L 64.00 46.72 L 82.72 94.72 L 104.32 35.20" fill="none" stroke-width="10.08" stroke-linejoin="miter" stroke-linecap="butt" stroke-miterlimit="6" stroke="#B99653"/>
   </g>
-  <text x="228" y="136" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="58" font-weight="700" letter-spacing="3" fill="#FFFFFF">THE NINE ENGINES</text>
-  <text x="230" y="178" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" letter-spacing="0.4" fill="#A7ADBB">The Masterclass Pipeline Generation Playbook, runnable. <tspan fill="#8FA3FF">by Andrew Wesbecher</tspan></text>
+  <text x="228" y="136" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="54" font-weight="700" letter-spacing="3" fill="#FFFFFF">PIPELINE GEN AS CODE</text>
+  <text x="230" y="178" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="400" letter-spacing="0.4" fill="#A7ADBB">The Nine Engines: the complete pipeline playbook, runnable. <tspan fill="#8FA3FF">by Andrew Wesbecher</tspan></text>
   <line x1="64" y1="226" x2="1216" y2="226" stroke="#232833" stroke-width="1"/>
   <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" letter-spacing="1">
     <text x="64" y="262"><tspan fill="#8FA3FF">01</tspan> <tspan fill="#7A8290">AUTOMATED</tspan></text>
