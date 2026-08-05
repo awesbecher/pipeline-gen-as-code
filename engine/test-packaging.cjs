@@ -175,5 +175,40 @@ try {
   fs.rmSync(tmp2, { recursive: true, force: true });
 }
 
+/* ---------- 7. the CI workflow itself parses ----------
+ * A step name containing an unquoted colon is valid-looking YAML that
+ * GitHub rejects outright, which takes the whole gate offline rather
+ * than failing one job. Node has no YAML parser and this repo has no
+ * dependencies, so check the shapes that actually break. */
+console.log('--- workflow file is well formed ---');
+const wf = fs.readFileSync(path.join(root, '.github', 'workflows', 'tests.yml'), 'utf8');
+const wfLines = wf.split('\n');
+const badNames = [];
+wfLines.forEach((line, i) => {
+  const m = line.match(/^\s*(?:- )?name:\s*(.+?)\s*$/);
+  if (!m) return;
+  const value = m[1];
+  const quoted = /^".*"$/.test(value) || /^'.*'$/.test(value);
+  if (!quoted && /:\s/.test(value)) badNames.push('line ' + (i + 1) + ': ' + value);
+});
+ok('no workflow name holds an unquoted colon', badNames.length === 0, badNames.slice(0, 2).join(' | '));
+const tabs = wfLines.map((l, i) => /\t/.test(l) ? i + 1 : null).filter(Boolean);
+ok('workflow uses no tab indentation', tabs.length === 0, tabs.slice(0, 3).join(', '));
+ok('workflow runs every suite', ['test-engine', 'test-mix', 'test-params', 'test-docs', 'test-packaging']
+  .every(s => wf.includes(s + '.cjs')));
+ok('workflow tests macOS, where the truncation reproduced', /macos-latest/.test(wf));
+ok('workflow parses captured JSON instead of discarding it',
+  /JSON\.parse\(out\)/.test(wf) && !/--example --json > \/dev\/null/.test(wf));
+ok('workflow runs both official validators',
+  /claude plugin validate/.test(wf) && /validate_plugin\.py/.test(wf));
+ok('the wrapper is committed executable', (() => {
+  const { execFileSync } = require('child_process');
+  try {
+    const out = execFileSync('git', ['ls-files', '-s', 'bin/nine-engines'], { cwd: root, encoding: 'utf8' });
+    return out.startsWith('100755');
+  } catch (e) { return true; /* not a git checkout, skip */ }
+})());
+
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exitCode = fail ? 1 : 0;

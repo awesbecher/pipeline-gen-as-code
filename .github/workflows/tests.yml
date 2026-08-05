@@ -98,14 +98,15 @@ jobs:
           if env -u CLAUDE_PLUGIN_ROOT -u CLAUDE_PROJECT_DIR node "$BUNDLE/engine/run.cjs" 2> /dev/null; then
             echo "implicit fallback must not exist"; exit 1
           fi
-      - name: Survives an ancestor package.json with "type": "module"
+      - name: Survives an ancestor package.json declaring type module
         run: |
           set -e
           ANCESTOR=$(mktemp -d)
           echo '{"name":"hostile","type":"module","version":"1.0.0"}' > "$ANCESTOR/package.json"
           cp -r . "$ANCESTOR/cache"
           rm -f "$ANCESTOR/cache/package.json"
-          node "$ANCESTOR/cache/engine/run.cjs" --example --json > /dev/null
+          node "$ANCESTOR/cache/engine/run.cjs" --example --json \
+            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{JSON.parse(s);console.log('parsed '+Buffer.byteLength(s)+' bytes through a pipe under an ESM ancestor')})"
       - name: Portable skill bundle is self-contained
         run: |
           test -f skills/nine-engines/references/params.example.yaml
@@ -129,13 +130,15 @@ jobs:
           claude plugin validate .
           claude plugin validate .claude-plugin/plugin.json
       - name: Official OpenAI Codex plugin validator
-        # Pinned to a commit rather than main so the gate cannot move
-        # under us. Bump deliberately when the spec changes.
+        # Tracks main today. If OpenAI moves the spec, this gate is where
+        # we find out; pin CODEX_VALIDATOR_REF to a commit SHA if that
+        # becomes noisy.
         env:
           CODEX_VALIDATOR_REF: main
         run: |
           set -e
-          python3 -m pip install --quiet pyyaml
+          python3 -m pip install --quiet --break-system-packages pyyaml \
+            || python3 -m pip install --quiet pyyaml
           curl -sSLo /tmp/validate_plugin.py \
             "https://raw.githubusercontent.com/openai/codex/${CODEX_VALIDATOR_REF}/codex-rs/skills/src/assets/samples/plugin-creator/scripts/validate_plugin.py"
           python3 /tmp/validate_plugin.py .
