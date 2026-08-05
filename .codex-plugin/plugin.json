@@ -1,22 +1,21 @@
 {
   "name": "nine-engines",
-  "description": "Pipeline generation for AI scale-ups: map your company onto the Nine Engines, get a budgeted portfolio, per-engine 90-day build orders, and a weekly operating loop. A human approves every external send.",
-  "version": "0.2.0",
+  "version": "0.3.0",
+  "description": "Explainable pipeline engine allocation and sales capacity for AI startups: company parameters in, budgeted engine verdicts, staffing math, and a weekly operating loop out. A human approves every external send.",
   "author": {
     "name": "Andrew Wesbecher",
-    "email": "awesbecher@gmail.com",
+    "email": "andrew@wesbecher.llc",
     "url": "https://www.wesbecher.llc"
   },
-  "homepage": "https://www.wesbecher.llc/pipeline",
-  "repository": "https://github.com/awesbecher/pipeline-gen-as-code",
-  "license": "MIT",
-  "keywords": [
-    "pipeline-generation",
-    "gtm",
-    "sales",
-    "outbound",
-    "abm",
-    "plg",
-    "b2b"
-  ]
+  "interface": {
+    "displayName": "Nine Engines Pipeline Planner",
+    "shortDescription": "Pipeline engine allocation and sales capacity, explainable.",
+    "longDescription": "Feed it your company parameters (ACV, cycle, team, budget, constraints) and it returns nine engine verdicts with written reasons, an exact budget split, a tested sales-capacity check against your ARR target, and a Monday-to-Friday operating loop. Deterministic models, pinned fixtures, field-validated inputs. Built by Andrew Wesbecher from the playbook at wesbecher.llc/pipeline.",
+    "developerName": "Andrew Wesbecher",
+    "category": "sales",
+    "capabilities": ["skills"],
+    "websiteURL": "https://www.wesbecher.llc/pipeline",
+    "privacyPolicyURL": "https://github.com/awesbecher/pipeline-gen-as-code/blob/main/docs/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/awesbecher/pipeline-gen-as-code/blob/main/LICENSE"
+  }
 }

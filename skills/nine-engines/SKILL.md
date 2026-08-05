@@ -34,17 +34,29 @@ to `company/params.yaml` matching `company/params.example.yaml`.
 
 ### 2. Verdicts
 
-If the repo's engine directory is present, run it; the logic is
-deterministic and tested:
+If the engine directory is present (repo clone, or the plugin's
+${CLAUDE_PLUGIN_ROOT}), run it with the user's params path passed
+explicitly; there is no implicit fallback to sample data:
 
-    node engine/run.cjs            # markdown verdict table + capacity check
-    node engine/run.cjs --json     # same, machine-readable
+    node "${CLAUDE_PLUGIN_ROOT:-.}/engine/run.cjs" "${CLAUDE_PROJECT_DIR:-.}/company/params.yaml"
+    # add --json for machine-readable, --board for the board memo
+    # --example runs the bundled illustrative Acme fixture, on request only
+
+Invalid input exits nonzero with field-specific errors; fix the named
+fields with the user rather than working around validation. The
+contract: portfolio drivers decide verdicts, capacity drivers feed the
+staffing model, narrative context drives nothing (run --help for the
+exact field groups).
 
 If the engine directory is not available (skill installed standalone),
 apply the decision rules in `references/engines.md` by hand; they are
 the same rules. Present the verdict table to the user and let them argue
 with it; every threshold is a knob, and an overridden verdict with a
-written reason beats a silently obeyed one.
+written reason beats a silently obeyed one. Persist every approved
+override (model recommendation, approved verdict, approved budget,
+rationale, approver, date) in the plan's Approved Overrides section
+and in review.md; re-apply standing overrides on top of fresh model
+output on every rerun, and say so.
 
 ### 3. The plan
 
@@ -70,10 +82,11 @@ what moved into next week. Keep history; the files are the memory.
   En dash only as a table placeholder.
 - No AI filler (delve, tapestry, landscape, seamless, robust, "not just
   X"). Active voice, specific nouns, operator tone.
-- Never invent benchmark numbers. The numbers in the playbook files are
-  the complete set; cite them as ranges, and carry this line into any
-  plan that quotes them: "Benchmark ranges are directional, drawn from
-  operating experience; the 2026 market data is industry-reported."
+- Never invent benchmark numbers. The playbook files carry the
+  complete set, each indexed by claim ID in docs/SOURCES.md with
+  source, evidence class, and confidence; cite the claim ID when a
+  plan quotes a number, and label unsourced values as Andrew operator
+  heuristics rather than hiding them behind an industry disclaimer.
 - Plans name owners and dates or they are not plans.
 
 ## References
@@ -83,6 +96,8 @@ what moved into next week. Keep history; the files are the memory.
 - `references/engines.md` · the nine decision rules and compressed
   operating cards
 - `references/plan-template.md` · PLAN.md, monday.md, review.md
-  structures
+  structures, including the Approved Overrides section
 - `references/math.md` · running the tested engines and checking the
   numbers
+- `references/params.example.yaml` · the full schema, bundled so the
+  skill works standalone without the repo

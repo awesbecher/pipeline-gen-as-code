@@ -10,142 +10,161 @@
 **The pipeline system I run at AI scale-ups, published as a repo your
 AI agent can execute.**
 
-[Give it to Claude](#give-it-to-claude) ·
-[What you get](#what-you-get) ·
-[The engines](#the-nine-engines) ·
-[How it works](#how-the-brain-works) ·
-[Wire your stack](docs/CONNECTORS.md) ·
-[The operator](#the-brain-behind-it)
+[The board memo](examples/acme/BOARD.md) ·
+[What it does](#what-this-is-and-what-it-is-not) ·
+[Run it](#run-it) ·
+[The engines](#the-nine-engines-methodology) ·
+[Evidence](#tests-and-evidence) ·
+[The operator](#the-operator)
 
 </div>
 
 ---
 
-Ask a founder how pipeline gets made and you get a channel list. Ask
-where next quarter's meetings come from and the room gets quiet. Every
-first meeting comes out of one of nine engines: automated outbound,
-PLG, manual outbound, ABM, community and partner, paid media, SEO and
-AEO, social content, events. Most teams run the two their last company
-ran and call the rest experiments.
+## What this is, and what it is not
 
-**Pipeline gen as code** is the correction: the Nine Engines playbook,
-built to be run rather than read. Hand it to Claude with your
-parameters (stage, ARR target, team, ACV, cycle, monthly budget) and
-it returns the portfolio: which engines run now with what budget,
-which get instrumented for next year, which get skipped with the
-reason written down. A tested capacity model checks the plan is
-staffable before you believe it, and a weekly loop keeps it honest
-after you start.
+You are trying to decide where next quarter's pipeline comes from,
+what it costs, and whether your team can staff the resulting meetings.
+Most teams answer with the two channels their last company ran and a
+slide of hope.
 
-## What you get
+This repository is **an explainable starting model for pipeline engine
+allocation and sales capacity at AI startups**. Give it your
+parameters (ACV, cycle, team, monthly budget, constraints) and it
+returns: a verdict on each of nine pipeline engines with the reason
+and the exact inputs that produced it, an exact budget split, a
+tested staffing model against your ARR target, a board memo, and a
+weekly operating loop your AI agent runs with you.
 
-Real output, not a promise. This is `node engine/run.cjs` against the
-example company in `company/params.example.yaml`: an AI security
-startup at $120K ACV, a 178-day cycle, two ramped and two ramping AEs,
-and $25K a month for pipeline.
+The honest boundary, stated up front: the engine allocation and the
+capacity model are two separate calculations. The split across
+engines is a management starting hypothesis from fixed weights, not a
+forecast; this version does not convert engine spend into meetings or
+bookings. The capacity model answers a different question, whether
+your target is staffable at all, and answers it with tested math.
+Every threshold is a knob you are supposed to argue with.
 
-| Engine | Verdict | Monthly | Why |
-|--------|---------|--------:|-----|
-| Automated Outbound | run now | $3,863 | The baseline layer: one GTM engineer, waterfall enrichment, warmed domains, human-approved sends. |
-| Product-Led Growth | defer | – | No self-serve surface. Revisit when a free tier or trial exists. |
-| Manual Outbound + Cold Calling | run now | $5,795 | ACV clears the bar for tiered, rep-led outbound. The deep-dive program is the operating manual. |
-| ABM | run now | $3,863 | Enterprise ACV and reps to route to: named list, signal architecture, stage scoring. |
-| Community + Partner Led | instrument now | $1,875 | Partner lane only: marketplace listing plus two or three co-sell relationships. |
-| Paid Media | run now | $1,931 | Named list exists and budget clears the floor: full-funnel creative, demo asks only at warm retargeting. |
-| SEO + AEO | instrument now | $1,875 | Start the clusters and versus pages now; AI-referred traffic converts about five times organic. |
-| Social Content | run now | $1,931 | Three founder posts a week plus daily comments; capture engaged accounts into outbound. |
-| Events | run now | $3,863 | Enterprise ICP: one or two ICP-dense events a quarter, half the meetings pre-booked. |
+**Three ways in:** read the
+[finished board memo](examples/acme/BOARD.md) without installing
+anything; [run it on your own numbers](#run-it) in about ten minutes;
+or [hire the operator who built it](https://www.wesbecher.llc) to run
+the system with you.
 
-And because a plan that funds engines but cannot staff the meetings
-fails in Q3, the same run checks the seat math:
+## The operator
 
-```text
-Steady-state per ramped AE: $999,996 a year.
-Gross bookings needed for the bridge: $6,960,000.
-Modeled gross capacity: $6,991,639 from 11 AEs (7 new: months 1, 1, 2, 2, 3, 3, 5).
-Modeled exit ARR: $7,022,147.
-Support build: 5 BDRs, 5 SEs. Sales payroll run rate: $6,465,000.
-```
+Built by **[Andrew Wesbecher](https://www.wesbecher.llc)**: 26 years
+of enterprise go-to-market and ten GTM plans built for AI and AI
+security companies. From his record at
+[wesbecher.llc/about](https://www.wesbecher.llc/about/): took
+Traceable AI from $700K to $12M ARR in five quarters, and grew
+Lacework from 2 accounts to more than 80 as its first sales hire.
+This repo is the runnable edition of the system behind those numbers.
 
-From there the skill writes `plan/PLAN.md` with the per-engine 90-day
-build orders, owners, KPI bars, and tripwires, and the weekly loop
-takes over.
+## Inputs, outputs, and limits
 
-## The nine engines
+**Inputs**, validated against a versioned schema (invalid input exits
+with field-specific errors; nothing fails open):
 
-| # | Engine | Runs when | The bar |
-|---|--------|-----------|---------|
-| 01 | [Automated Outbound](playbook/01-automated-outbound.md) | Nearly always; needs one owner | 6 to 12 percent replies, enriched |
-| 02 | [Product-Led Growth](playbook/02-plg.md) | Self-serve product exists | 8 percent median free-to-paid |
-| 03 | [Manual Outbound + Cold Calling](playbook/03-manual-outbound.md) | ACV $25K and up | 2 to 3 percent dial-to-meeting |
-| 04 | [ABM](playbook/04-abm.md) | ACV $75K and up, nameable market | 25 to 40 percent list engagement in 90 days |
-| 05 | [Community + Partner Led](playbook/05-community-partner.md) | Almost always, patiently | 25 percent of new business at the year mark |
-| 06 | [Paid Media](playbook/06-paid-media.md) | ABM list live, $8K+ a month | Cycles 15 to 30 percent faster |
-| 07 | [SEO + AEO](playbook/07-seo-aeo.md) | Always, starting now | AI-referred converts ~5x organic |
-| 08 | [Social Content](playbook/08-social-content.md) | The founder will post | Inbound ~3x inside 60 days |
-| 09 | [Events](playbook/09-events.md) | Enterprise ACV, real budget | $2.5K to $5K per opportunity |
+- Portfolio drivers, which decide engine verdicts: ACV, monthly
+  pipeline budget, AE and GTM-engineer coverage, product self-serve
+  shape, hard constraints.
+- Capacity drivers, which feed the staffing model: sales cycle, ARR
+  base and target, churn, expansion, current AEs, BDRs, and
+  optionally SEs, leadership, and real ramp cohorts.
+- Narrative context, which drives no verdict and says so: stage,
+  funding, ICP, personas. If a field cannot change the answer, this
+  repo will not pretend it does.
 
-The portfolio verdict that frames all nine: PLG is the cheapest at
-scale, then Community + Partner Led, then SEO and AEO. Those take
-months to instrument. The other six you can turn on this quarter. So
-fund the fast six to make this year's number, and instrument the cheap
-three so next year's number costs less.
+**Outputs:** the verdict table with reasons and decision inputs, exact
+allocation in basis points with unallocated cash reported, the
+capacity check with hiring schedule and payroll, a generated
+[BOARD.md](examples/acme/BOARD.md) with downside, base, and upside
+scenarios, and machine-readable JSON with versions, warnings, and
+every assumption listed.
 
-```mermaid
-quadrantChart
-    title Cost to run at scale vs time to turn on
-    x-axis Turns on this quarter --> Months to instrument
-    y-axis Costly at scale --> Cheap at scale
-    quadrant-1 Instrument now, harvest next year
-    quadrant-2 Run now, compounding
-    quadrant-3 Run now, funded
-    quadrant-4 Nobody lives here
-    PLG: [0.80, 0.90]
-    Community and Partner: [0.85, 0.78]
-    SEO and AEO: [0.90, 0.68]
-    Social Content: [0.15, 0.85]
-    Automated Outbound: [0.12, 0.60]
-    ABM: [0.30, 0.42]
-    Paid Media: [0.25, 0.32]
-    Manual Outbound: [0.20, 0.28]
-    Events: [0.35, 0.15]
-```
+**Limits:** engine spend is not converted to meetings (yet); the model
+constants are one operator's tested heuristics, indexed in
+[docs/SOURCES.md](docs/SOURCES.md); current engine performance is
+collected as context, annotated on verdicts, and not yet a model
+input. When the model derives something you did not supply, it says
+so in the output.
 
-## How the brain works
+## The illustrative fixture
+
+Acme Security is a made-up seed-stage company ($120K ACV, 178-day
+cycle, 2 ramped and 2 ramping AEs, 1 BDR, $25K a month) committed
+under [examples/acme/](examples/acme/) so you can inspect every
+artifact without installing anything: the
+[parameters](examples/acme/params.yaml), the
+[JSON output](examples/acme/output.json), the
+[board memo](examples/acme/BOARD.md), the
+[90-day plan](examples/acme/PLAN.md), and one week of the
+[Monday](examples/acme/monday.md) / [Friday](examples/acme/review.md)
+loop including a persisted management override. These exact numbers
+are pinned by the test suite; documentation cannot drift from the
+model.
+
+| Engine | Verdict | Monthly | Why (abridged; full reasons in the memo) |
+|--------|---------|--------:|------------------------------------------|
+| Automated Outbound | run now | $3,865 | Baseline layer; one owner exists |
+| Product-Led Growth | defer | – | No self-serve surface |
+| Manual Outbound + Cold Calling | run now | $5,795 | ACV clears the rep-led bar; already running |
+| ABM | run now | $3,862 | Enterprise ACV, reps to route to |
+| Community + Partner Led | instrument now | $1,875 | Slow flywheel; pays next year |
+| Paid Media | run now | $1,932 | Named list live, budget clears floor |
+| SEO + AEO | instrument now | $1,875 | No fast mode exists |
+| Social Content | run now | $1,932 | The founder will post |
+| Events | run now | $3,862 | Enterprise ICP, budget above floor |
+
+Allocated $24,998 of $25,000; $2 unallocated rounding remainder,
+reported, never hidden. The capacity check on the same inputs: gross
+capacity $6,991,639 against $6,960,000 needed, exit ARR $7,022,147,
+seven AE hires (months 1, 1, 2, 2, 3, 3, 5), support build to 5 BDRs
+and 5 SEs, payroll run rate $6,465,000, with every derived assumption
+disclosed in the output.
+
+## The Nine Engines methodology
+
+Every first meeting a B2B company books comes out of one of nine
+engines. The playbook behind this repo covers all nine, how strong AI
+companies run each one, and the numbers that say each is working,
+with each claim indexed to a source or labeled an operator heuristic
+in [docs/SOURCES.md](docs/SOURCES.md).
+
+| # | Engine | Runs when (the model's rule) |
+|---|--------|------------------------------|
+| 01 | [Automated Outbound](playbook/01-automated-outbound.md) | Nearly always; needs one owner |
+| 02 | [Product-Led Growth](playbook/02-plg.md) | A self-serve surface exists |
+| 03 | [Manual Outbound + Cold Calling](playbook/03-manual-outbound.md) | ACV at $25K and up |
+| 04 | [ABM](playbook/04-abm.md) | ACV at $75K and up, nameable market |
+| 05 | [Community + Partner Led](playbook/05-community-partner.md) | Almost always, patiently |
+| 06 | [Paid Media](playbook/06-paid-media.md) | ABM running, $8K+ a month |
+| 07 | [SEO + AEO](playbook/07-seo-aeo.md) | Always, starting now |
+| 08 | [Social Content](playbook/08-social-content.md) | The founder will post |
+| 09 | [Events](playbook/09-events.md) | Enterprise ACV, real budget |
+
+The portfolio stance: fund the fast engines to make this year's
+number, instrument the slow, cheap ones (PLG, community and partner,
+SEO and AEO) so next year's number costs less. The readable long-form
+edition lives at
+[wesbecher.llc/pipeline](https://www.wesbecher.llc/pipeline).
 
 ```mermaid
 flowchart LR
-    P["company/params.yaml<br/>stage, team, ACV, cash, constraints"] --> M["engine/mix.js<br/>nine verdicts + budget split"]
+    P["company/params.yaml<br/>validated, schema v1"] --> M["engine/mix.js<br/>nine verdicts + exact split"]
     P --> C["engine/engine.js<br/>seats, ramp, hiring, payroll"]
-    M --> PL["plan/PLAN.md<br/>your operating plan"]
+    M --> PL["plan/PLAN.md + BOARD.md<br/>with overrides persisted"]
     C --> PL
     K["playbook/<br/>nine operating cards"] --> PL
-    PL --> MO["plan/monday.md<br/>this week's touches"]
-    MO --> R["plan/review.md<br/>Friday scorecard"]
+    PL --> MO["plan/monday.md"]
+    MO --> R["plan/review.md"]
     R --> MO
     R -. assumptions changed .-> P
 ```
 
-Two deterministic engines do the math so the agent never improvises
-numbers. `mix.js` maps your parameters onto the portfolio: every engine
-gets a verdict (run_now, instrument_now, defer, or blocked), a written
-reason you can argue with, and a budget share; run_now engines split 85
-percent of monthly cash by weight, instrument_now engines split the
-rest. `engine.js` is a full sales capacity model, ported from a
-workbook and verified to the dollar: given your ACV, cycle, and seats
-it computes ramp, hiring schedule, support build, payroll, and whether
-your bookings target is physically reachable. A plan that funds engines
-but cannot staff the resulting meetings fails in Q3, quietly; running
-both is the point.
+## Run it
 
-The agent layer sits on top: a portable skill interviews you, runs the
-engines, and writes the plan from the nine operating cards. The weekly
-loop (`monday` and `review`) turns it from a document into an operating
-system, because the plan files are the memory.
-
-## Give it to Claude
-
-The fastest path, from zero, in any terminal with
+Fastest path, from zero, in a terminal with
 [Claude Code](https://claude.com/claude-code):
 
 ```bash
@@ -154,102 +173,87 @@ cd pipeline-gen-as-code
 claude
 ```
 
-Then say: **"Set up my pipeline plan."** `CLAUDE.md` briefs the agent,
-the skill runs the interview, and your plan lands in `plan/`. That is
-the whole setup.
+Say: **"Set up my pipeline plan."** The skill interviews you, writes
+`company/params.yaml`, runs the validated models, and drafts your
+plan and board memo. Or skip the agent entirely:
 
-Three install paths, by depth:
+```bash
+node engine/run.cjs company/params.yaml           # verdicts + capacity
+node engine/run.cjs company/params.yaml --board   # your BOARD.md
+node engine/run.cjs --example                     # the Acme fixture, explicitly
+```
 
-**1. Plugin (Claude Code).** Versioned installs and the workflow
-skills as commands:
+**Claude Code plugin** (versioned installs, `/nine-engines:setup`,
+`:monday`, `:review`; plugin code and your project state resolve
+through separate paths, so an installed plugin never touches sample
+data by accident):
 
 ```text
 /plugin marketplace add awesbecher/pipeline-gen-as-code
 /plugin install nine-engines@wesbecher
 ```
 
-Then `/nine-engines:setup`, `/nine-engines:monday`,
-`/nine-engines:review`.
+**Portable skill** for any agent that reads SKILL.md: copy
+`skills/nine-engines/` into your skills directory. It bundles the
+schema and decision rules, so it works standalone.
 
-**2. Portable skill (any agent that reads SKILL.md).** Copy
-`skills/nine-engines/` into your skills directory: `.claude/skills/`
-(Claude Code), `.agents/skills/` (Codex CLI), `.github/skills/`
-(Copilot), or `.gemini/skills/` (Gemini CLI). Then ask for a pipeline
-plan. The skill carries compressed decision rules, so it works even
-without the rest of the repo.
+**Codex and ChatGPT desktop:** clone the repo; `AGENTS.md` briefs the
+agent. Codex-format manifests ship in `.codex-plugin/` and
+`.agents/`, pending validation against the Codex CLI before we claim
+plugin-install support.
 
-**3. The full brain (recommended).** Clone, as above. Claude Code and
-Cowork read `CLAUDE.md`; Codex and ChatGPT desktop read the mirrored
-`AGENTS.md` and the `.codex-plugin/` and `.agents/` manifests. Your
-parameters live in `company/params.yaml`, your plan in `plan/`, and
-the weekly loop compounds week over week. Running a private clone as
-your operating system: un-ignore `plan/` and `company/params.yaml` in
-`.gitignore` and commit your state, so the memory travels with the
-repo.
+Privacy: everything runs locally, nothing is sent anywhere, and your
+parameters and plans are gitignored by default. Details in
+[docs/PRIVACY.md](docs/PRIVACY.md).
 
-## What is in the box
+## Tests and evidence
 
-```text
-skills/nine-engines/     the operating procedure (SKILL.md + references:
-                         intake interview, decision rules, plan templates)
-skills/{setup,monday,review}/  the three workflow commands
-playbook/                the nine engine cards: flows, benchmarks,
-                         stacks, first 90 days, tripwires
-engine/                  the math: mix.js, engine.js, run.cjs CLI,
-                         49 tests between them
-company/                 params.example.yaml, the intake schema
-docs/CONNECTORS.md       wiring Clay, Apollo, Attio, HubSpot, Stripe,
-                         Instantly, HeyReach over MCP
-plan/                    your generated plan lives here (gitignored)
-assets/                  banner and social card, Electric Studio spec
-CLAUDE.md · AGENTS.md    the runtime brief, mirrored for both ecosystems
-```
-
-## The math is tested
-
-No dependencies anywhere; everything runs on bare Node.
+No runtime dependencies; the engines run on bare Node (18, 20, 22 in
+CI).
 
 ```bash
-node engine/run.cjs            # verdicts + capacity check, markdown
-node engine/run.cjs --json     # same, machine-readable
-node engine/test-engine.cjs    # capacity model: 29 tests
-node engine/test-mix.cjs       # portfolio logic: 20 tests
+node engine/test-engine.cjs   # capacity model: named, pinned fixtures
+node engine/test-mix.cjs      # verdict logic, thresholds, constraint sweep
+node engine/test-params.cjs   # schema: every fail-open case fails closed
+node engine/test-docs.cjs     # README numbers must match the fixtures
 ```
 
-The capacity model reproduces its source workbook to the dollar: the
-default scenario must produce gross capacity of $6,958,328 and exit ARR
-of $7,000,830, and CI fails if it ever does not. Thresholds in `mix.js`
-(the $25K manual bar, the $75K enterprise line, the $8K paid floor) are
-knobs on purpose, commented where they live; argue with them, then
-change them.
+Two fixtures anchor the capacity model, by name. The
+workbook-schedule fixture reproduces the source workbook's forced
+hiring grid within a stated $50 tolerance (the workbook rounds
+monthly cells to whole dollars; the model computes exactly, and the
+exact values are pinned). The solver-default fixture pins the
+solver's own outputs to the dollar. The full pin set lives in
+[engine/fixtures.json](engine/fixtures.json), regenerated only by a
+deliberate script, and the docs test fails if this README disagrees
+with it.
+
+Every benchmark in the playbook resolves to a claim ID in
+[docs/SOURCES.md](docs/SOURCES.md) with source, evidence class, and
+confidence; numbers with no source are labeled Andrew operator
+heuristics, on purpose, rather than dressed up as industry data.
 
 ## The rules that travel with it
 
-**A human approves every external send, in every engine, always.** The
-agent drafts, queues, and reports; you own the send button. This ships
-inside the skill, the runtime brief, and every generated plan, and no
+**A human approves every external send, in every engine, always.**
+The agent drafts, queues, and reports; you own the send button. This
+ships inside the skill, the runner, and every generated plan, and no
 parameter file overrides it.
 
-Benchmark ranges are directional, drawn from operating experience; the
-2026 market data is industry-reported. Validate against your own funnel
-before you build a forecast on any of them.
+Management overrides are first-class: when you overrule a verdict,
+the skill records the model recommendation, your decision, the
+rationale, approver, and date, and re-applies your standing decisions
+on every rerun.
 
-## The brain behind it
+## Wire your stack, if you want to
 
-This playbook is by **[Andrew Wesbecher](https://www.wesbecher.llc)**:
-26 years of enterprise go-to-market and ten GTM plans built for AI and
-AI security companies. This repo is the runnable edition of the system
-he operates.
-
-The readable editions live on his site: the full
-[pipeline playbook](https://www.wesbecher.llc/pipeline), the
-[sales playbook for AI scale-ups](https://www.wesbecher.llc/playbook),
-and the [capacity model as an interactive app](https://www.wesbecher.llc/capacity),
-which is the same math as `engine/engine.js`.
-
-Running GTM for an AI company and want the operator, not just the
-repo: [www.wesbecher.llc](https://www.wesbecher.llc).
+Optional MCP connections for the tools the engines run on (Clay,
+Apollo, Attio, HubSpot, Stripe, and community servers for Instantly
+and HeyReach) are documented in [docs/CONNECTORS.md](docs/CONNECTORS.md),
+with pinned versions and API keys kept out of command history. None
+of them are required; the plugin deliberately ships no MCP config.
 
 ## License
 
-MIT. Fork it, run it, ship pipeline with it.
+MIT. Fork it, run it, argue with the thresholds; they are knobs on
+purpose, commented where they live in `engine/mix.js`.

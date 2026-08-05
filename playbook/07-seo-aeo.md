@@ -31,6 +31,9 @@ rank tracker.
 AI-referred visitors convert around five times organic search; the catch
 is months of instrumentation before the flywheel pays.
 
+Sources: claims SEO-1 to SEO-4 in docs/SOURCES.md (evidence class and
+confidence per claim; unsourced values are Andrew operator heuristics).
+
 ## Stack
 
 Ahrefs (keyword and cluster research) · Claude (drafting) · AirOps

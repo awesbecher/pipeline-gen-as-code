@@ -33,6 +33,9 @@ single signal.
 Expect 25 to 40 percent of a named list to engage within 90 days; the
 flywheel is judged on stage progression, not clicks.
 
+Sources: claims ABM-1 to ABM-4 in docs/SOURCES.md (evidence class and
+confidence per claim; unsourced values are Andrew operator heuristics).
+
 ## Stack
 
 Clay (list and research) · Ocean.io (lookalike TAM) · RB2B (visitor

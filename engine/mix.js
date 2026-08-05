@@ -1,17 +1,25 @@
 /* The Nine Engines · mix engine
  * Maps a company's parameters to an engine portfolio: which of the nine
- * pipeline engines to run now, which to instrument for next year, which to
- * defer, and how to split the monthly pipeline budget.
+ * pipeline engines to run now, which to instrument for next year, which
+ * to defer, and how a monthly budget could be split across them.
  *
- * Deterministic and explainable on purpose. Every verdict carries a reason a
- * CEO can argue with. The thresholds below are knobs, not laws; they encode
- * the playbook at wesbecher.llc/pipeline and default to its logic.
- * Companion: engine.js (capacity math, verified against the workbook).
+ * Deterministic and explainable on purpose. Every verdict carries a
+ * reason and the exact decision inputs that produced it. The thresholds
+ * are knobs, not laws; they encode the playbook at
+ * wesbecher.llc/pipeline and default to its logic.
+ *
+ * Scope, stated plainly: this model allocates budget across engines as
+ * a starting hypothesis. It does not convert engine spend into meetings
+ * or bookings, and it is not connected to the capacity model in
+ * engine.js. Treat the split as a management starting point to argue
+ * with, not a forecast.
  * No em dashes in this file.
  */
 
 (function (root) {
   'use strict';
+
+  var MIX_VERSION = '0.3.0';
 
   var ENGINES = [
     'automated_outbound', 'plg', 'manual_outbound', 'abm',
@@ -30,11 +38,23 @@
     events: 'Events'
   };
 
-  // Verdicts: run_now (staff and fund this quarter), instrument_now (start the
-  // slow flywheel with a small allocation), defer (revisit at the named gate),
-  // blocked (a stated constraint rules it out).
-  function verdict(kind, reason, weight) {
-    return { verdict: kind, reason: reason, weight: weight || 0 };
+  /* Channels each engine depends on, used to keep every reason legal
+   * under the stated constraints. A verdict may never recommend a
+   * channel a constraint excludes. */
+  var CHANNELS = {
+    automated_outbound: ['email'],
+    plg: [],
+    manual_outbound: ['phone', 'email', 'linkedin'],
+    abm: [],
+    community_partner: [],
+    paid_media: [],
+    seo_aeo: [],
+    social_content: [],
+    events: ['email', 'phone', 'linkedin']
+  };
+
+  function verdict(kind, reason, weight, inputs) {
+    return { verdict: kind, reason: reason, weight: weight || 0, decision_inputs: inputs || [] };
   }
 
   function has(list, x) { return (list || []).indexOf(x) >= 0; }
@@ -45,138 +65,209 @@
     var team = p.team || {};
     var aes = (team.aes_ramped || 0) + (team.aes_ramping || 0);
     var cons = p.constraints || [];
+    var running = p.engines_running || [];
     var selfServe = (p.product && p.product.self_serve) || 'no';
+    var devFacing = !!(p.product && p.product.developer_facing);
     var enterprise = acv >= 75000;
+    var noEmail = has(cons, 'no_email');
+    var noPhone = has(cons, 'no_phone');
     var r = {};
 
-    // 01 Automated Outbound: the baseline layer for nearly everyone.
-    if (has(cons, 'no_email')) {
-      r.automated_outbound = verdict('blocked', 'Constraint: no email outbound.');
+    /* 01 Automated Outbound: the baseline layer for nearly everyone. */
+    if (noEmail) {
+      r.automated_outbound = verdict('blocked', 'Constraint: no email outbound.', 0, ['constraints']);
     } else if (!team.gtm_engineer && aes === 0) {
       r.automated_outbound = verdict('defer',
-        'Needs one owner. Hire or name the GTM engineer first; the engine runs on one.');
+        'Needs one owner. Hire or name the GTM engineer first; the engine runs on one.',
+        0, ['team.gtm_engineer', 'team.aes_ramped', 'team.aes_ramping']);
     } else {
       r.automated_outbound = verdict('run_now',
-        'The baseline layer: one GTM engineer, waterfall enrichment, warmed domains, human-approved sends.', 2);
+        'The baseline layer: one GTM engineer, waterfall enrichment, warmed domains, human-approved sends.',
+        2, ['team.gtm_engineer', 'team.aes_ramped', 'team.aes_ramping', 'constraints']);
     }
 
-    // 02 PLG: only where the product can be self-served.
+    /* 02 PLG: only where the product can be self-served. */
     if (selfServe === 'no') {
-      r.plg = verdict('defer', 'No self-serve surface. Revisit when a free tier or trial exists.');
+      r.plg = verdict('defer', 'No self-serve surface. Revisit when a free tier or trial exists.',
+        0, ['product.self_serve']);
     } else if (selfServe === 'yes') {
       r.plg = verdict(acv < 50000 ? 'run_now' : 'instrument_now',
         acv < 50000
           ? 'Self-serve product at a velocity price point: the product is the SDR. Wire usage to PQLs now.'
           : 'Self-serve exists under an enterprise motion: instrument PQL scoring; sales works the queue.',
-        acv < 50000 ? 3 : 1);
+        acv < 50000 ? 3 : 1, ['product.self_serve', 'acv']);
     } else {
       r.plg = verdict('instrument_now',
-        'Partial self-serve: define the entry model (reverse trial is the default answer) and instrument usage.', 1);
+        'Partial self-serve: define the entry model (reverse trial is the default answer) and instrument usage.',
+        1, ['product.self_serve']);
     }
 
-    // 03 Manual Outbound: earns its cost above a personalization-worthy ACV.
-    if (has(cons, 'no_phone')) {
+    /* 03 Manual Outbound: earns its cost above a personalization-worthy
+     * ACV. Channel legs drop out under constraints; with neither phone
+     * nor email the rep-led motion does not clear its cost bar. */
+    if (noPhone && noEmail) {
+      r.manual_outbound = verdict('defer',
+        'Constraints leave a LinkedIn-only rep motion, which does not clear the cost bar for rep-led outbound.',
+        0, ['constraints', 'acv']);
+    } else if (noPhone) {
       r.manual_outbound = verdict(acv >= 50000 ? 'instrument_now' : 'defer',
-        'Constraint: no phone coverage. Run the tiered program on email and LinkedIn only; it works at reduced power.');
+        acv >= 50000
+          ? 'Constraint: no phone coverage. Run the tiered program on email and LinkedIn only; it works at reduced power.'
+          : 'No phone coverage and a sub-$50K ACV: let automated outbound carry it.',
+        acv >= 50000 ? 1 : 0, ['constraints', 'acv']);
+    } else if (noEmail) {
+      r.manual_outbound = verdict(acv >= 25000 ? 'run_now' : 'defer',
+        acv >= 25000
+          ? 'Rep-led motion on phone and LinkedIn; the email leg is off by constraint. The deep-dive program still applies.'
+          : 'Below a $25K ACV the math rarely clears a rep-led motion.',
+        acv >= 25000 ? 3 : 0, ['constraints', 'acv']);
     } else if (acv < 25000) {
       r.manual_outbound = verdict('defer',
-        'Below a $25K ACV the math rarely clears a rep-led motion; let automated outbound and PLG carry it.');
+        'Below a $25K ACV the math rarely clears a rep-led motion; let automated outbound and PLG carry it.',
+        0, ['acv']);
     } else {
       r.manual_outbound = verdict('run_now',
-        'ACV clears the bar for tiered, rep-led outbound. The deep-dive program is the operating manual.', 3);
+        'ACV clears the bar for tiered, rep-led outbound. The deep-dive program is the operating manual.',
+        3, ['acv', 'constraints']);
     }
 
-    // 04 ABM: enterprise ACV plus a nameable market.
+    /* 04 ABM: enterprise ACV plus a nameable market. */
     if (enterprise) {
       r.abm = verdict(aes >= 1 ? 'run_now' : 'instrument_now',
         aes >= 1
           ? 'Enterprise ACV and reps to route to: named list, signal architecture, stage scoring.'
           : 'Enterprise ACV but no rep coverage yet: build the named list and signals; route when a rep lands.',
-        aes >= 1 ? 2 : 1);
+        aes >= 1 ? 2 : 1, ['acv', 'team.aes_ramped', 'team.aes_ramping']);
     } else {
-      r.abm = verdict('defer', 'Below enterprise ACV, ABM overhead beats its yield; signals still feed outbound.');
+      r.abm = verdict('defer', 'Below enterprise ACV, ABM overhead beats its yield; signals still feed outbound.',
+        0, ['acv']);
     }
 
-    // 05 Community + Partner: category-dependent, always slow.
+    /* 05 Community + Partner: category-dependent, always slow. */
     if (has(cons, 'no_community_capacity')) {
-      r.community_partner = verdict('defer', 'Constraint: nobody to host it. A dead community is worse than none.');
-    } else if (p.product && (p.product.developer_facing || selfServe !== 'no')) {
+      r.community_partner = verdict('defer', 'Constraint: nobody to host it. A dead community is worse than none.',
+        0, ['constraints']);
+    } else if (devFacing || selfServe !== 'no') {
       r.community_partner = verdict('instrument_now',
-        'Practitioner-facing product: pick one lane (community or partner), start the value engine now; it pays next year.', 1);
+        'Practitioner-facing product: pick one lane (community or partner), start the value engine now; it pays next year.',
+        1, ['product.developer_facing', 'product.self_serve']);
     } else {
       r.community_partner = verdict('instrument_now',
-        'Partner lane only: marketplace listing plus two or three co-sell relationships; the 25 percent channel bar is the graduation gate.', 1);
+        'Partner lane only: marketplace listing plus two or three co-sell relationships; the 25 percent channel bar is the graduation gate.',
+        1, ['product.developer_facing', 'product.self_serve']);
     }
 
-    // 06 Paid Media: an accelerant that needs a list and real budget.
+    /* 06 Paid Media: an accelerant that needs a routed list and budget. */
     if (has(cons, 'no_paid_budget') || cash < 8000) {
       r.paid_media = verdict('defer',
-        'Under about $8K a month, LinkedIn ABM spend fragments below the learning threshold. Bank it.');
+        'Under about $8K a month, LinkedIn ABM spend fragments below the learning threshold. Bank it.',
+        0, ['constraints', 'cash_monthly_pipeline']);
     } else if (r.abm.verdict === 'defer') {
-      r.paid_media = verdict('defer', 'Paid without a named list is spray. Stand up the ABM list first.');
+      r.paid_media = verdict('defer', 'Paid without a named list is spray. Stand up the ABM list first.',
+        0, ['cash_monthly_pipeline', 'acv']);
     } else if (r.abm.verdict === 'instrument_now') {
       r.paid_media = verdict('defer',
-        'The named list is still being built and nobody routes yet; turn paid on when ABM runs.');
+        'The named list is still being built and nobody routes yet; turn paid on when ABM runs.',
+        0, ['cash_monthly_pipeline', 'acv', 'team.aes_ramped', 'team.aes_ramping']);
     } else {
       r.paid_media = verdict('run_now',
-        'Named list exists and budget clears the floor: full-funnel creative, demo asks only at warm retargeting.', 1);
+        'Named list exists and budget clears the floor: full-funnel creative, demo asks only at warm retargeting.',
+        1, ['cash_monthly_pipeline', 'acv', 'team.aes_ramped', 'team.aes_ramping']);
     }
 
-    // 07 SEO + AEO: instrument early, always; months to pay.
+    /* 07 SEO + AEO: instrument early, always; months to pay. */
     r.seo_aeo = verdict('instrument_now',
-      'Start the clusters and versus pages now; AI-referred traffic converts about five times organic, months from now.', 1);
+      'Start the clusters and versus pages now; the flywheel pays months from now (see the source registry for the conversion claim).',
+      1, []);
 
-    // 08 Social: founder-led, nearly free, compounding.
+    /* 08 Social: founder-led, nearly free, compounding. */
     r.social_content = verdict(has(cons, 'founder_wont_post') ? 'defer' : 'run_now',
       has(cons, 'founder_wont_post')
         ? 'Founder-led is the mechanism; without the founder, park it rather than ghost-write badly.'
-        : 'Three founder posts a week plus daily comments; capture engaged accounts into outbound.', 1);
+        : 'Three founder posts a week plus daily comments; capture engaged accounts into outbound.',
+      has(cons, 'founder_wont_post') ? 0 : 1, ['constraints']);
 
-    // 09 Events: enterprise motion with real budget, pre-booked or not at all.
+    /* 09 Events: enterprise motion with real budget, pre-booked or not
+     * at all. Pre-event outreach adapts to the surviving channels. */
     if (has(cons, 'no_events_budget')) {
-      r.events = verdict('blocked', 'Constraint: no events budget.');
+      r.events = verdict('blocked', 'Constraint: no events budget.', 0, ['constraints']);
     } else if (enterprise && cash >= 15000) {
+      var preBook = 'list built six weeks out, half the meetings pre-booked';
+      if (noEmail && noPhone) preBook = 'list built six weeks out, meetings pre-booked over LinkedIn only';
+      else if (noEmail) preBook = 'list built six weeks out, meetings pre-booked by phone and LinkedIn';
+      else if (noPhone) preBook = 'list built six weeks out, meetings pre-booked by email and LinkedIn';
       r.events = verdict('run_now',
-        'Enterprise ICP: one or two ICP-dense events a quarter, list built six weeks out, half the meetings pre-booked.', 2);
+        'Enterprise ICP: one or two ICP-dense events a quarter, ' + preBook + '.',
+        2, ['acv', 'cash_monthly_pipeline', 'constraints']);
     } else {
       r.events = verdict('defer',
-        'Until ACV and budget support it, attend rather than sponsor; a dinner beats a booth anyway.');
+        'Until ACV and budget support it, attend rather than sponsor; a dinner beats a booth anyway.',
+        0, ['acv', 'cash_monthly_pipeline']);
     }
 
-    // Budget split: run_now engines share ~85 percent of monthly cash by
-    // weight; instrument_now engines share the rest equally.
+    /* Already-running annotation. This flags continuity; it does not
+     * change the verdict. Current engine performance is not yet a
+     * model input, and pretending otherwise would be dishonest. */
+    ENGINES.forEach(function (e) {
+      r[e].already_running = has(running, e);
+      if (r[e].already_running) {
+        r[e].reason += ' Already running per your intake; this verdict applies to continued funding.';
+      }
+    });
+
+    /* Budget split in basis points, largest-remainder, exact totals.
+     * run_now engines share 8500 bps by weight; instrument_now engines
+     * split 1500 bps equally. Unfunded pools are reported, not hidden. */
     var runs = [], instruments = [];
     ENGINES.forEach(function (e) {
       if (r[e].verdict === 'run_now') runs.push(e);
       if (r[e].verdict === 'instrument_now') instruments.push(e);
     });
-    var runWeight = runs.reduce(function (s, e) { return s + r[e].weight; }, 0);
+
+    function apportion(keys, pool, weightOf) {
+      var totalW = keys.reduce(function (s, k) { return s + weightOf(k); }, 0);
+      if (!keys.length || totalW <= 0) return {};
+      var exact = keys.map(function (k) { return { k: k, x: pool * weightOf(k) / totalW }; });
+      var floors = {};
+      var used = 0;
+      exact.forEach(function (e) { floors[e.k] = Math.floor(e.x); used += floors[e.k]; });
+      exact.sort(function (a, b) { return (b.x - Math.floor(b.x)) - (a.x - Math.floor(a.x)); });
+      for (var i = 0; used < pool && i < exact.length; i++, used++) floors[exact[i].k] += 1;
+      return floors;
+    }
+
+    var runBps = apportion(runs, 8500, function (k) { return r[k].weight; });
+    var instBps = apportion(instruments, 1500, function () { return 1; });
+
+    var allocated = 0;
     ENGINES.forEach(function (e) {
-      var share = 0;
-      if (r[e].verdict === 'run_now' && runWeight > 0) {
-        share = 0.85 * (r[e].weight / runWeight);
-      } else if (r[e].verdict === 'instrument_now' && instruments.length > 0) {
-        share = 0.15 / instruments.length;
-      }
-      r[e].budget_share = Math.round(share * 100) / 100;
-      // Floor, not round: allocations must never sum past the cash.
-      r[e].budget_monthly = Math.floor(share * cash);
+      var bps = runBps[e] || instBps[e] || 0;
+      r[e].budget_share_bps = bps;
+      r[e].budget_monthly = Math.floor(cash * bps / 10000);
+      allocated += r[e].budget_monthly;
       r[e].label = LABELS[e];
     });
 
+    var notes = [
+      'Weights and thresholds are knobs; argue with them in the reasons.',
+      'The split is a starting allocation hypothesis, not a forecast. Engine spend is not yet converted into meetings or bookings; the capacity model in engine.js answers staffing separately.',
+      'A human approves every external send, in every engine, always.'
+    ];
+    if (!runs.length) notes.push('No engine cleared run_now, so the 85 percent run pool ($' + Math.floor(cash * 0.85) + ') is intentionally unallocated. Fix the blockers before spending it.');
+    if (!instruments.length) notes.push('No engine is instrumenting, so the 15 percent instrument pool is unallocated.');
+
     return {
+      mix_version: MIX_VERSION,
       engines: r,
       run_now: runs,
       instrument_now: instruments,
-      notes: [
-        'Weights and thresholds are knobs; argue with them in the reasons.',
-        'Every engine lands in the same forecast. Tie the plan to seats with engine.js.',
-        'A human approves every external send, in every engine, always.'
-      ]
+      allocated_total: allocated,
+      unallocated_total: cash - allocated,
+      notes: notes
     };
   }
 
-  var api = { ENGINES: ENGINES, LABELS: LABELS, recommend: recommend };
+  var api = { MIX_VERSION: MIX_VERSION, ENGINES: ENGINES, LABELS: LABELS, CHANNELS: CHANNELS, recommend: recommend };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.MIX = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -30,6 +30,9 @@ Paid rarely creates category demand; run well against a named list it
 accelerates cycles 15 to 30 percent and carries 5 to 15 percent of
 pipeline.
 
+Sources: claims PM-1 to PM-6 in docs/SOURCES.md (evidence class and
+confidence per claim; unsourced values are Andrew operator heuristics).
+
 ## Stack
 
 LinkedIn Ads (delivery) · Chili Piper (speed to lead) · Ergo (signal

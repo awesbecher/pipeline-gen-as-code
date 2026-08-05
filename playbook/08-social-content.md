@@ -30,6 +30,9 @@ engine.
 Consistent founder-led programs see inbound conversations roughly triple
 inside 60 days; inbound closes an order of magnitude better than cold.
 
+Sources: claims SC-1 to SC-3 in docs/SOURCES.md (evidence class and
+confidence per claim; unsourced values are Andrew operator heuristics).
+
 ## Stack
 
 Claude (drafting and ideation) · Jungler (signal capture) · RB2B

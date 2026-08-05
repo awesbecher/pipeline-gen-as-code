@@ -5,17 +5,74 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20, 22]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Capacity model (named, pinned fixtures)
+        run: node engine/test-engine.cjs
+      - name: Mix engine (thresholds + constraint sweep)
+        run: node engine/test-mix.cjs
+      - name: Input schema (fail-closed battery)
+        run: node engine/test-params.cjs
+      - name: Docs agree with fixtures
+        run: node engine/test-docs.cjs
+      - name: Runner contract smoke
+        run: |
+          node engine/run.cjs --help > /dev/null
+          node engine/run.cjs --version
+          node engine/run.cjs --example > /dev/null
+          node engine/run.cjs --example --json > /dev/null
+          node engine/run.cjs --example --board > /dev/null
+          if node engine/run.cjs 2> /dev/null; then echo "should have exited 2"; exit 1; fi
+
+  install-paths:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
-      - name: Capacity model (29 tests)
-        run: node engine/test-engine.cjs
-      - name: Mix engine (20 tests)
-        run: node engine/test-mix.cjs
-      - name: Runner smoke test
-        run: node engine/run.cjs --json > /dev/null && node engine/run.cjs
+      - name: Clean-directory clone path
+        run: |
+          set -e
+          WORK=$(mktemp -d)
+          cp -r . "$WORK/repo"
+          cd "$WORK/repo"
+          node engine/run.cjs --example > /dev/null
+          node engine/run.cjs company/params.example.yaml --json > /dev/null
+      - name: Plugin path resolution (CLAUDE_PLUGIN_ROOT and CLAUDE_PROJECT_DIR)
+        run: |
+          set -e
+          PLUGIN=$(mktemp -d)/plugin
+          PROJECT=$(mktemp -d)/project
+          mkdir -p "$PLUGIN" "$PROJECT/company"
+          cp -r . "$PLUGIN"
+          cp company/params.example.yaml "$PROJECT/company/params.yaml"
+          export CLAUDE_PLUGIN_ROOT="$PLUGIN"
+          export CLAUDE_PROJECT_DIR="$PROJECT"
+          cd /tmp
+          node "${CLAUDE_PLUGIN_ROOT}/engine/run.cjs" "${CLAUDE_PROJECT_DIR}/company/params.yaml" > /dev/null
+          if node "${CLAUDE_PLUGIN_ROOT}/engine/run.cjs" 2> /dev/null; then echo "implicit fallback must not exist"; exit 1; fi
+      - name: Portable skill bundle is self-contained
+        run: |
+          test -f skills/nine-engines/references/params.example.yaml
+          test -f skills/nine-engines/references/engines.md
+      - name: Manifests parse
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/marketplace.json','utf8'))"
+          node -e "const p=JSON.parse(require('fs').readFileSync('.codex-plugin/plugin.json','utf8')); if(!p.interface||!p.interface.displayName) throw new Error('codex interface missing')"
+          node -e "const m=JSON.parse(require('fs').readFileSync('.agents/plugins/marketplace.json','utf8')); const e=m.plugins[0]; if(!e.source.source||!e.policy.installation) throw new Error('codex marketplace shape missing')"

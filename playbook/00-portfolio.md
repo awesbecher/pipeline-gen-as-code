@@ -32,8 +32,11 @@ cost less.
 
 ## The budget rule
 
-Engines the mix engine marks `run_now` share roughly 85 percent of the
-monthly pipeline budget, weighted by fit. Engines marked `instrument_now`
+Engines the mix engine marks `run_now` share 85 percent of the
+monthly pipeline budget (8500 basis points, exactly apportioned),
+weighted by fit. The split is a starting allocation hypothesis, not a
+forecast; engine spend is not converted into meetings in this model
+version. Engines marked `instrument_now`
 share the rest equally; the allocation is deliberately small because
 their cost is mostly patience. `defer` and `blocked` engines get zero and
 a written reason, so the decision can be argued with instead of forgotten.
@@ -46,6 +49,8 @@ button. This travels with every plan the playbook generates.
 
 ## On the numbers
 
-Benchmark ranges are directional, drawn from operating experience; the
-2026 market data is industry-reported. Validate against your own funnel
+Every benchmark in these cards resolves to a claim ID in
+docs/SOURCES.md with source, evidence class, and confidence; numbers
+with no source are labeled Andrew operator heuristics. None of them
+are predictions for your company; validate against your own funnel
 before you build a forecast on any of them.

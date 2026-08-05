@@ -32,6 +32,9 @@ because the inbox moves on.
 Booth-first programs run 8 to 12 thousand dollars per opportunity;
 ICP-first with pre-booking runs 2.5 to 5.
 
+Sources: claims EV-1 to EV-6 in docs/SOURCES.md (evidence class and
+confidence per claim; unsourced values are Andrew operator heuristics).
+
 ## Stack
 
 Luma (hosted events) · Instantly (pre-event sequencing) · Clay (list

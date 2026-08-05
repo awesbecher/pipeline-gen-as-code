@@ -30,6 +30,9 @@ sends a day across the whole system; the rep only touches replies.
 Enriched, signal-led campaigns reply at 6 to 12 percent; unenriched
 merge-tag volume replies at 1 to 3 and burns the domain.
 
+Sources: claims AO-1 to AO-5 in docs/SOURCES.md (evidence class and
+confidence per claim; unsourced values are Andrew operator heuristics).
+
 ## Stack
 
 Clay (enrichment waterfall) · Apollo (sourcing) · Instantly (sending) ·

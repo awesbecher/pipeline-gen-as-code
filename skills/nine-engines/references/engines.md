@@ -4,9 +4,10 @@ These are the same rules `engine/mix.js` encodes, stated for use by hand
 when the engine directory is not available. Verdicts: run_now (staff and
 fund this quarter), instrument_now (start the slow flywheel with a small
 allocation), defer (revisit at the named gate), blocked (a stated
-constraint rules it out). Budget: run_now engines share roughly 85
-percent of monthly cash, weighted; instrument_now engines split the rest
-equally.
+constraint rules it out). Budget: run_now engines share 8500 basis
+points by weight and instrument_now engines split 1500, exactly
+apportioned with unallocated cash reported. The split is a starting
+allocation hypothesis, not a forecast.
 
 The CAC verdict that frames all nine: PLG is the cheapest at scale, then
 Community + Partner Led, then SEO and AEO. Those take months to
@@ -36,9 +37,12 @@ Segment, Amplitude, Stripe.
 
 ## 03 Manual Outbound + Cold Calling · weight 3
 
-Rule: run_now at ACV $25K and above. no_phone degrades it to
-instrument_now at $50K+ (email and LinkedIn only), defer below. Under
-$25K ACV: defer; engines 01 and 02 carry it.
+Rule: run_now at ACV $25K and above. no_phone alone degrades it to
+instrument_now at $50K+ (email and LinkedIn only), defer below.
+no_email alone: still run_now at $25K+ on phone and LinkedIn, email
+leg off. no_phone AND no_email together: defer; a LinkedIn-only
+rep-led motion does not clear the cost bar. Under $25K ACV: defer;
+engines 01 and 02 carry it.
 Card: tier ladder (Dream-150 by hand, T1 calls plus sequences, T2
 automated, T3 email only); below-the-line calling: practitioners first,
 then the decision maker quoting their words. Eight attempts to reach one
@@ -113,7 +117,10 @@ session-specific angles (generic replies at 2 percent, specific near
 opportunity against $8K to $12K booth-first. Stack: Luma, Instantly,
 Clay, Ergo.
 
-## The disclaimer that travels with every number above
+## The evidence rule that travels with every number above
 
-Benchmark ranges are directional, drawn from operating experience; the
-2026 market data is industry-reported.
+Every range above resolves to a claim ID in docs/SOURCES.md with
+source, evidence class, and confidence. Unsourced numbers (the ACV
+and cash thresholds, the 25 percent channel bar, the 300-account
+list rule) are Andrew operator heuristics, labeled as such. Cite the
+claim ID when a plan quotes a number.

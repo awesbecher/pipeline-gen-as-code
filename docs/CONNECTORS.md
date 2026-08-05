@@ -23,7 +23,7 @@ trusting with an API key.
 | HubSpot | CRM for any | Official, OAuth app | Create an MCP auth app at app.hubspot.com/l/mcp-auth-apps, then connect `https://mcp.hubspot.com` |
 | Stripe | 02 | Official, OAuth | `claude mcp add --transport http stripe https://mcp.stripe.com/` |
 | Instantly | 01, 09 | Community | Remote `https://mcp.instantly.ai/mcp` with your API key (Growth plan or above) |
-| HeyReach | 01, 03 | Community | `claude mcp add heyreach -- npx heyreach-mcp-server --api-key=YOUR_KEY` |
+| HeyReach | 01, 03 | Community | `claude mcp add heyreach -e HEYREACH_API_KEY -- npx heyreach-mcp-server@2.0.5 --api-key="$HEYREACH_API_KEY"` (pinned; key from env, not history) |
 
 On claude.ai and Cowork, use Settings, then Connectors; Clay and Attio
 are in the connector directory, and the rest add as custom connectors
@@ -50,5 +50,7 @@ connector that can send email or LinkedIn messages (Instantly, HeyReach,
 Apollo sequences) is for drafting, queueing, and reporting; the send
 button stays human.
 
-Use restricted or scoped API keys wherever the vendor offers them, and
-give community servers the least access that still runs the play.
+Use restricted or scoped API keys wherever the vendor offers them,
+keep keys in environment variables rather than command history, pin
+community packages to exact versions, and give community servers the
+least access that still runs the play.
