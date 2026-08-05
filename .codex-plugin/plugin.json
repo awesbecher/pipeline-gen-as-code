@@ -8,7 +8,7 @@
     "url": "https://www.wesbecher.llc"
   },
   "homepage": "https://www.wesbecher.llc/pipeline",
-  "repository": "https://github.com/awesbecher/masterclass-pipeline-gen",
+  "repository": "https://github.com/awesbecher/pipeline-gen-as-code",
   "license": "MIT",
   "keywords": [
     "pipeline-generation",
