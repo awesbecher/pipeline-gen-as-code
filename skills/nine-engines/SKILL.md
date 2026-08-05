@@ -12,7 +12,7 @@ Content, Events. This skill maps a specific company onto that portfolio
 and produces a plan an operator can run on Monday.
 
 Source: the playbook at https://www.wesbecher.llc/pipeline by Andrew
-Wesbecher. Repo: https://github.com/awesbecher/masterclass-pipeline-gen
+Wesbecher. Repo: https://github.com/awesbecher/pipeline-gen-as-code
 
 ## The standing rule
 
