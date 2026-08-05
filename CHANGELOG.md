@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0 (unreleased, branch claude/s-tier-release-hardening)
+## 0.3.0 (2026-08-05)
 
 Release-hardening pass against the August 2026 S-tier audit. The
 public claims and the code now say the same thing.
