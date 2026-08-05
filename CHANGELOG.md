@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.1 (unreleased, branch claude/v0.3.1-board-truth-hotfix)
+## 0.3.1 (2026-08-05)
 
 Board truth and portability. Two independent test passes, a post-release
 audit and an OpenAI install test, found defects that a board reader or an
