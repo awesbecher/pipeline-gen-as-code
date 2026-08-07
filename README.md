@@ -273,7 +273,7 @@ data by accident):
 **Codex CLI plugin**, verified against Codex CLI 0.147.0-alpha.6.5:
 
 ```text
-codex plugin marketplace add awesbecher/pipeline-gen-as-code --ref v0.3.1
+codex plugin marketplace add awesbecher/pipeline-gen-as-code --ref v0.3.2
 codex plugin add nine-engines@wesbecher
 ```
 
@@ -328,8 +328,8 @@ payroll, hiring, customer, or pipeline data. Details in
 
 ## Tests and evidence
 
-No runtime dependencies; the engines run on bare Node (18, 20, and 22
-on Ubuntu, 18 and 22 on macOS, all in CI).
+No runtime dependencies; the engines run on bare Node. The floor is
+Node 22, and CI runs 22 and 24 on both Ubuntu and macOS.
 
 ```bash
 npm test                        # all five suites
