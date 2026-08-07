@@ -2,13 +2,12 @@
 
 ## Current state
 
-Design-partner beta, in the v0.3.2 trust pass. The last released
-version is 0.3.1 (see [docs/RELEASE.md](docs/RELEASE.md)), tagged and
-green in CI on Node 18, 20, and 22 on Ubuntu and Node 18 and 22 on
-macOS, with both official plugin validators passing. The 0.3.2 work
-adds the public maintainer surface: this roadmap, a model card, a
-contributing guide, a security policy, issue forms, and a pull request
-template.
+Design-partner beta. The last released version is 0.3.2 (see
+[docs/RELEASE.md](docs/RELEASE.md)), tagged and green in CI on Node 22
+and 24 across Ubuntu and macOS, with both official plugin validators
+passing. The 0.3.2 trust pass added the public maintainer surface: this
+roadmap, a model card, a contributing guide, a security policy, issue
+forms, and a pull request template.
 
 What works today: fail-closed input validation against params schema
 v1, nine deterministic engine verdicts with an exact budget split and
