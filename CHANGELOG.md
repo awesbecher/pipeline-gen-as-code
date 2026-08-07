@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.2 (unreleased, branch claude/v0.3.2-trust-pass)
+## 0.3.2 (2026-08-07)
 
 Trust pass against the August 7 pre-promotion audit. The parser now
 fails closed everywhere it claimed to, the leadership rule matches the
