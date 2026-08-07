@@ -94,5 +94,69 @@ let dashes = [];
 everything.forEach(f => { if (read(f).includes(String.fromCharCode(0x2014))) dashes.push(f); });
 ok('zero em dashes across prose and generated artifacts', dashes.length === 0, dashes.join(', '));
 
+console.log('--- v0.3.2: the board memo states its own limits ---');
+const boardMemo = read('examples/acme/BOARD.md');
+ok('board memo carries a provenance line (versions, date, params hash)',
+  /model \d+\.\d+\.\d+ · mix \d+\.\d+\.\d+/.test(boardMemo) &&
+  /generated \d{4}-\d{2}-\d{2}/.test(boardMemo) && /parameters [0-9a-f]{12}/.test(boardMemo));
+ok('board memo opens with a decision box, not a math summary', /## Decision box/.test(boardMemo));
+['Pipeline cash committed', 'New AE hires and timing', 'Incremental year-one sales comp',
+ 'Sales payroll run rate', 'Base margin on gross capacity', 'Downside gap',
+ 'Decisions required today'].forEach(row => {
+  ok('decision box row: ' + row, boardMemo.includes(row));
+});
+ok('board memo says demand coverage is not modeled', /Demand coverage \| NOT MODELED/.test(boardMemo));
+ok('board memo says cash and runway are not modeled', /Cash and runway viability \| NOT MODELED/.test(boardMemo));
+ok('board memo refuses to let a staffing verdict stand in for a company plan',
+  /not a statement that the company plan clears/.test(boardMemo));
+ok('board memo surfaces input warnings instead of swallowing them',
+  /## Warnings on these inputs/.test(boardMemo) && /illustrative example/i.test(boardMemo));
+ok('the machine output carries the same not-modeled statuses', (() => {
+  const out = JSON.parse(read('examples/acme/output.json'));
+  const dims = (out.status.not_modeled || []).map(n => n.dimension).sort().join(',');
+  return dims === 'cash_and_runway,demand_coverage' && out.params_hash && out.generated_on;
+})());
+ok('the example output reports the versions the code actually has', (() => {
+  const out = JSON.parse(read('examples/acme/output.json'));
+  const pkg = JSON.parse(read('package.json'));
+  return out.model_version === FX.model_version && out.mix_version === FX.mix_version &&
+    out.model_version === pkg.version;
+})());
+ok('every manifest agrees with package.json on the version', (() => {
+  const pkg = JSON.parse(read('package.json'));
+  return [read('.claude-plugin/plugin.json'), read('.codex-plugin/plugin.json')]
+    .map(s => JSON.parse(s).version).every(v => v === pkg.version);
+})());
+ok('CHANGELOG reports the assertion count the suite actually runs', (() => {
+  const ch = read('CHANGELOG.md');
+  const claimed = [...ch.matchAll(/(\d{3}) assertions/g)].map(m => Number(m[1]));
+  return claimed.length > 0 && claimed.every(n => n >= 276);
+})());
+
+console.log('--- v0.3.2: the public-maintainer surface exists ---');
+['CONTRIBUTING.md', 'SECURITY.md', 'ROADMAP.md', 'CODEOWNERS', 'docs/MODEL_CARD.md',
+ 'docs/EVIDENCE-AUDIT.md', '.github/pull_request_template.md',
+ '.github/ISSUE_TEMPLATE/bug_report.yml'].forEach(f => {
+  ok('exists: ' + f, fs.existsSync(path.join(root, f)));
+});
+ok('README links the maintainer surface', (() => {
+  const s = read('README.md');
+  return ['CONTRIBUTING.md', 'SECURITY.md', 'docs/MODEL_CARD.md'].every(f => s.includes(f));
+})());
+ok('secrets are gitignored', (() => {
+  const g = read('.gitignore');
+  return /^\.env$/m.test(g) && /^\.env\.\*$/m.test(g) && /params\.json/.test(g);
+})());
+ok('no doc still advertises an end-of-life Node floor', (() => {
+  const pkg = JSON.parse(read('package.json'));
+  return !/18|20/.test(String(pkg.engines.node));
+})());
+/* The voice rule applies to the new prose too. */
+['CONTRIBUTING.md', 'SECURITY.md', 'ROADMAP.md', 'docs/MODEL_CARD.md', 'docs/EVIDENCE-AUDIT.md']
+  .forEach(f => {
+    ok(f + ': no em dashes', !read(f).includes(String.fromCharCode(0x2014)));
+  });
+
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

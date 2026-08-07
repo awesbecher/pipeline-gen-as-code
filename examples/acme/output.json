@@ -1,7 +1,7 @@
 {
-  "output_schema_version": 3,
-  "model_version": "0.3.1",
-  "mix_version": "0.3.0",
+  "output_schema_version": 4,
+  "model_version": "0.3.2",
+  "mix_version": "0.3.2",
   "params_schema_version": 1,
   "params_file": "company/params.example.yaml",
   "illustrative_example": true,
@@ -11,12 +11,26 @@
     "months": "plan month, 1-12",
     "bdr_capacity": "SAO points, 12 per BDR month"
   },
+  "generated_on": "2026-08-07",
+  "params_hash": "20f4e7b7aefd",
   "status": {
     "target_clearance": {
       "ae_bookings": "clears",
       "bdr_support": "clears",
       "overall": "clears"
     },
+    "not_modeled": [
+      {
+        "dimension": "demand_coverage",
+        "status": "not_modeled",
+        "note": "The plan counts the first meetings the bookings target implies. Nothing here proves the funded engines will produce them; engine spend is not converted into meetings."
+      },
+      {
+        "dimension": "cash_and_runway",
+        "status": "not_modeled",
+        "note": "Sales payroll is priced, but this model holds no balance sheet, burn rate, or runway. Check the hiring plan against your cash position before approving it."
+      }
+    ],
     "warnings": [
       "Running the bundled illustrative example (Acme Security), not your data."
     ],
@@ -107,7 +121,7 @@
     }
   },
   "mix": {
-    "mix_version": "0.3.0",
+    "mix_version": "0.3.2",
     "engines": {
       "automated_outbound": {
         "verdict": "run_now",
@@ -285,6 +299,10 @@
         "month": 1
       },
       {
+        "role": "avp",
+        "month": 3
+      },
+      {
         "role": "bdrMgr",
         "month": 1
       },
@@ -293,8 +311,8 @@
         "month": 1
       }
     ],
-    "sales_payroll_run_rate_usd": 6585000,
-    "year1_sales_comp_usd": 4986829,
+    "sales_payroll_run_rate_usd": 6955000,
+    "year1_sales_comp_usd": 5248913,
     "meetings_required_year1": 1166,
     "bdr_meetings_required_year1": 777,
     "bdr_capacity_points_year1": 780,
@@ -323,9 +341,9 @@
         ],
         "total_bdrs": 6,
         "total_ses": 5,
-        "leadership_hires": 3,
-        "sales_payroll_run_rate_usd": 6585000,
-        "year1_sales_comp_usd": 4986829,
+        "leadership_hires": 4,
+        "sales_payroll_run_rate_usd": 6955000,
+        "year1_sales_comp_usd": 5248913,
         "gross_capacity_usd": 5942893,
         "exit_arr_usd": 6288025,
         "shortfall_usd": 1017107,
@@ -348,9 +366,9 @@
         ],
         "total_bdrs": 6,
         "total_ses": 5,
-        "leadership_hires": 3,
-        "sales_payroll_run_rate_usd": 6585000,
-        "year1_sales_comp_usd": 4986829,
+        "leadership_hires": 4,
+        "sales_payroll_run_rate_usd": 6955000,
+        "year1_sales_comp_usd": 5248913,
         "gross_capacity_usd": 6991639,
         "exit_arr_usd": 7022147,
         "shortfall_usd": 0,
@@ -373,9 +391,9 @@
         ],
         "total_bdrs": 6,
         "total_ses": 5,
-        "leadership_hires": 3,
-        "sales_payroll_run_rate_usd": 6585000,
-        "year1_sales_comp_usd": 4986829,
+        "leadership_hires": 4,
+        "sales_payroll_run_rate_usd": 6955000,
+        "year1_sales_comp_usd": 5248913,
         "gross_capacity_usd": 7690803,
         "exit_arr_usd": 7511562,
         "shortfall_usd": 0,
@@ -407,7 +425,7 @@
         "total_ses": 7,
         "leadership_hires": 4,
         "sales_payroll_run_rate_usd": 9245000,
-        "year1_sales_comp_usd": 6233646,
+        "year1_sales_comp_usd": 6181229,
         "gross_capacity_usd": 6977055,
         "exit_arr_usd": 7011939,
         "shortfall_usd": 0,
@@ -430,9 +448,9 @@
         ],
         "total_bdrs": 6,
         "total_ses": 5,
-        "leadership_hires": 3,
-        "sales_payroll_run_rate_usd": 6585000,
-        "year1_sales_comp_usd": 4986829,
+        "leadership_hires": 4,
+        "sales_payroll_run_rate_usd": 6955000,
+        "year1_sales_comp_usd": 5248913,
         "gross_capacity_usd": 6991639,
         "exit_arr_usd": 7022147,
         "shortfall_usd": 0,
@@ -454,9 +472,9 @@
         ],
         "total_bdrs": 6,
         "total_ses": 4,
-        "leadership_hires": 3,
-        "sales_payroll_run_rate_usd": 5995000,
-        "year1_sales_comp_usd": 4578558,
+        "leadership_hires": 4,
+        "sales_payroll_run_rate_usd": 6365000,
+        "year1_sales_comp_usd": 4840642,
         "gross_capacity_usd": 7003305,
         "exit_arr_usd": 7030314,
         "shortfall_usd": 0,

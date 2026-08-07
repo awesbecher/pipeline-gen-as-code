@@ -1,6 +1,35 @@
 # Pipeline plan for the board · Acme Security
 
 > Illustrative fixture. Acme Security is a made-up company used to show the output shape. Numbers below are computed from the committed example parameters, not from a real business.
+>
+> model 0.3.2 · mix 0.3.2 · params schema v1 · output schema v4 · generated 2026-08-07 · parameters 20f4e7b7aefd
+
+This is a sales capacity and engine allocation memo. It decides where pipeline money goes and whether the bookings target is staffable. It does not model demand or cash, so a staffing verdict of "clears" is not a statement that the company plan clears.
+
+## Decision box
+
+| Item | Value |
+|------|-------|
+| Pipeline cash committed | $25,000 a month, $300,000 a year |
+| New AE hires and timing | 7 in months 1, 1, 2, 2, 3, 3, 5 |
+| New support hires | 5 BDRs, 3 SEs, 4 leaders |
+| Incremental year-one sales comp | $3,589,688 |
+| Sales payroll run rate at full build | $6,955,000 |
+| Modeled exit ARR against target | $7,022,147 against $7,000,000 |
+| Base margin on gross capacity | +$31,639 |
+| Downside gap, approved plan held fixed | MISSES by $1,017,107 |
+| Demand coverage | NOT MODELED |
+| Cash and runway viability | NOT MODELED |
+| Decisions required today | 6 |
+
+## Warnings on these inputs
+
+- Running the bundled illustrative example (Acme Security), not your data.
+
+## What this memo does not model
+
+- Demand coverage: not modeled. The plan counts the first meetings the bookings target implies. Nothing here proves the funded engines will produce them; engine spend is not converted into meetings.
+- Cash and runway viability: not modeled. Sales payroll is priced, but this model holds no balance sheet, burn rate, or runway. Check the hiring plan against your cash position before approving it.
 
 ## The ask, in one paragraph
 
@@ -33,8 +62,8 @@ This split is a management starting hypothesis from fixed 85/15 weights. It is n
 - New AEs: 7 (months 1, 1, 2, 2, 3, 3, 5)
 - New BDRs: 5 (months 1, 1, 2, 3, 5); new SEs: 3 (months 1, 2, 5)
 - BDR hiring takes the larger of two requirements, the AE coverage ratio and the meeting plan. Here it is bound by meeting volume: 4 hire(s) from the ratio plus 1 to source the meeting plan.
-- Leadership adds: Sales leader (Area VP) month 1, BDR manager month 1, SE lead (Field CTO) month 1. Carried leadership priced in this plan: 0 sales leader(s), 0 BDR manager(s), 0 SE lead(s).
-- Sales payroll run rate at full build: $6,585,000; year-1 sales comp: $4,986,829
+- Leadership adds: Sales leader (Area VP) month 1, Sales leader (Area VP) month 3, BDR manager month 1, SE lead (Field CTO) month 1. Carried leadership priced in this plan: 0 sales leader(s), 0 BDR manager(s), 0 SE lead(s).
+- Sales payroll run rate at full build: $6,955,000; year-1 sales comp: $5,248,913
 - Meetings the plan implies: 1,166 first meetings across the year, of which BDRs source 777; BDR capacity utilization 99.7 percent (prorated for hire months)
 
 ## Sensitivity on the approved plan
@@ -53,11 +82,11 @@ Each row re-solves the schedule for that scenario. The headcount and payroll col
 
 | Scenario | New AEs | Hire months | BDRs | SEs | Leaders added | Payroll run rate | Year-1 comp | Exit ARR | BDR utilization |
 |----------|--------:|-------------|-----:|----:|--------------:|-----------------:|------------:|---------:|----------------:|
-| Downside | 12 | 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 9 | 7 | 7 | 4 | $9,245,000 | $6,233,646 | $7,011,939 | 95.1 percent |
-| Base | 7 | 1, 1, 2, 2, 3, 3, 5 | 6 | 5 | 3 | $6,585,000 | $4,986,829 | $7,022,147 | 99.7 percent |
-| Upside | 6 | 1, 1, 2, 2, 3, 8 | 6 | 4 | 3 | $5,995,000 | $4,578,558 | $7,030,314 | 99.8 percent |
+| Downside | 12 | 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 9 | 7 | 7 | 4 | $9,245,000 | $6,181,229 | $7,011,939 | 95.1 percent |
+| Base | 7 | 1, 1, 2, 2, 3, 3, 5 | 6 | 5 | 4 | $6,955,000 | $5,248,913 | $7,022,147 | 99.7 percent |
+| Upside | 6 | 1, 1, 2, 2, 3, 8 | 6 | 4 | 4 | $6,365,000 | $4,840,642 | $7,030,314 | 99.8 percent |
 
-Read the downside row as the real ask: holding $7,000,000 through a 15 percent productivity miss costs 5 more AEs and $2,660,000 more payroll run rate than the base plan.
+Read the downside row as the real ask: holding $7,000,000 through a 15 percent productivity miss costs 5 more AEs and $2,290,000 more payroll run rate than the base plan.
 
 ## Risks
 

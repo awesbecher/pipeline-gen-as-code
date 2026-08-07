@@ -109,6 +109,29 @@
     if (opts.int && x !== Math.trunc(x)) throw new RangeError('ENGINE.compute: ' + name + ' must be a whole number');
   }
 
+  /* Leadership coverage, stated once so the docs and the code cannot
+   * drift: one Area VP per eight AEs, and none below five AEs. */
+  var AES_PER_AVP = 8;
+  var AVP_THRESHOLD_AES = 5;
+  function avpsFor(aeCount) {
+    if (aeCount < AVP_THRESHOLD_AES) return 0;
+    return Math.ceil(aeCount / AES_PER_AVP);
+  }
+  /* Headcount in seat at plan month m, given carried staff and hire months. */
+  function headcountAt(existing, hires) {
+    return function (m) {
+      var c = existing;
+      hires.forEach(function (h) { if (h <= m) c++; });
+      return c;
+    };
+  }
+  /* The first plan month where countAt(m) satisfies the test; month 1 if
+   * it is already true, month 12 if it never becomes true. */
+  function monthCountReaches(countAt, test) {
+    for (var m = 1; m <= 12; m++) if (test(countAt(m))) return m;
+    return 12;
+  }
+
   function compute(inp) {
     if (!inp || typeof inp !== 'object') throw new TypeError('ENGINE.compute: expected an input object');
     requireFinite('baseArr', inp.baseArr, { min: 0 });
@@ -348,18 +371,32 @@
     var carriedBdrMgrs = inp.bdrManagers != null ? inp.bdrManagers : 0;
     var carriedSeLeads = inp.seLeads != null ? inp.seLeads : 0;
     if (adv.leadership) {
-      var avpNeed = totalAes >= 5 ? Math.max(1, Math.floor(totalAes / 8)) : 0;
+      /* One AVP per eight AEs, the rule as written, encoded once.
+       * floor() used to give a single AVP anywhere from 9 to 15 AEs,
+       * which is not one per eight. Below the 5-AE threshold the
+       * founder or head of sales carries the team and none is priced. */
+      var avpNeed = avpsFor(totalAes);
       if (suppliedLeaders == null) assumptions.push(
         'Current sales leadership not supplied; the plan assumes none is in place and prices every leader it adds (set team.sales_leaders to carry existing leaders).');
-      for (i = carriedAvps; i < avpNeed; i++) leaders.push({ role: 'avp', month: newSeats.length ? newSeats[0].hireMonth : 1 });
+      /* Each added leader starts the month their threshold is crossed,
+       * not the month of the first AE hire. */
+      for (i = carriedAvps; i < avpNeed; i++) {
+        leaders.push({ role: 'avp', month: monthCountReaches(aeCountAt, function (c) { return avpsFor(c) >= i + 1; }) });
+      }
       var bmNeed = totalBdrs >= 3 ? 1 : 0;
       if (inp.bdrManagers == null && bmNeed) assumptions.push(
         'Current BDR management not supplied; the plan hires and prices a BDR manager (set team.bdr_managers if one is already in seat).');
-      for (i = carriedBdrMgrs; i < bmNeed; i++) leaders.push({ role: 'bdrMgr', month: bdrHires.length ? bdrHires[Math.min(bdrHires.length - 1, Math.max(0, 2 - existingBdrs))] : 1 });
+      var bdrCountAt = headcountAt(existingBdrs, bdrHires);
+      for (i = carriedBdrMgrs; i < bmNeed; i++) {
+        leaders.push({ role: 'bdrMgr', month: monthCountReaches(bdrCountAt, function (c) { return c >= 3; }) });
+      }
       var slNeed = totalSes >= 3 ? 1 : 0;
       if (inp.seLeads == null && slNeed) assumptions.push(
         'Current SE leadership not supplied; the plan hires and prices an SE lead (set team.se_leads if one is already in seat).');
-      for (i = carriedSeLeads; i < slNeed; i++) leaders.push({ role: 'seLead', month: seHires.length ? seHires[Math.min(seHires.length - 1, Math.max(0, 2 - existingSes))] : 1 });
+      var seCountAt = headcountAt(existingSes, seHires);
+      for (i = carriedSeLeads; i < slNeed; i++) {
+        leaders.push({ role: 'seLead', month: monthCountReaches(seCountAt, function (c) { return c >= 3; }) });
+      }
     }
 
     /* ---------- burn ---------- */
@@ -487,9 +524,10 @@
    *    clears and no month exceeds adv.maxPerMonth.
    * Objective: fewest hires, then latest feasible start dates. */
   var api = {
-    MODEL_VERSION: '0.3.1',
+    MODEL_VERSION: '0.3.2',
     DEFAULTS: DEFAULTS, FUNNEL: FUNNEL, ANCHOR: ANCHOR,
     profileFor: profileFor, steadyAnnual: steadyAnnual,
+    AES_PER_AVP: AES_PER_AVP, AVP_THRESHOLD_AES: AVP_THRESHOLD_AES, avpsFor: avpsFor,
     seatYear1: seatYear1, seatMonths: seatMonths, compute: compute
   };
   /* CommonJS is the contract. The file extension is .cjs and the plugin

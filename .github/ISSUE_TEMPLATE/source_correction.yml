@@ -1,0 +1,127 @@
+name: Source correction
+description: A claim in docs/SOURCES.md is wrong, dead, or unsupported by its source.
+title: "source: "
+labels: ["source-correction"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        These are the most valuable reports this project gets. Every
+        quantitative claim here resolves to a claim ID in docs/SOURCES.md
+        or carries the ANDREW OPERATOR HEURISTIC label. If a row points at
+        a dead URL, misreads a figure, gets a magnitude wrong, or cites a
+        source that does not actually support it, say so.
+
+        Demoting a claim to an operator heuristic is a valid correction.
+        A number with no resolvable primary source should not carry
+        implied external authority.
+
+  - type: input
+    id: claim_id
+    attributes:
+      label: Claim ID
+      description: >
+        The ID from docs/SOURCES.md. Prefixes in use are AO, PLG, MO, ABM,
+        CP, PM, SEO, SC, EV, CAP, MIX.
+      placeholder: MO-3
+    validations:
+      required: true
+
+  - type: textarea
+    id: registry_now
+    attributes:
+      label: What the registry says now
+      description: Paste the claim text and the source it cites, verbatim.
+      placeholder: |
+        MO-3: Roughly 370 dials produce one booked meeting, about 0.27 percent
+        dial-to-meeting. Source: Belkins, 2026-06-26.
+    validations:
+      required: true
+
+  - type: textarea
+    id: correct_value
+    attributes:
+      label: The correct value
+      description: >
+        The number or statement that should replace it. If the correction is
+        that no source supports the claim, say that and propose the operator
+        heuristic label instead.
+      placeholder: |
+        The measured figure is X percent, not Y percent.
+        Or: no resolvable source supports this. Demote to ANDREW OPERATOR
+        HEURISTIC and strip the external attribution.
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: Resolvable URL
+      description: >
+        A URL you fetched yourself and read the number off the page, not off
+        a summary of the page. Write "none found" if the correction is a
+        demotion.
+      placeholder: https://example.com/report
+    validations:
+      required: true
+
+  - type: input
+    id: sample
+    attributes:
+      label: Sample size
+      description: How many companies, deals, reps, emails, dials, or respondents.
+      placeholder: 175,000+ dials across calendar year 2025
+    validations:
+      required: true
+
+  - type: input
+    id: cohort
+    attributes:
+      label: Cohort
+      description: Who was measured, in what market, over what period.
+      placeholder: B2B agency cold outbound, US and EMEA, calendar 2025
+    validations:
+      required: true
+
+  - type: textarea
+    id: method
+    attributes:
+      label: Method
+      description: >
+        How the number was produced. Include the attribution model, the
+        inclusion rules, and anything self-reported. Note any incentive the
+        publisher has for the number to look the way it does.
+      placeholder: |
+        First-party dialer data, classification described on the page. The
+        publisher sells the dialer, and the page discloses that the campaign
+        data skews to harder verticals.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: evidence_class
+    attributes:
+      label: Proposed evidence class
+      description: See the evidence class table at the top of docs/SOURCES.md.
+      options:
+        - first-party study
+        - industry report
+        - survey
+        - vendor content
+        - case study
+        - platform documentation
+        - operator heuristic
+    validations:
+      required: true
+
+  - type: textarea
+    id: downstream
+    attributes:
+      label: What else this changes
+      description: >
+        Which playbook cards, plans, or README passages quote this claim and
+        would need rewriting. The docs suite checks that every cited claim ID
+        resolves in the registry.
+      placeholder: playbook/03-manual-outbound.md quotes this in the capacity section.
+    validations:
+      required: false

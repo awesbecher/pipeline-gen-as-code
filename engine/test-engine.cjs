@@ -93,7 +93,18 @@ const b0 = E.compute(Object.assign(D(), { bdrs: 0 }));
 const b4 = E.compute(Object.assign(D(), { bdrs: 4 }));
 okTrue('BDR count drives hires: 0 current -> ' + b0.team.newBdrs + ' new, 4 current -> ' + b4.team.newBdrs + ' new',
   b0.team.newBdrs > b4.team.newBdrs);
-okTrue('BDR count drives year-1 comp (hiring vs carrying)', Math.abs(b0.burn.totalCost - b4.burn.totalCost) > 10000);
+/* Carried and hired heads are priced on the same basis, so swapping a
+ * month-1 hire for a carried BDR must not move total payroll. What
+ * moves cost is total head-months, not who is on the roster first. */
+okTrue('carried and hired BDRs are priced consistently (same fleet, same cost)',
+  b0.team.totalBdrs === b4.team.totalBdrs && Math.abs(b0.burn.totalCost - b4.burn.totalCost) < 1,
+  'fleet ' + b0.team.totalBdrs + '/' + b4.team.totalBdrs + ', cost delta ' + Math.round(Math.abs(b0.burn.totalCost - b4.burn.totalCost)));
+okTrue('new-BDR spend falls exactly by the carried heads it replaces',
+  Math.abs((b0.burn.bdrNew - b4.burn.bdrNew) - 4 * (E.DEFAULTS.adv.comp.bdr.base + E.DEFAULTS.adv.comp.bdr.variable * 0.7)) < 1);
+/* A surplus roster is carried honestly and costs more. */
+const b8 = E.compute(Object.assign(D(), { bdrs: 8 }));
+okTrue('a surplus BDR roster raises year-1 comp above the lean plan',
+  b8.team.totalBdrs === 8 && b8.burn.totalCost > b4.burn.totalCost + 100000);
 const b100 = E.compute(Object.assign(D(), { bdrs: 100 }));
 okTrue('surplus BDRs carried honestly: 100 current -> total ' + b100.team.totalBdrs + ', payroll grows',
   b100.team.totalBdrs === 100 && b100.burn.runRate > b4.burn.runRate + 1000000);
@@ -218,6 +229,44 @@ okTrue('a frozen plan under lower productivity misses instead of quietly rehirin
     try { E.compute(Object.assign(D(), bad)); return false; } catch (e) { return /ENGINE\.compute/.test(e.message); }
   })());
 });
+
+
+console.log('--- v0.3.2: leadership coverage is the rule as written ---');
+/* One AVP per eight AEs, none below five. floor() used to hold a single
+ * AVP from 9 through 15 AEs, which is not one per eight. */
+[[4, 0], [5, 1], [8, 1], [9, 2], [15, 2], [16, 2], [17, 3], [24, 3], [25, 4]].forEach(([aes, want]) => {
+  ok('avpsFor(' + aes + ')', E.avpsFor(aes), want);
+});
+okTrue('the AVP constants are published, not buried',
+  E.AES_PER_AVP === 8 && E.AVP_THRESHOLD_AES === 5);
+/* Each leader starts when their threshold is crossed. */
+const ledPlan = E.compute(D());
+const avpMonths = ledPlan.team.leaders.filter(l => l.role === 'avp').map(l => l.month);
+okTrue('a second AVP starts later than the first, not in the same month',
+  avpMonths.length < 2 || avpMonths[1] > avpMonths[0], JSON.stringify(avpMonths));
+okTrue('every leader month falls inside the plan year',
+  ledPlan.team.leaders.every(l => l.month >= 1 && l.month <= 12));
+okTrue('the BDR manager arrives no earlier than the third BDR', (() => {
+  const mgr = ledPlan.team.leaders.find(l => l.role === 'bdrMgr');
+  if (!mgr) return true;
+  const existingBdrs = ledPlan.team.totalBdrs - ledPlan.team.bdrHires.length;
+  const inSeatAtMgrMonth = existingBdrs + ledPlan.team.bdrHires.filter(m => m <= mgr.month).length;
+  return inSeatAtMgrMonth >= 3;
+})());
+okTrue('a carried leader is never re-hired', (() => {
+  const carried = E.compute(Object.assign(D(), { salesLeaders: 5, bdrManagers: 1, seLeads: 1 }));
+  return carried.team.leaders.length === 0 &&
+    carried.team.carriedAvps === 5 && carried.team.carriedBdrMgrs === 1 && carried.team.carriedSeLeads === 1;
+})());
+/* The leadership rule is priced into the run rate either way. */
+okTrue('adding the ninth AE adds an AVP and its full OTE', (() => {
+  const eight = E.compute(Object.assign(D(), { rampedAes: 8, rampingAes: 0, targetArr: 1500000 }));
+  const nine = E.compute(Object.assign(D(), { rampedAes: 9, rampingAes: 0, targetArr: 1500000 }));
+  const avpOte = E.DEFAULTS.adv.comp.avp.base + E.DEFAULTS.adv.comp.avp.variable;
+  const aeOte = E.DEFAULTS.adv.comp.ae.base + E.DEFAULTS.adv.comp.ae.variable;
+  return E.avpsFor(8) === 1 && E.avpsFor(9) === 2 &&
+    Math.abs((nine.burn.runRate - eight.burn.runRate) - (avpOte + aeOte)) < 1;
+})());
 
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');

@@ -1,6 +1,6 @@
 # The nine decision rules and compressed operating cards
 
-These are the same rules `engine/mix.js` encodes, stated for use by hand
+These are the same rules `engine/mix.cjs` encodes, stated for use by hand
 when the engine directory is not available. Verdicts: run_now (staff and
 fund this quarter), instrument_now (start the slow flywheel with a small
 allocation), defer (revisit at the named gate), blocked (a stated
@@ -9,9 +9,20 @@ points by weight and instrument_now engines split 1500, exactly
 apportioned with unallocated cash reported. The split is a starting
 allocation hypothesis, not a forecast.
 
-The CAC verdict that frames all nine: PLG is the cheapest at scale, then
-Community + Partner Led, then SEO and AEO. Those take months to
-instrument. The other 6 you can turn on this quarter.
+The CAC verdict that frames all nine (claim MIX-2): on marginal cash
+cost per new customer, PLG is the cheapest at scale, then Community +
+Partner Led, then SEO and AEO. Those take months to instrument. The
+other 6 you can turn on this quarter. Marginal cash means media,
+tooling, data, agency fees and event costs. It excludes product
+engineering, founder time, editorial labor and community ownership,
+which are usually the largest lines on those three engines, so loading
+them back in can flip the order. This is an operator ranking for
+sequencing investment, not a measured CAC study; no source measures it.
+Re-price every engine fully loaded each quarter, marginal cash plus the
+salaried and founder hours it consumed over new customers attributed. If
+one of the slow three costs more per new customer than the funded
+outbound engines two quarters running, the ranking is wrong for that
+company: change the mix and record the override.
 
 ## 01 Automated Outbound · weight 2
 

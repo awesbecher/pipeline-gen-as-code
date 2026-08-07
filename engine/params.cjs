@@ -32,22 +32,39 @@ var SELF_SERVE = ['yes', 'partial', 'no'];
 
 /* ---------- strict YAML-subset parser ---------- */
 
+/* A "#" only opens a comment at the start of a line or after whitespace.
+ * Treating every "#" as a comment silently truncated real values:
+ * `company: C# Security` became `C`. */
 function stripComment(line) {
   var out = '', inQ = null;
   for (var i = 0; i < line.length; i++) {
     var ch = line[i];
     if (inQ) { out += ch; if (ch === inQ) inQ = null; continue; }
     if (ch === '"' || ch === "'") { inQ = ch; out += ch; continue; }
-    if (ch === '#') break;
+    if (ch === '#' && (i === 0 || /\s/.test(line[i - 1]))) break;
     out += ch;
   }
   return out;
 }
 
+/* Own-property test that cannot be shadowed by a key in the document.
+ * `hasOwnProperty: x` used to make the parser throw a TypeError. */
+var hasOwn = Object.prototype.hasOwnProperty;
+function owns(o, k) { return hasOwn.call(o, k); }
+/* Maps built from user input carry no prototype, so `__proto__` and
+ * `constructor` are ordinary keys that unknown-key validation can see
+ * and reject instead of silently mutating an object. */
+function emptyMap() { return Object.create(null); }
+var RESERVED_KEYS = ['__proto__', 'constructor', 'prototype'];
+
 function parseScalar(raw, where, errors) {
   var v = raw.trim();
   if (v === '') return { kind: 'empty' };
-  var q = v.match(/^"(.*)"$/) || v.match(/^'(.*)'$/);
+  if ((v[0] === '"' || v[0] === "'") && !(v.length > 1 && v[v.length - 1] === v[0])) {
+    errors.push(where + ': unterminated ' + v[0] + ' quote; close the quote or remove it');
+    return { kind: 'error' };
+  }
+  var q = v.match(/^"([\s\S]*)"$/) || v.match(/^'([\s\S]*)'$/);
   if (q) {
     if (/^-?\d+(\.\d+)?$/.test(q[1])) {
       errors.push(where + ': quoted number "' + q[1] + '"; remove the quotes so it parses as a number');
@@ -113,7 +130,7 @@ function wrap(r) {
 
 function parseSubset(text) {
   var errors = [];
-  var doc = {};
+  var doc = emptyMap();
   var lines = text.split(/\r?\n/);
   var section = null;       /* current top-level map or list key */
   var sectionIsList = false;
@@ -127,6 +144,10 @@ function parseSubset(text) {
 
     if (t.startsWith('- ') || t === '-') {
       var item = t === '-' ? '' : t.slice(2).trim();
+      if (indent !== 2) {
+        errors.push(lineNo + ': list items are indented exactly two spaces under their key');
+        continue;
+      }
       /* A bare "key:" opens an ambiguous section; the first list item
        * resolves it into a block list. */
       if (section && !sectionIsList && doc[section] && doc[section].__open &&
@@ -139,7 +160,11 @@ function parseSubset(text) {
         continue;
       }
       var rs = parseScalar(item, lineNo, errors);
-      if (rs.kind !== 'error' && rs.kind !== 'empty') doc[section].push(wrap(rs));
+      if (rs.kind === 'empty') {
+        errors.push(lineNo + ': empty list item; give it a value or delete the line');
+        continue;
+      }
+      if (rs.kind !== 'error') doc[section].push(wrap(rs));
       continue;
     }
 
@@ -147,10 +172,14 @@ function parseSubset(text) {
     if (!m) { errors.push(lineNo + ': unrecognized syntax "' + t.slice(0, 30) + '"'); continue; }
     var key = m[1];
     var val = m[2].trim();
+    if (RESERVED_KEYS.indexOf(key) >= 0) {
+      errors.push(lineNo + ': "' + key + '" is a reserved key and is not allowed');
+      continue;
+    }
 
     if (indent === 0) {
-      if (doc.hasOwnProperty(key)) { errors.push(lineNo + ': duplicate key "' + key + '"'); continue; }
-      if (val === '') { section = key; sectionIsList = false; doc[key] = { __open: true }; }
+      if (owns(doc, key)) { errors.push(lineNo + ': duplicate key "' + key + '"'); continue; }
+      if (val === '') { section = key; sectionIsList = false; doc[key] = emptyMap(); doc[key].__open = true; }
       else if (val === '[]') { section = key; sectionIsList = true; doc[key] = []; }
       else if (val.startsWith('[') && val.endsWith(']')) { section = null; doc[key] = parseInline(val, lineNo, errors); }
       else {
@@ -161,8 +190,8 @@ function parseSubset(text) {
       continue;
     }
 
-    if (indent >= 2 && section && !sectionIsList && doc[section] && doc[section].__open) {
-      if (doc[section].hasOwnProperty(key)) { errors.push(lineNo + ': duplicate key "' + section + '.' + key + '"'); continue; }
+    if (indent === 2 && section && !sectionIsList && doc[section] && doc[section].__open) {
+      if (owns(doc[section], key)) { errors.push(lineNo + ': duplicate key "' + section + '.' + key + '"'); continue; }
       if (val === '[]') { doc[section][key] = []; }
       else if (val.startsWith('[') && val.endsWith(']')) { doc[section][key] = parseInline(val, lineNo, errors); }
       else if (val === '') { errors.push(lineNo + ': "' + section + '.' + key + '" opens a nested map; only one nesting level is supported'); }
@@ -180,12 +209,15 @@ function parseSubset(text) {
 }
 
 /* JSON input arrives as plain values; normalize to the wrapped form. */
-function wrapJson(v) {
+function wrapJson(v, reserved) {
   if (v === null) return null;
-  if (Array.isArray(v)) return v.map(wrapJson);
+  if (Array.isArray(v)) return v.map(function (x) { return wrapJson(x, reserved); });
   if (typeof v === 'object') {
-    var o = {};
-    Object.keys(v).forEach(function (k) { o[k] = wrapJson(v[k]); });
+    var o = emptyMap();
+    Object.keys(v).forEach(function (k) {
+      if (RESERVED_KEYS.indexOf(k) >= 0) { reserved.push(k); return; }
+      o[k] = wrapJson(v[k], reserved);
+    });
     return o;
   }
   if (typeof v === 'boolean') return { __kind: 'bool', value: v };
@@ -216,6 +248,7 @@ function takeString(v, obj, field, opts) {
   }
   var s = w.__kind === 'number' ? String(w.value) : w.value;
   checkControl(v, field, s);
+  if (s.trim() === '') { v.err(field, 'must not be blank'); return undefined; }
   if (opts.max && s.length > opts.max) v.err(field, 'longer than ' + opts.max + ' characters');
   if (opts.enum && opts.enum.indexOf(s) < 0) {
     v.err(field, '"' + s + '" is not one of: ' + opts.enum.join(', '));
@@ -346,8 +379,8 @@ function validate(doc) {
     if (p.team.aes_ramping_tenure_months.length && p.cycle_days !== undefined) {
       var rampMonths = p.cycle_days < 120 ? 6 : (p.cycle_days <= 220 ? 9 : 12);
       p.team.aes_ramping_tenure_months.forEach(function (t, i) {
-        if (t >= rampMonths) v.warnings.push('team.aes_ramping_tenure_months[' + i + ']: ' + t +
-          ' months is at or past the ' + rampMonths + '-month ramp for a ' + p.cycle_days +
+        if (t > rampMonths) v.warnings.push('team.aes_ramping_tenure_months[' + i + ']: ' + t +
+          ' months is past the ' + rampMonths + '-month ramp for a ' + p.cycle_days +
           '-day cycle; that rep is fully ramped and belongs in team.aes_ramped');
       });
     }
@@ -407,7 +440,12 @@ function load(text, isJson) {
     if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
       return { errors: ['file: expected a JSON object'], warnings: [], assumptions: [] };
     }
-    return validate(wrapJson(obj));
+    var reserved = [];
+    var wrapped = wrapJson(obj, reserved);
+    if (reserved.length) {
+      return { errors: reserved.map(function (k) { return k + ': reserved key is not allowed'; }), warnings: [], assumptions: [] };
+    }
+    return validate(wrapped);
   }
   var parsed = parseSubset(text);
   if (parsed.errors.length) return { errors: parsed.errors, warnings: [], assumptions: [] };

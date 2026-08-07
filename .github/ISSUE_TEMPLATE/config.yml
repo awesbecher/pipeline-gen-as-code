@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/awesbecher/pipeline-gen-as-code/blob/main/SECURITY.md
+    about: Do not open a public issue. Report privately to andrew@wesbecher.llc.
+  - name: How the model works and what it does not claim
+    url: https://github.com/awesbecher/pipeline-gen-as-code/blob/main/docs/MODEL_CARD.md
+    about: Read the model card before filing a model change. It names the known failure modes.
+  - name: What is planned and what is a non-goal
+    url: https://github.com/awesbecher/pipeline-gen-as-code/blob/main/ROADMAP.md
+    about: Forecasting, CRM features, and runtime dependencies are declined on purpose.
+  - name: Contributing guide
+    url: https://github.com/awesbecher/pipeline-gen-as-code/blob/main/CONTRIBUTING.md
+    about: Test rules, fixture rules, claim ID rules, and writing rules before you open a pull request.
+  - name: Hire the operator
+    url: https://www.wesbecher.llc
+    about: Questions about running this system with your team go here, not into an issue.

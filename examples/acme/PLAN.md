@@ -120,9 +120,10 @@ on purpose.
 Modeled gross capacity $6,991,639 against $6,960,000 needed; exit ARR
 $7,022,147; 7 new AE hires (months 1, 1, 2, 2, 3, 3, 5); support build
 to 6 BDRs total (5 new, months 1, 1, 2, 3, 5) and 5 SEs total (3 new,
-months 1, 2, 5); leadership adds an Area VP, a BDR manager, and an SE
-lead in month 1; sales payroll run rate $6,585,000 and year-1 sales
-comp $4,986,829. The plan implies 1,166 first meetings, of which BDRs
+months 1, 2, 5); leadership adds four leaders, an Area VP in month 1, a
+second Area VP in month 3, a BDR manager in month 1, and an SE lead in
+month 1; sales payroll run rate $6,955,000 and year-1 sales
+comp $5,248,913. The plan implies 1,166 first meetings, of which BDRs
 source 777, and BDR capacity runs at 99.7 percent, so BDR hiring is
 bound by meeting volume, not the AE ratio. Assumptions as listed in
 output.json (ramp stagger, derived SEs and leadership).

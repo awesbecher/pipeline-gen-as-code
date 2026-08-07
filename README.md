@@ -6,13 +6,11 @@
 [![license: MIT](https://img.shields.io/badge/license-MIT-0A0A0A)](LICENSE)
 [![dependencies](https://img.shields.io/badge/dependencies-zero-4361EE)](engine/)
 [![skill](https://img.shields.io/badge/agent%20skill-portable-4361EE)](skills/nine-engines/SKILL.md)
-
-**The pipeline system I run at AI scale-ups, published as a repo your
-AI agent can execute.**
+[![status](https://img.shields.io/badge/status-design--partner%20beta-4361EE)](docs/MODEL_CARD.md)
 
 [The board memo](examples/acme/BOARD.md) ·
-[What it does](#what-this-is-and-what-it-is-not) ·
 [Run it](#run-it) ·
+[What it does](#what-this-is-and-what-it-is-not) ·
 [The engines](#the-nine-engines-methodology) ·
 [Evidence](#tests-and-evidence) ·
 [The operator](#the-operator)
@@ -20,6 +18,44 @@ AI agent can execute.**
 </div>
 
 ---
+
+# Pipeline gen as code: the Nine Engines
+
+**The pipeline system I run at AI scale-ups, published as a repo your
+AI agent can execute.**
+
+## What you get in 30 seconds
+
+Clone the repo and run one command. Nothing to configure, no account,
+no network calls.
+
+```bash
+bin/nine-engines --example --board
+```
+
+That prints the finished [Acme board memo](examples/acme/BOARD.md):
+nine engine verdicts with the reason behind each one, an exact budget
+split, a hiring schedule and payroll, and three scenarios. The whole
+first run on your own numbers, start to finish, from the clone root:
+
+```bash
+bin/nine-engines --example --board          # see a finished board memo
+cp company/params.example.yaml company/params.yaml
+$EDITOR company/params.yaml
+bin/nine-engines company/params.yaml        # your verdicts and capacity
+mkdir -p plan
+bin/nine-engines company/params.yaml --board > plan/BOARD.md
+```
+
+`--board` prints to stdout. It writes no file unless you redirect it,
+as the last line does. A fresh clone ships no `company/params.yaml`,
+which is why step two copies the example; running the tool without a
+params path and without `--example` exits 2 rather than falling back to
+sample data.
+
+Status: design-partner beta. Read
+[docs/MODEL_CARD.md](docs/MODEL_CARD.md) for what the model does, what
+it refuses to do, and which constants are operator heuristics.
 
 ## What this is, and what it is not
 
@@ -33,16 +69,23 @@ allocation and sales capacity at AI startups**. Give it your
 parameters (ACV, cycle, team, monthly budget, constraints) and it
 returns: a verdict on each of nine pipeline engines with the reason
 and the exact inputs that produced it, an exact budget split, a
-tested staffing model against your ARR target, a board memo, and a
-weekly operating loop your AI agent runs with you.
+staffing model against your ARR target, a board memo, and a
+weekly operating loop your AI agent runs with you. Every constant sits
+on the page where you can argue with it.
 
 The honest boundary, stated up front: the engine allocation and the
 capacity model are two separate calculations. The split across
 engines is a management starting hypothesis from fixed weights, not a
 forecast; this version does not convert engine spend into meetings or
 bookings. The capacity model answers a different question, whether
-your target is staffable at all, and answers it with tested math.
-Every threshold is a knob you are supposed to argue with.
+your target is staffable at all, and answers it with validated inputs
+and regression-tested calculators. Be precise about what that buys. The
+suite proves deterministic implementation, regression behavior, pinned
+fixtures, and documentation consistency. It does not prove predictive
+validity, and the core capacity constants are operator heuristics, not
+measured industry data. The full accounting is in
+[docs/MODEL_CARD.md](docs/MODEL_CARD.md). Every threshold is a knob you
+are supposed to argue with.
 
 **Three ways in:** read the
 [finished board memo](examples/acme/BOARD.md) without installing
@@ -85,8 +128,9 @@ capacity check with hiring schedule and payroll, a generated
 scenarios, and machine-readable JSON with versions, warnings, and
 every assumption listed.
 
-**Limits:** engine spend is not converted to meetings (yet); the model
-constants are one operator's tested heuristics, indexed in
+**Limits:** engine spend is not converted to meetings (yet); the core
+model constants are one operator's heuristics, tested for
+reproducibility and not for accuracy, indexed in
 [docs/SOURCES.md](docs/SOURCES.md); current engine performance is
 collected as context, annotated on verdicts, and not yet a model
 input. When the model derives something you did not supply, it says
@@ -122,8 +166,8 @@ model.
 Allocated $24,999 of $25,000; $1 unallocated rounding remainder,
 reported, never hidden.
 
-Read the two defers, because they are the change in this version. An
-engine now has to clear its own minimum spend floor against the money
+Read the two defers, because they are the change the spend floors
+made. An engine has to clear its own minimum spend floor against the money
 the split actually hands it, not merely qualify on ICP and budget. At
 $25,000 a month, Events ($15,000 floor) and Paid Media ($8,000 floor)
 never get there, so both drop to $0 and their share moves to the four
@@ -132,13 +176,21 @@ sponsorship program at $4,250.
 
 The capacity check on the same inputs: gross capacity $6,991,639
 against $6,960,000 needed, exit ARR $7,022,147, seven AE hires
-(months 1, 1, 2, 2, 3, 3, 5), support build to 6 BDRs and 5 SEs,
-sales payroll run rate $6,585,000, with every derived assumption
+(months 1, 1, 2, 2, 3, 3, 5), support build to 6 BDRs and 5 SEs, four
+leaders added (Area VPs in months 1 and 3, a BDR manager and an SE lead
+in month 1), sales payroll run rate $6,955,000 and year-one sales comp
+$5,248,913, with every derived assumption
 disclosed in the output. The board memo reports status per layer, AE
 bookings capacity, BDR support, and overall staffing, so a plan that
 books the number but cannot source the meetings shows up as its own
 failure. BDR hiring follows the meeting plan the bookings target
 implies, not the AE coverage ratio alone.
+
+The leadership rule changed in this version. One Area VP per eight AEs
+now rounds up above the 5-AE threshold instead of down, so 11 AEs get
+two Area VPs rather than one, and every added leader starts in the
+month its threshold is crossed instead of in the first AE hire month.
+That is what moves the payroll numbers above.
 
 ## The Nine Engines methodology
 
@@ -161,10 +213,17 @@ in [docs/SOURCES.md](docs/SOURCES.md).
 | 09 | [Events](playbook/09-events.md) | Enterprise ACV, real budget |
 
 The portfolio stance: fund the fast engines to make this year's
-number, instrument the slow, cheap ones (PLG, community and partner,
-SEO and AEO) so next year's number costs less. The readable long-form
-edition lives at
-[wesbecher.llc/pipeline](https://www.wesbecher.llc/pipeline).
+number, instrument the slow ones (PLG, community and partner, SEO and
+AEO) so next year's number costs less. They are cheap in cash, not in
+founder time; see MIX-2 in the source registry for the cost basis.
+
+This repository is canonical. A longer prose edition of the playbook
+lives at [wesbecher.llc/pipeline](https://www.wesbecher.llc/pipeline),
+and as of August 2026 it still reflects an earlier version of the
+model: nine engines numbered differently, one combined forecast, and
+several benchmark figures this repository has since corrected. Where
+the two disagree, the repository is right. The page is being brought
+into line.
 
 ```mermaid
 flowchart LR
@@ -191,18 +250,15 @@ claude
 ```
 
 Say: **"Set up my pipeline plan."** The skill interviews you, writes
-`company/params.yaml`, runs the validated models, and drafts your
-plan and board memo. Or skip the agent entirely:
-
-```bash
-bin/nine-engines company/params.yaml              # verdicts + capacity
-bin/nine-engines company/params.yaml --board      # your BOARD.md
-bin/nine-engines --example                        # the Acme fixture, explicitly
-```
+`company/params.yaml`, runs the calculators, and drafts your plan and
+board memo. Or skip the agent and run the six-command proof path in
+[what you get in 30 seconds](#what-you-get-in-30-seconds).
 
 The wrapper finds the engine from its own location, so it works from
 any directory and needs no environment variables. `node
-engine/run.cjs <path>` does the same thing.
+engine/run.cjs <path>` does the same thing. Flags: `--json` for
+machine-readable output, `--board` for the memo, `--example` for the
+Acme fixture, `--help` for the field contract.
 
 **Claude Code plugin** (versioned installs, `/nine-engines:setup`,
 `:monday`, `:review`; plugin code and your project state resolve
@@ -214,16 +270,49 @@ data by accident):
 /plugin install nine-engines@wesbecher
 ```
 
-**Portable skill** for any agent that reads SKILL.md: copy
-`skills/nine-engines/` into your skills directory. It bundles the
-schema and decision rules, so it works standalone.
+**Codex CLI plugin**, verified against Codex CLI 0.147.0-alpha.6.5:
 
-**Codex and ChatGPT desktop:** clone the repo; `AGENTS.md` briefs the
-agent and `.agents/skills/nine-engines/` makes the skill discoverable
-from a fresh clone. The manifest in `.codex-plugin/` passes OpenAI's
-official plugin validator, which CI runs on every commit. We still say
-clone-first rather than claiming plugin-install support, because a
-clean end-to-end install through the Codex CLI has not been run yet.
+```text
+codex plugin marketplace add awesbecher/pipeline-gen-as-code --ref v0.3.1
+codex plugin add nine-engines@wesbecher
+```
+
+The manifest in `.codex-plugin/` also passes OpenAI's official plugin
+validator, which CI runs on every commit. Cloning still works for Codex
+and ChatGPT desktop: `AGENTS.md` briefs the agent and
+`.agents/skills/nine-engines/` makes the skill discoverable from a
+fresh clone.
+
+### The two install modes
+
+Where your company state lives depends on how you installed this. The
+two modes differ, and mixing them is the mistake to avoid.
+
+**Clone mode.** The clone is the project root. `company/params.yaml`
+and `plan/` inside the clone are the right destinations; write them
+there. The repo gitignores both by default, so your numbers never ride
+along in a commit.
+
+**Plugin mode.** The plugin cache is read-only and holds code only.
+Your company state goes in your own project directory, the one you are
+working in, never in the cache. Run the engine out of the cache and
+pass the params path explicitly:
+
+```bash
+/path/to/plugin-cache/bin/nine-engines ./company/params.yaml --board > plan/BOARD.md
+```
+
+**Copying the skill alone is a manual-lite path, not the product.** You
+can drop `skills/nine-engines/` into any agent's skills directory, and
+that directory carries the intake interview, the parameter schema, the
+nine decision rules, and the plan templates. With those an agent can
+apply the decision rules by hand and draft a plan in the right shape.
+It cannot do three things the copied directory has no files for: run
+the calculators (no `engine/` and no `bin/`, so no verdicts, no budget
+split, no capacity math), pull the full operating cards (no
+`playbook/`), or cite a claim ID (no `docs/SOURCES.md`). For verdicts
+you can defend and numbers you can publish, clone the repo or install
+the plugin.
 
 Privacy, scoped honestly. The calculators are dependency-free Node
 and run locally. They make no network calls, and your parameters and
@@ -265,6 +354,25 @@ Every benchmark in the playbook resolves to a claim ID in
 [docs/SOURCES.md](docs/SOURCES.md) with source, evidence class, and
 confidence; numbers with no source are labeled Andrew operator
 heuristics, on purpose, rather than dressed up as industry data.
+
+State the boundary once more, because it matters. The suite proves
+deterministic implementation, regression behavior, pinned fixtures, and
+documentation consistency. It does not prove that the model predicts
+anything. No test compares an output to a real company's realized
+bookings, hiring, or payroll, because no such comparison exists yet.
+[docs/MODEL_CARD.md](docs/MODEL_CARD.md) lists every constant, its
+status, and the known failure modes.
+
+## Read next
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) · the merge bar and how to
+  propose a model change
+- [SECURITY.md](SECURITY.md) · how to report a vulnerability
+- [ROADMAP.md](ROADMAP.md) · what ships next and the v1 exit criteria
+- [docs/MODEL_CARD.md](docs/MODEL_CARD.md) · intended use, constants,
+  failure modes, and what the tests do not prove
+- [docs/PRIVACY.md](docs/PRIVACY.md) · what stays local and what your
+  assistant sees
 
 ## The rules that travel with it
 

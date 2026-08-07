@@ -1,0 +1,126 @@
+name: Bug report
+description: Something in the calculators, the runner, or an install path does not work.
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste real ARR, payroll, customer names, or pipeline data
+        into this form. Replace confidential numbers with realistic dummy
+        values before you attach a params file.
+
+        If the issue has a security impact, do not open an issue. Email
+        andrew@wesbecher.llc. See SECURITY.md.
+
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened
+      description: What you expected, what you got instead.
+      placeholder: |
+        Expected: the runner writes a board memo.
+        Got: exit code 2 with an error naming team.bdrs.
+    validations:
+      required: true
+
+  - type: input
+    id: node_version
+    attributes:
+      label: Node version
+      description: Output of `node --version`.
+      placeholder: v20.11.1
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      description: Name and version. Include the architecture if it matters.
+      placeholder: macOS 15.5 on Apple silicon
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install_mode
+    attributes:
+      label: Install mode
+      options:
+        - Git clone
+        - Claude Code plugin
+        - Codex plugin
+        - Portable skill copied into another agent
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The version line the runner prints, or the commit SHA you are on.
+      placeholder: model 0.3.1 · mix 0.3.0 · params schema v1 · output schema v3
+    validations:
+      required: true
+
+  - type: textarea
+    id: command
+    attributes:
+      label: The exact command
+      description: The command you ran, copied verbatim, including flags and paths.
+      render: shell
+      placeholder: bin/nine-engines company/params.yaml --board
+    validations:
+      required: true
+
+  - type: textarea
+    id: params
+    attributes:
+      label: Your params file, with confidential numbers removed
+      description: >
+        Paste the parameters that reproduce the problem. Replace ARR,
+        payroll, budget, customer names, and anything else confidential
+        with realistic dummy values that still trigger the bug.
+      render: yaml
+      placeholder: |
+        schema_version: 1
+        company: Example Co
+        acv: 60000
+        cycle_days: 140
+        cash_monthly_pipeline: 20000
+        team:
+          aes_ramped: 3
+          aes_ramping: 1
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Output, error message, or stack trace
+      description: Paste stdout and stderr as they appeared.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: tests
+    attributes:
+      label: Test suite result
+      description: >
+        Output of `npm test` on your machine. Say which of the five suites
+        failed, if any.
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Before you submit
+      options:
+        - label: I removed all confidential company data from this report.
+          required: true
+        - label: I ran `npm test` and reported the result above, or explained why I could not.
+          required: false
