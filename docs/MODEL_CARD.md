@@ -83,7 +83,7 @@ joins them. Do not read the two outputs as one funnel.
 
 Be precise about what the test suite proves.
 
-**What the suite proves.** Five suites and 281 assertions on the 0.3.2
+**What the suite proves.** Five suites and 340 assertions on the 0.3.2
 release, run on Node 18, 20, and 22 on Ubuntu and Node 18 and 22 on
 macOS:
 

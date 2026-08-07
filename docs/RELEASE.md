@@ -14,7 +14,7 @@ CHANGELOG.md.
 
 Verification on this branch:
 
-    npm test                       # 281 assertions across five suites
+    npm test                       # 340 assertions across five suites
     claude plugin validate .
     python3 validate_plugin.py .   # OpenAI's official Codex validator
 

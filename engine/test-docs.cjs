@@ -127,11 +127,17 @@ ok('every manifest agrees with package.json on the version', (() => {
   return [read('.claude-plugin/plugin.json'), read('.codex-plugin/plugin.json')]
     .map(s => JSON.parse(s).version).every(v => v === pkg.version);
 })());
-ok('CHANGELOG reports the assertion count the suite actually runs', (() => {
-  const ch = read('CHANGELOG.md');
-  const claimed = [...ch.matchAll(/(\d{3}) assertions/g)].map(m => Number(m[1]));
-  return claimed.length > 0 && claimed.every(n => n >= 276);
-})());
+/* Assertion counts are quoted in three places. They drift, and a stale
+ * count in a release note is exactly the kind of small lie this repo
+ * says it does not tell. Require them to agree with each other. */
+ok('CHANGELOG, RELEASE and the model card quote the same assertion count', (() => {
+  const latest = s => {
+    const m = [...s.matchAll(/(\d{3}) assertions/g)].map(x => Number(x[1]));
+    return m.length ? m[0] : null;
+  };
+  const a = latest(read('CHANGELOG.md')), b = latest(read('docs/RELEASE.md')), c = latest(read('docs/MODEL_CARD.md'));
+  return a && a === b && b === c && a >= 276;
+})(), 'see the three files');
 
 console.log('--- v0.3.2: the public-maintainer surface exists ---');
 ['CONTRIBUTING.md', 'SECURITY.md', 'ROADMAP.md', 'CODEOWNERS', 'docs/MODEL_CARD.md',

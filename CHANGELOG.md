@@ -77,7 +77,7 @@ memo states what it does not know.
   Codex validator with `curl -f` and a non-empty check, and sets job
   timeouts.
 - `.env` and `.env.*` are gitignored.
-- 281 assertions across five suites.
+- 340 assertions across five suites.
 
 ## 0.3.1 (2026-08-05)
 
