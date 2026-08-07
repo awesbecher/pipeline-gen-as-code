@@ -88,7 +88,7 @@ ok('--json emits versioned finite output', (() => {
   const r = cli([tmp, '--json']);
   if (r.status !== 0) return false;
   const d = JSON.parse(r.stdout);
-  return d.output_schema_version === 3 && d.params_schema_version === 1 && d.capacity === null;
+  return d.output_schema_version === 4 && d.params_schema_version === 1 && d.capacity === null;
 })());
 ok('markdown escapes pipe in company name', (() => {
   fs.writeFileSync(tmp, GOOD.replace('company: X', 'company: "Acme | DROP"'));
@@ -96,6 +96,50 @@ ok('markdown escapes pipe in company name', (() => {
   return r.status === 0 && r.stdout.includes('Acme \\| DROP');
 })());
 fs.unlinkSync(tmp);
+
+console.log('--- v0.3.2: the parser fails closed at the edges ---');
+/* Every case below silently succeeded or crashed in 0.3.1. */
+function errs(yaml) { const r = load(yaml, false); return (r.errors || []).join(' | '); }
+function loadsClean(yaml) { const r = load(yaml, false); return (r.errors || []).length === 0 ? r : null; }
+const MIN = 'company: Acme\nacv: 120000\ncycle_days: 178\ncash_monthly_pipeline: 25000\nteam:\n  aes_ramped: 2\n  aes_ramping: 2\n  bdrs: 1\n  gtm_engineer: true\nproduct:\n  self_serve: "no"\n';
+ok('reserved key __proto__ is rejected', /reserved key/.test(errs(MIN + '__proto__: x\n')));
+ok('reserved key constructor is rejected', /reserved key/.test(errs(MIN + 'constructor: x\n')));
+ok('a key named hasOwnProperty does not crash the parser', (() => {
+  try { return /unknown field/.test((load(MIN + 'hasOwnProperty: x\nicp: banks\n', false).errors || []).join(' ')); }
+  catch (e) { return false; }
+})());
+ok('the global prototype is never polluted', (() => {
+  PARAMS.load('{"__proto__":{"polluted":true},"company":"A","acv":1,"cycle_days":1,"cash_monthly_pipeline":1,"team":{"aes_ramped":0,"aes_ramping":0,"bdrs":0,"gtm_engineer":true},"product":{"self_serve":"no"}}', true);
+  return {}.polluted === undefined;
+})());
+ok('a hash inside a value is not treated as a comment', (() => {
+  const r = loadsClean('company: C# Security\n' + MIN.split('\n').slice(1).join('\n'));
+  return r && r.params.company === 'C# Security';
+})());
+ok('an unterminated quote is rejected', /unterminated/.test(errs(MIN + 'icp: "banks\n')));
+ok('a blank required string is rejected', /must not be blank/.test(errs(MIN.replace('company: Acme', 'company: "   "'))));
+ok('an empty list item is rejected, not dropped', /empty list item/.test(errs(MIN + 'personas:\n  - \n  - CISO\n')));
+ok('an unindented list item is rejected', /two spaces/.test(errs(MIN + 'personas:\n- CISO\n')));
+ok('a three-space nested key is rejected', /unexpected indentation/.test(errs('company: A\nteam:\n   aes_ramped: 2\n')));
+ok('the documented example still parses clean', (() => {
+  const fs2 = require('fs'), path2 = require('path');
+  const r = load(fs2.readFileSync(path2.join(__dirname, '..', 'company', 'params.example.yaml'), 'utf8'), false);
+  return (r.errors || []).length === 0;
+})());
+ok('a real block list still parses', (() => {
+  const r = loadsClean(MIN + 'personas:\n  - CISO\n  - VP Security\n');
+  return r && r.params.personas.length === 2 && r.params.personas[1] === 'VP Security';
+})());
+ok('JSON reserved keys are rejected before validation', (() => {
+  const r = PARAMS.load('{"constructor":"x","company":"A"}', true);
+  return (r.errors || []).join(' ').includes('reserved key');
+})());
+ok('ramp warning fires past the ramp, not at its last month', (() => {
+  const at9 = load(MIN.replace('  aes_ramping: 2', '  aes_ramping: 1\n  aes_ramping_tenure_months: [9]'), false);
+  const at10 = load(MIN.replace('  aes_ramping: 2', '  aes_ramping: 1\n  aes_ramping_tenure_months: [10]'), false);
+  return !at9.warnings.join(' ').includes('past the') && at10.warnings.join(' ').includes('past the');
+})());
+
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

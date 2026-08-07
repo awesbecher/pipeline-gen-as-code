@@ -2,7 +2,7 @@
 
 Two deterministic engines, zero dependencies, Node only.
 
-## engine/mix.js · params to portfolio
+## engine/mix.cjs · params to portfolio
 
     node engine/run.cjs <params.yaml>   # markdown out; --json / --board
     node engine/run.cjs --example       # the Acme fixture, explicit only
@@ -16,9 +16,9 @@ equally, allocated and unallocated totals reported so cash always
 reconciles to the dollar. The split is a starting allocation
 hypothesis; it is not connected to the capacity forecast. Thresholds (the $25K manual bar, $50K PLG
 velocity line, $75K enterprise line, $8K paid floor, $15K events floor)
-are knobs in mix.js, commented where they live.
+are knobs in mix.cjs, commented where they live.
 
-## engine/engine.js · seats to bookings
+## engine/engine.cjs · seats to bookings
 
     node engine/test-engine.cjs      # named, pinned fixtures
 

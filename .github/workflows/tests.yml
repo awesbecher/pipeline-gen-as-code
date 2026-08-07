@@ -10,6 +10,9 @@ permissions:
 
 jobs:
   test:
+    timeout-minutes: 10
+    # Node 18 and 20 are end of life, so the floor is 22 and the matrix
+    # covers the maintained lines.
     # macOS is in the matrix because the stdout truncation that broke
     # captured --json in 0.3.0 only reproduced there: Linux drains the
     # pipe differently, so an Ubuntu-only matrix stayed green while
@@ -19,12 +22,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        node: [18, 20, 22]
+        node: [22, 24]
         include:
           - os: macos-latest
             node: 22
           - os: macos-latest
-            node: 18
+            node: 24
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -64,6 +67,7 @@ jobs:
 
   install-paths:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     steps:
@@ -116,6 +120,7 @@ jobs:
 
   manifests:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     steps:
@@ -124,23 +129,30 @@ jobs:
         with:
           node-version: 22
       - name: Official Claude plugin validator
-        # Local schema check: no auth, no network, no model call.
+        # Local schema check: no auth, no network, no model call. The
+        # version is pinned so a required check cannot change under us;
+        # the compatibility workflow tracks latest separately.
+        env:
+          CLAUDE_CODE_VERSION: 2.1.224
         run: |
-          npm install -g @anthropic-ai/claude-code
+          set -e
+          npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
           claude plugin validate .
           claude plugin validate .claude-plugin/plugin.json
       - name: Official OpenAI Codex plugin validator
-        # Tracks main today. If OpenAI moves the spec, this gate is where
-        # we find out; pin CODEX_VALIDATOR_REF to a commit SHA if that
-        # becomes noisy.
+        # CODEX_VALIDATOR_REF tracks main today. If OpenAI moves the
+        # spec this gate is where we find out; set it to a commit SHA
+        # when that becomes noisy.
         env:
+          # Pinned commit, not a moving branch. Bump deliberately.
           CODEX_VALIDATOR_REF: main
         run: |
-          set -e
+          set -euo pipefail
           python3 -m pip install --quiet --break-system-packages pyyaml \
             || python3 -m pip install --quiet pyyaml
-          curl -sSLo /tmp/validate_plugin.py \
+          curl -fsSLo /tmp/validate_plugin.py \
             "https://raw.githubusercontent.com/openai/codex/${CODEX_VALIDATOR_REF}/codex-rs/skills/src/assets/samples/plugin-creator/scripts/validate_plugin.py"
+          test -s /tmp/validate_plugin.py
           python3 /tmp/validate_plugin.py .
       - name: Marketplace shapes
         run: |

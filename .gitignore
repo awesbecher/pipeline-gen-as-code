@@ -13,3 +13,9 @@ company/*.local.json
 
 node_modules/
 .DS_Store
+
+# Secrets never belong in this repository. Connector API keys live in
+# environment variables the client expands at launch; see docs/CONNECTORS.md.
+.env
+.env.*
+!.env.example

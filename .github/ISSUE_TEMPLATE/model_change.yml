@@ -1,0 +1,111 @@
+name: Model change
+description: Propose changing a constant, a threshold, or a decision rule.
+title: "model: "
+labels: ["model-change"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Every constant in this repository is a knob, and most of them are
+        labeled operator heuristics in docs/SOURCES.md. Changing one is a
+        normal request. It moves pinned fixtures, so it needs evidence and
+        a version bump.
+
+        Read docs/MODEL_CARD.md first if you have not. Model quality
+        disagreements are not security issues.
+
+  - type: input
+    id: target
+    attributes:
+      label: Which constant or rule
+      description: >
+        Name it and say where it lives. Include the claim ID from
+        docs/SOURCES.md if it has one (CAP-1 through CAP-5, MIX-1).
+      placeholder: CAP-4, the 30 percent haircut, engine/engine.cjs DEFAULTS.adv.haircut
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current behavior
+      description: >
+        What the model does today with this constant or rule, and the
+        output it produces on a case you can point at.
+      placeholder: |
+        The haircut is fixed at 30 percent of gross capacity. On the Acme
+        fixture that turns $6,991,639 gross into the reported net-new figure,
+        with no way to set it per company from the params file.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed behavior
+      description: >
+        The exact new value or rule. If it is a rule change, write the
+        condition and the outcome the way the code would read it.
+      placeholder: |
+        Make the haircut an optional capacity driver, capacity.haircut_pct,
+        bounded 0 to 0.6, defaulting to 0.30 and disclosed as an assumption
+        when derived.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: >
+        What supports the change. A resolvable URL with sample size, cohort,
+        and method carries the most weight. Your own funnel data carries
+        weight if you describe how it was measured. "This matches how my
+        team runs" is acceptable if you say so plainly, and the result will
+        be labeled an operator heuristic.
+      placeholder: |
+        Source: URL
+        Sample: how many companies, deals, or reps
+        Cohort: who, what market, what period
+        Method: how the number was produced
+    validations:
+      required: true
+
+  - type: textarea
+    id: fixtures
+    attributes:
+      label: Which fixtures would move
+      description: >
+        Name the pinned values in engine/fixtures.json that change, and the
+        committed artifacts under examples/acme/ that would need
+        regenerating. Give the new numbers if you have run it.
+      placeholder: |
+        solver_default: gross_capacity_usd, exit_arr_usd, shortfall_usd
+        acme_example: capacity block, scenarios_fixed_plan, json_bytes
+        examples/acme/: output.json, PLAN.md, BOARD.md
+        README: the capacity paragraph, enforced by test-docs.cjs
+    validations:
+      required: true
+
+  - type: dropdown
+    id: version_impact
+    attributes:
+      label: Version impact
+      description: Which version field this change moves.
+      options:
+        - model_version (engine/engine.cjs)
+        - mix_version (engine/mix.cjs)
+        - params_schema_version (engine/params.cjs)
+        - output_schema_version (engine/run.cjs)
+        - More than one (say which below)
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Who this change helps, who it hurts, and what breaks if it is wrong.
+    validations:
+      required: false

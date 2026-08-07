@@ -25,7 +25,7 @@ const PARAMS = require('./params.cjs');
 const MIX = require('./mix.cjs');
 const ENGINE = require('./engine.cjs');
 
-const OUTPUT_SCHEMA_VERSION = 3;
+const OUTPUT_SCHEMA_VERSION = 4;
 const root = path.resolve(__dirname, '..');
 
 /* Board sensitivity deltas, published as assumptions. */
@@ -36,6 +36,36 @@ const SCENARIOS = [
 ];
 
 function emit(s) { process.stdout.write(s + '\n'); }
+
+/* Provenance. Outputs say which logic produced them, from which inputs,
+ * on which day. The date honours SOURCE_DATE_EPOCH so committed
+ * fixtures stay byte-stable; without it, today's date is used. */
+function generatedOn() {
+  const src = process.env.SOURCE_DATE_EPOCH;
+  const ms = src && /^\d+$/.test(src) ? Number(src) * 1000 : Date.now();
+  return new Date(ms).toISOString().slice(0, 10);
+}
+function canonical(v) {
+  if (v === null || typeof v !== 'object') return JSON.stringify(v);
+  if (Array.isArray(v)) return '[' + v.map(canonical).join(',') + ']';
+  return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + canonical(v[k])).join(',') + '}';
+}
+function paramsHash(p) {
+  return require('crypto').createHash('sha256').update(canonical(p)).digest('hex').slice(0, 12);
+}
+function versionLine() {
+  return 'model ' + ENGINE.MODEL_VERSION + ' · mix ' + MIX.MIX_VERSION +
+    ' · params schema v' + PARAMS.SCHEMA_VERSION + ' · output schema v' + OUTPUT_SCHEMA_VERSION;
+}
+
+/* What this model does not attempt. Stated in every output so a reader
+ * never mistakes a staffing verdict for a company plan. */
+const NOT_MODELED = [
+  { key: 'demand_coverage', label: 'Demand coverage',
+    note: 'The plan counts the first meetings the bookings target implies. Nothing here proves the funded engines will produce them; engine spend is not converted into meetings.' },
+  { key: 'cash_and_runway', label: 'Cash and runway viability',
+    note: 'Sales payroll is priced, but this model holds no balance sheet, burn rate, or runway. Check the hiring plan against your cash position before approving it.' }
+];
 function note(s) { process.stderr.write(s); }
 
 /* ---------- CLI ---------- */
@@ -259,7 +289,14 @@ function main() {
       params_file: path.relative(root, file),
       illustrative_example: isExample,
       units: { currency: 'USD', budget_share: 'basis_points', months: 'plan month, 1-12', bdr_capacity: 'SAO points, 12 per BDR month' },
-      status: { target_clearance: clearance, warnings: warnings, assumptions: assumptions },
+      generated_on: generatedOn(),
+      params_hash: paramsHash(p),
+      status: {
+        target_clearance: clearance,
+        not_modeled: NOT_MODELED.map(n => ({ dimension: n.key, status: 'not_modeled', note: n.note })),
+        warnings: warnings,
+        assumptions: assumptions
+      },
       decision_input_groups: PARAMS.GROUPS,
       inputs_normalized: p,
       mix: mix,
@@ -285,7 +322,43 @@ function main() {
     L.push('');
     L.push(isExample
       ? '> Illustrative fixture. Acme Security is a made-up company used to show the output shape. Numbers below are computed from the committed example parameters, not from a real business.'
-      : '> Generated from ' + escapeMd(path.basename(file)) + '. Model ' + ENGINE.MODEL_VERSION + '; every assumption is listed below.');
+      : '> Generated from ' + escapeMd(path.basename(file)) + '. Every assumption is listed below.');
+    L.push('>');
+    L.push('> ' + versionLine() + ' · generated ' + generatedOn() + ' · parameters ' + paramsHash(p));
+    L.push('');
+    L.push('This is a sales capacity and engine allocation memo. It decides where pipeline money goes and whether the bookings target is staffable. It does not model demand or cash, so a staffing verdict of "clears" is not a statement that the company plan clears.');
+    L.push('');
+    if (cap) {
+      const scDec = sc;
+      const decisions = 1 + mix.run_now.length +
+        (cap.newSeats.length ? 1 : 0) +
+        (clearance.bdr_support === 'over_capacity' ? 1 : 0) +
+        (cap.shortfall > 0 ? 1 : 0);
+      L.push('## Decision box');
+      L.push('');
+      L.push('| Item | Value |');
+      L.push('|------|-------|');
+      L.push('| Pipeline cash committed | ' + money(p.cash_monthly_pipeline) + ' a month, ' + money(p.cash_monthly_pipeline * 12) + ' a year |');
+      L.push('| New AE hires and timing | ' + cap.newSeats.length + (cap.newSeats.length ? ' in months ' + cap.newSeats.map(s => s.hireMonth).join(', ') : '') + ' |');
+      L.push('| New support hires | ' + cap.team.newBdrs + ' BDRs, ' + cap.team.newSes + ' SEs, ' + cap.team.leaders.length + ' leaders |');
+      L.push('| Incremental year-one sales comp | ' + money(cap.burn.buildCost) + ' |');
+      L.push('| Sales payroll run rate at full build | ' + money(cap.burn.runRate) + ' |');
+      L.push('| Modeled exit ARR against target | ' + money(cap.exitArr) + ' against ' + money(p.arr_target_12mo_usd) + ' |');
+      L.push('| Base margin on gross capacity | ' + (cap.grossCapacity >= cap.grossNeeded ? '+' : '') + money(cap.grossCapacity - cap.grossNeeded) + ' |');
+      L.push('| Downside gap, approved plan held fixed | ' + (scDec && scDec.fixed.downside.shortfall > 0 ? 'MISSES by ' + money(scDec.fixed.downside.shortfall) : 'clears') + ' |');
+      NOT_MODELED.forEach(n => L.push('| ' + n.label + ' | NOT MODELED |'));
+      L.push('| Decisions required today | ' + decisions + ' |');
+      L.push('');
+    }
+    if (warnings.length) {
+      L.push('## Warnings on these inputs');
+      L.push('');
+      warnings.forEach(w => L.push('- ' + w));
+      L.push('');
+    }
+    L.push('## What this memo does not model');
+    L.push('');
+    NOT_MODELED.forEach(n => L.push('- ' + n.label + ': not modeled. ' + n.note));
     L.push('');
     if (cap) {
       const covered = cap.netNewNeeded <= 0;

@@ -9,12 +9,16 @@ Paths: resolve the bundle root from this skill file's own location
 (`<root>/skills/<name>/SKILL.md`, so the root is two directories up).
 No environment variable is required; `CLAUDE_PLUGIN_ROOT`,
 `CLAUDE_PROJECT_DIR`, slash commands, and `$ARGUMENTS` are
-Claude-specific and may not exist. The user's company state
-(`company/params.yaml`, `plan/`) lives in the directory you are working
-in, never in the bundle. Never write plans into the bundle and never run
-the bundled example as if it were the user's data. From a cloned repo both variables are unset; use the repo root.
+Claude-specific and may not exist.
 
-1. If `company/params.yaml` exists in the working directory, read it
+Two install modes decide where company state goes. In **clone mode**
+the clone is the project root: `company/params.yaml` and `plan/` inside
+it are the right destinations. In **plugin mode** the plugin cache is
+read-only and holds code only: company state goes in the caller's own
+project directory, the one you are working in, never in the cache.
+Never run the bundled example as if it were the user's data.
+
+1. If `company/params.yaml` exists in the project root, read it
    back to the user in three lines and ask what changed. If not, run
    the intake interview from skills/nine-engines/references/intake.md
    in its three batches and write that file.
@@ -26,7 +30,7 @@ the bundled example as if it were the user's data. From a cloned repo both varia
    section with: model recommendation, approved verdict, approved
    budget, rationale, approver, and date. Overrides persist across
    reruns; re-apply them on top of fresh model output and say so.
-4. Generate `plan/PLAN.md` in the working directory per
+4. Generate `plan/PLAN.md` in the project root per
    skills/nine-engines/references/plan-template.md, pulling operating
    cards from `<root>/playbook/`.
 5. Close by asking for an owner per run_now engine if any are unnamed.

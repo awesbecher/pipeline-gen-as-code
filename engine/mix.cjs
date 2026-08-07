@@ -19,7 +19,7 @@
 (function (root) {
   'use strict';
 
-  var MIX_VERSION = '0.3.0';
+  var MIX_VERSION = '0.3.2';
 
   var ENGINES = [
     'automated_outbound', 'plg', 'manual_outbound', 'abm',

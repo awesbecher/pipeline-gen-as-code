@@ -42,13 +42,20 @@ Flags: `--json` machine-readable, `--board` board memo, `--example` the
 bundled illustrative Acme fixture (never treat it as the user's data),
 `--help` the field contract, `--version`.
 
-Company state belongs to the directory you are working in:
-`company/params.yaml` for inputs, `plan/` for generated artifacts. Never
-write either into the bundle root.
+## Where company state goes
+
+Two install modes, and they differ.
+
+- **Clone mode.** The clone is the project root. `company/params.yaml`
+  for inputs and `plan/` for generated artifacts belong inside the
+  clone. Both are gitignored.
+- **Plugin mode.** The plugin cache is read-only and holds code only.
+  Company state goes in the caller's own project directory, the one you
+  are working in, never in the cache.
 
 ## The loop
 
-1. Read `company/params.yaml` in the working directory. If it is
+1. Read `company/params.yaml` in the project root. If it is
    missing, run the intake interview in
    `<root>/skills/nine-engines/references/intake.md` and write the file
    against `<root>/company/params.example.yaml`.

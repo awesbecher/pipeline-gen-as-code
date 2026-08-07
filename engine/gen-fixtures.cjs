@@ -9,6 +9,11 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const E = require('./engine.cjs');
 
+/* Committed artifacts carry a generation date. Pin it so regenerating
+ * the fixtures does not churn on the clock; bump it deliberately when
+ * you regenerate for a release. */
+const FIXTURE_EPOCH = '1786060800'; /* 2026-08-07 */
+
 const prof = E.profileFor(178);
 const steadyMo = 1000000 / 12;
 
@@ -57,7 +62,8 @@ const solver = {
  * Captured the same way a consumer captures it (a pipe, not a file
  * redirect), so a truncating runner fails here first. */
 const captured = execFileSync('node', [path.join(__dirname, 'run.cjs'), '--example', '--json'],
-  { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,
+    env: Object.assign({}, process.env, { SOURCE_DATE_EPOCH: FIXTURE_EPOCH }) });
 let out;
 try { out = JSON.parse(captured); }
 catch (e) {
@@ -92,6 +98,8 @@ const acme = {
 const fixtures = {
   generated_by: 'engine/gen-fixtures.cjs (run deliberately; tests pin these exactly)',
   model_version: E.MODEL_VERSION,
+  mix_version: require('./mix.cjs').MIX_VERSION,
+  fixture_epoch: FIXTURE_EPOCH,
   workbook_schedule: workbook,
   solver_default: solver,
   acme_example: acme

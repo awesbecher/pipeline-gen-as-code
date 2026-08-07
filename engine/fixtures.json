@@ -1,6 +1,8 @@
 {
   "generated_by": "engine/gen-fixtures.cjs (run deliberately; tests pin these exactly)",
-  "model_version": "0.3.1",
+  "model_version": "0.3.2",
+  "mix_version": "0.3.2",
+  "fixture_epoch": "1786060800",
   "workbook_schedule": {
     "description": "Forced workbook hire schedule (8 new hires), $120K ACV, 178-day cycle",
     "forced_hire_months": [
@@ -53,8 +55,8 @@
     "bdr_capacity_points": 780,
     "bdr_capacity_utilization": 0.997,
     "bdr_hiring_bound_by": "meeting_volume",
-    "sales_payroll_run_rate_usd": 6585000,
-    "year1_sales_comp_usd": 4986829,
+    "sales_payroll_run_rate_usd": 6955000,
+    "year1_sales_comp_usd": 5248913,
     "status": {
       "ae_bookings": "clears",
       "bdr_support": "clears",
@@ -138,6 +140,10 @@
           "month": 1
         },
         {
+          "role": "avp",
+          "month": 3
+        },
+        {
           "role": "bdrMgr",
           "month": 1
         },
@@ -146,8 +152,8 @@
           "month": 1
         }
       ],
-      "sales_payroll_run_rate_usd": 6585000,
-      "year1_sales_comp_usd": 4986829,
+      "sales_payroll_run_rate_usd": 6955000,
+      "year1_sales_comp_usd": 5248913,
       "meetings_required_year1": 1166,
       "bdr_meetings_required_year1": 777,
       "bdr_capacity_points_year1": 780,
@@ -202,7 +208,7 @@
         "total_bdrs": 7,
         "total_ses": 7,
         "sales_payroll_run_rate_usd": 9245000,
-        "year1_sales_comp_usd": 6233646,
+        "year1_sales_comp_usd": 6181229,
         "exit_arr_usd": 7011939,
         "status": "clears"
       },
@@ -212,8 +218,8 @@
         "new_aes": 7,
         "total_bdrs": 6,
         "total_ses": 5,
-        "sales_payroll_run_rate_usd": 6585000,
-        "year1_sales_comp_usd": 4986829,
+        "sales_payroll_run_rate_usd": 6955000,
+        "year1_sales_comp_usd": 5248913,
         "exit_arr_usd": 7022147,
         "status": "clears"
       },
@@ -223,12 +229,12 @@
         "new_aes": 6,
         "total_bdrs": 6,
         "total_ses": 4,
-        "sales_payroll_run_rate_usd": 5995000,
-        "year1_sales_comp_usd": 4578558,
+        "sales_payroll_run_rate_usd": 6365000,
+        "year1_sales_comp_usd": 4840642,
         "exit_arr_usd": 7030314,
         "status": "clears"
       }
     ],
-    "json_bytes": 14108
+    "json_bytes": 14798
   }
 }

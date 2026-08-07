@@ -17,18 +17,37 @@ so next year is cheaper than this one.
 | 05 | Community + Partner Led | Months | Pays next year, not this one |
 | 06 | Paid Media | This quarter | Accelerant, never the creator |
 | 07 | SEO + AEO | Months | Compounding retrieval surface |
-| 08 | Social Content | This quarter | Founder-led, nearly free |
+| 08 | Social Content | This quarter | Founder-led; cheap in cash, not in founder time |
 | 09 | Events | This quarter | Enterprise motion, pre-booked or nothing |
 
-## The CAC verdict
+## The CAC verdict (claim MIX-2)
 
-PLG is the cheapest at scale, then Community + Partner Led, then SEO and
-AEO. Those take months to instrument. The other 6 you can turn on this
-quarter.
+On marginal cash cost per new customer, PLG is the cheapest at scale,
+then Community + Partner Led, then SEO and AEO. Those three take months
+to instrument. The other 6 you can turn on this quarter.
 
-That sentence is the whole portfolio strategy: fund the fast six to make
-the number now, instrument the cheap three to make next year's number
-cost less.
+Know the basis before you spend against it. Marginal cash means the
+dollars that leave the bank account to win the next customer: media,
+tooling, data, agency fees, event costs. It excludes the product
+engineering that builds and maintains self-serve, founder time,
+editorial and design labor, and the cost of owning a community. On the
+three engines this ranking calls cheap, those excluded lines are usually
+the largest ones. Load them back in and the order can flip.
+
+This is an operator ranking for sequencing investment. It is not a
+measured CAC study, no source measures it, and MIX-2 in docs/SOURCES.md
+says exactly that.
+
+Kill it on your own data. Once a quarter, price every engine fully
+loaded: marginal cash plus the salaried and founder hours it consumed,
+divided by new customers attributed to it. If one of the slow three
+costs more per new customer than your funded outbound engines two
+quarters running, the ranking is wrong for your company. Change the mix
+and write the override down.
+
+The strategy the ranking implies: fund the fast six to make the number
+now, instrument the slow three to make next year's number cost less, and
+re-price the basis every quarter instead of trusting the order.
 
 ## The budget rule
 

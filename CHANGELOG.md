@@ -1,5 +1,84 @@
 # Changelog
 
+## 0.3.2 (unreleased, branch claude/v0.3.2-trust-pass)
+
+Trust pass against the August 7 pre-promotion audit. The parser now
+fails closed everywhere it claimed to, the leadership rule matches the
+rule as written, outputs say which logic produced them, and the board
+memo states what it does not know.
+
+### The parser fails closed at the edges
+- Maps built from user input carry no prototype, so `__proto__`,
+  `constructor` and `prototype` are rejected by name instead of
+  silently mutating an object. A JSON payload can no longer reach
+  Object.prototype.
+- A key named `hasOwnProperty` no longer crashes the parser with a
+  TypeError; own-property checks go through Object.prototype.
+- A `#` opens a comment only at the start of a line or after
+  whitespace. `company: C# Security` used to become `C`.
+- An unterminated quote, a blank required string, an empty list item,
+  an unindented list item, and a nested key at the wrong indentation
+  are all errors now. Each one used to pass.
+
+### The model says what it means
+- Leadership coverage is one Area VP per eight AEs, encoded once as
+  `avpsFor()` and boundary-tested. floor() gave a single AVP anywhere
+  from 9 to 15 AEs, which is not one per eight. The Acme fixture moves
+  from one Area VP to two: payroll run rate $6,955,000, year-one comp
+  $5,248,913.
+- Every added leader starts the month their threshold is crossed, not
+  the month of the first AE hire.
+- The ramp warning fires past the ramp rather than at its last month;
+  a standard-ramp AE at tenure 9 is still ramping at 90 percent, and
+  the schema and the engine now agree about that.
+- mix_version was still 0.3.0 while 0.3.1 had changed the allocation
+  algorithm. Both versions now move together and a test pins them to
+  package.json.
+
+### Outputs carry their provenance and their limits
+- Board memo and JSON carry model version, mix version, schema
+  versions, generation date and a parameter hash. The date honours
+  SOURCE_DATE_EPOCH so committed fixtures stay byte-stable.
+- The board memo opens with a decision box: cash committed, hires and
+  timing, incremental year-one comp, run rate, exit ARR against
+  target, base margin, downside gap, and the count of decisions
+  required today.
+- Demand coverage and cash-and-runway viability are reported as NOT
+  MODELED in both the memo and the JSON. A staffing verdict of
+  "clears" is no longer allowed to read as a company plan that clears.
+- Input warnings appear in the board memo. `--board` returned before
+  emitting them, so even the bundled-example warning disappeared.
+- Output schema v4.
+
+### Setup routes that actually work
+- The quick start no longer tells a fresh clone to run a params file
+  that does not exist. The proof path starts with `--example --board`,
+  then copying the documented example.
+- Clone mode and plugin mode are defined separately, in the README and
+  in every skill. The old instructions said company state belongs in
+  the working directory and also forbade writing into the bundle root,
+  which is the same place in a clone.
+- The portable skill is described as manual-lite: it applies the
+  decision rules by hand and cannot run the calculators or cite the
+  registry.
+- Codex install is verified against Codex CLI 0.147.0-alpha.6.5, so
+  the pending-validation caveat is gone.
+
+### Evidence and maintenance
+- docs/SOURCES.md is current-state only. Eleven rows that recommended
+  demotion are demoted; correction history moved to
+  docs/EVIDENCE-AUDIT.md. MIX-2 states the cost basis behind the CAC
+  ordering, and the absolutes it rested on became hypotheses with kill
+  criteria in the playbook cards.
+- docs/MODEL_CARD.md, CONTRIBUTING.md, SECURITY.md, ROADMAP.md,
+  CODEOWNERS, issue forms and a PR checklist.
+- Node floor is 22; 18 and 20 are end of life. CI runs 22 and 24 on
+  Ubuntu and macOS, pins the Claude validator version, fetches the
+  Codex validator with `curl -f` and a non-empty check, and sets job
+  timeouts.
+- `.env` and `.env.*` are gitignored.
+- 340 assertions across five suites.
+
 ## 0.3.1 (2026-08-05)
 
 Board truth and portability. Two independent test passes, a post-release
@@ -93,7 +172,7 @@ fixed with a regression test that fails on the old code.
 - The HeyReach setup command is corrected and verified: that server reads
   no environment variable, `claude mcp add -e` needs KEY=value, and single
   quotes keep the secret out of the stored config.
-- 251 assertions across five suites, on Node 18, 20, and 22, Ubuntu and
+- 276 assertions across five suites, on Node 18, 20, and 22, Ubuntu and
   macOS.
 
 ## 0.3.0 (2026-08-05)

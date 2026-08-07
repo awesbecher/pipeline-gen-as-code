@@ -1,0 +1,24 @@
+# Code owners for pipeline-gen-as-code.
+# Single maintainer. Every pull request needs a review from @awesbecher.
+# Later lines win, so the explicit paths below restate the owner for the
+# areas where a change moves pinned numbers, published claims, or an
+# install path.
+
+*                       @awesbecher
+
+# The calculators, the schema, the fixtures, and their tests. A change
+# here moves pinned numbers and requires a version bump.
+/engine/                @awesbecher
+
+# The claim registry. Every quantitative claim in the repository
+# resolves here or is labeled an operator heuristic.
+/docs/SOURCES.md        @awesbecher
+
+# Install and distribution manifests. Both official validators run
+# against these in CI.
+/.claude-plugin/        @awesbecher
+/.codex-plugin/         @awesbecher
+/.agents/               @awesbecher
+
+# The nine engine cards, canonical methodology content.
+/playbook/              @awesbecher

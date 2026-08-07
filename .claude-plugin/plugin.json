@@ -1,13 +1,13 @@
 {
   "name": "nine-engines",
   "description": "Explainable pipeline engine allocation and sales capacity for AI startups: validated company parameters in, engine verdicts with reasons, exact budget split, tested staffing math, a board memo, and a weekly operating loop. A human approves every external send.",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": {
     "name": "Andrew Wesbecher",
     "email": "andrew@wesbecher.llc",
     "url": "https://www.wesbecher.llc"
   },
-  "homepage": "https://www.wesbecher.llc/pipeline",
+  "homepage": "https://github.com/awesbecher/pipeline-gen-as-code",
   "repository": "https://github.com/awesbecher/pipeline-gen-as-code",
   "license": "MIT",
   "keywords": [

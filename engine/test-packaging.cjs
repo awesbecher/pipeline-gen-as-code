@@ -18,6 +18,10 @@ function ok(name, v, detail) {
 const root = path.resolve(__dirname, '..');
 const RUN = path.join(root, 'engine', 'run.cjs');
 const FX = require('./fixtures.json');
+/* Committed artifacts pin their generation date; captures must use the
+ * same one or the byte comparison fails on the clock rather than on a
+ * real difference. */
+const ENV = Object.assign({}, process.env, { SOURCE_DATE_EPOCH: FX.fixture_epoch });
 
 /* ---------- 1. captured stdout is complete ----------
  * console.log followed by process.exit(0) truncated --json at the pipe
@@ -28,8 +32,8 @@ const FX = require('./fixtures.json');
 console.log('--- captured JSON is complete on every capture path ---');
 const committed = fs.readFileSync(path.join(root, 'examples', 'acme', 'output.json'), 'utf8');
 
-const viaExec = execFileSync('node', [RUN, '--example', '--json'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
-const viaSpawn = spawnSync('node', [RUN, '--example', '--json'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }).stdout;
+const viaExec = execFileSync('node', [RUN, '--example', '--json'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: ENV });
+const viaSpawn = spawnSync('node', [RUN, '--example', '--json'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: ENV }).stdout;
 const execBytes = Buffer.byteLength(viaExec);
 const spawnBytes = Buffer.byteLength(viaSpawn);
 
@@ -45,7 +49,7 @@ ok('capture matches the committed fixture byte for byte', viaExec === committed,
 ok('captured byte count matches the pinned fixture', execBytes === FX.acme_example.json_bytes,
   execBytes + ' vs pinned ' + FX.acme_example.json_bytes);
 /* A large board memo travels the same path. */
-const board = execFileSync('node', [RUN, '--example', '--board'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+const board = execFileSync('node', [RUN, '--example', '--board'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: ENV });
 ok('captured board memo is complete', board.trim().endsWith('A human approves every external send, in every engine, always.'),
   Buffer.byteLength(board) + ' bytes');
 ok('the runner never calls process.exit after writing stdout',
@@ -89,7 +93,9 @@ const engineFiles = fs.readdirSync(path.join(root, 'engine')).filter(f => /\.(js
 ok('no bare .js remains in engine/', engineFiles.every(f => f.endsWith('.cjs')), engineFiles.filter(f => !f.endsWith('.cjs')).join(', '));
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 ok('plugin root package.json declares CommonJS', pkg.type === 'commonjs', String(pkg.type));
-ok('package.json documents a Node floor', /18/.test(String(pkg.engines && pkg.engines.node)));
+ok('package.json documents a maintained Node floor (18 and 20 are end of life)',
+  /(>=\s*)?(22|24)/.test(String(pkg.engines && pkg.engines.node)) && !/18|20/.test(String(pkg.engines && pkg.engines.node)),
+  String(pkg.engines && pkg.engines.node));
 ok('package.json test script runs every suite',
   ['test-engine', 'test-mix', 'test-params', 'test-docs', 'test-packaging'].every(s => pkg.scripts.test.includes(s)));
 ok('no runtime dependencies', !pkg.dependencies || Object.keys(pkg.dependencies).length === 0);

@@ -25,8 +25,10 @@ queue, and report; the user owns the send button.
 
 ### 1. Intake
 
-Look for `company/params.yaml` in the working directory (the repo
-layout). If it exists, read it and confirm the two or three parameters
+Look for `company/params.yaml` in the project root (the clone in clone
+mode, the caller's own project directory in plugin mode; see the two
+install modes below). If it exists, read it and confirm the two or
+three parameters
 most likely to have changed (ARR target, team, monthly budget). If it
 does not exist, run the interview in `references/intake.md`: ask the
 questions in batches, offer the stated defaults, then write the answers
@@ -51,10 +53,19 @@ Run the wrapper, which locates the runner from its own path:
     # add --json for machine-readable, --board for the board memo
     # --example runs the bundled illustrative Acme fixture, on request only
 
-Company state (`company/params.yaml`, `plan/`) belongs to the user's
-project directory, which is the directory you are working in, never the
-bundle root. Pass the params path explicitly; there is no implicit
-fallback to sample data. Never write a plan into the bundle.
+Where company state goes depends on the install mode. There are two,
+and they differ.
+
+- **Clone mode.** The clone is the project root. `company/params.yaml`
+  and `plan/` inside the clone are the right destinations; write them
+  there. Both are gitignored.
+- **Plugin mode.** The plugin cache is read-only and holds code only.
+  Company state goes in the caller's own project directory, the one you
+  are working in, never in the cache. Run the engine out of the cache
+  and write output into the project.
+
+Either way, pass the params path explicitly; there is no implicit
+fallback to sample data.
 
 Invalid input exits nonzero with field-specific errors; fix the named
 fields with the user rather than working around validation. The
@@ -62,9 +73,13 @@ contract: portfolio drivers decide verdicts, capacity drivers feed the
 staffing model, narrative context drives nothing (run --help for the
 exact field groups).
 
-If the engine directory is not available (skill installed standalone),
-apply the decision rules in `references/engines.md` by hand; they are
-the same rules. Present the verdict table to the user and let them argue
+If the engine directory is not available (this skill directory copied
+on its own), apply the decision rules in `references/engines.md` by
+hand; they are the same rules. Tell the user what that costs: no
+calculator output, no exact budget split, no capacity math, and no
+claim IDs, because the registry is not there either.
+
+Present the verdict table to the user and let them argue
 with it; every threshold is a knob, and an overridden verdict with a
 written reason beats a silently obeyed one. Persist every approved
 override (model recommendation, approved verdict, approved budget,
@@ -113,5 +128,5 @@ what moved into next week. Keep history; the files are the memory.
   structures, including the Approved Overrides section
 - `references/math.md` · running the tested engines and checking the
   numbers
-- `references/params.example.yaml` · the full schema, bundled so the
-  skill works standalone without the repo
+- `references/params.example.yaml` · the full schema, bundled so it
+  travels with a copied skill directory
