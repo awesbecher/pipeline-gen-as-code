@@ -54,7 +54,11 @@ jobs:
       - name: Captured JSON is parsed, not discarded
         # Redirecting to /dev/null hid the truncation bug for a whole
         # release. Capture it the way a consumer does and parse it.
+        # Pin generated_on to the committed fixture epoch so a later
+        # calendar day does not fail the byte compare.
         run: |
+          set -e
+          export SOURCE_DATE_EPOCH=$(node -p "require('./engine/fixtures.json').fixture_epoch")
           node -e "
             const {execFileSync} = require('child_process');
             const fs = require('fs');
