@@ -14,6 +14,10 @@ function ok(name, v, detail) {
 const root = path.resolve(__dirname, '..');
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 const money = n => '$' + Math.round(n).toLocaleString('en-US');
+/* Committed artifacts pin generated_on; live runs must use the same
+ * epoch or the byte comparison fails on the clock. Packaging does this
+ * the same way. */
+const ENV = Object.assign({}, process.env, { SOURCE_DATE_EPOCH: FX.fixture_epoch });
 
 console.log('--- README numbers come from fixtures ---');
 const readme = read('README.md');
@@ -41,7 +45,8 @@ ok('README does not claim "Real output, not a promise"', !readme.includes('Real 
 ok('README states the model boundary (spend not converted to meetings)', /not convert(ed)? .*(engine )?spend into meetings|spend is not converted/i.test(readme));
 
 console.log('--- committed example agrees with the runner ---');
-const live = execFileSync('node', [path.join(__dirname, 'run.cjs'), '--example', '--json'], { encoding: 'utf8' });
+const live = execFileSync('node', [path.join(__dirname, 'run.cjs'), '--example', '--json'],
+  { encoding: 'utf8', env: ENV });
 const committed = read('examples/acme/output.json');
 ok('examples/acme/output.json matches a fresh --example --json run', live.trim() === committed.trim());
 const board = read('examples/acme/BOARD.md');

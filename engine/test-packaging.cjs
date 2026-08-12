@@ -236,7 +236,8 @@ ok('--doctor exits 0 in a clone with calculators present', doc.status === 0,
   (doc.stderr || '').split('\n')[0]);
 ok('--doctor prints Node vs package engines',
   /Node: v/.test(doc.stdout) && /requires >=22/.test(doc.stdout));
-ok('--doctor prints install mode clone', /Install mode: clone/.test(doc.stdout));
+ok('--doctor prints install mode clone (or unpacked bundle if .git is absent)',
+  /Install mode: (clone|unpacked bundle)/.test(doc.stdout));
 ok('--doctor prints params path and plan dir',
   /Params path:/.test(doc.stdout) && /Plan dir:/.test(doc.stdout));
 ok('--doctor does not combine with --json',
