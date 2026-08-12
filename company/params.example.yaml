@@ -25,7 +25,7 @@ funding_usd: 8000000
 arr_now_usd: 1200000
 icp: Mid-market and enterprise security teams, US
 personas: [CISO, VP Security Engineering, Head of AppSec]
-engines_running: [manual_outbound]   # annotated on verdicts; does not change them
+engines_running: [manual_outbound]   # narrative context; annotated on verdicts; does not change them
 
 # ---- portfolio + capacity drivers ----
 acv: 120000                     # average contract value, USD; > 0
@@ -60,3 +60,11 @@ capacity:
   base_arr_usd: 1200000         # defaults to arr_now_usd if omitted
   churn_pct: 0.06               # annual gross churn on the base, 0 to 0.6
   expansion_usd: 1000000        # expected expansion ARR, gross
+
+# Advanced calibration: CAP-1 through CAP-5 and MIX-1 live in
+# engine/engine.cjs and engine/mix.cjs, not in this schema. Recalibrate
+# in the order in docs/MODEL_CARD.md. Params knobs that exist:
+# team.aes_ramping_tenure_months (real ramp cohorts), team.ses /
+# team.bdrs / team.sales_leaders (real headcount instead of derived
+# ratios). Do not add haircut, steadyOverride, or spend-floor keys;
+# unknown fields are rejected.

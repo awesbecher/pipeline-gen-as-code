@@ -9,6 +9,7 @@
 #
 #   bin/nine-engines company/params.yaml --board
 #   bin/nine-engines --example --json
+#   bin/nine-engines doctor
 set -e
 src="$0"
 while [ -L "$src" ]; do

@@ -14,6 +14,10 @@ function ok(name, v, detail) {
 const root = path.resolve(__dirname, '..');
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 const money = n => '$' + Math.round(n).toLocaleString('en-US');
+/* Committed artifacts pin generated_on; live runs must use the same
+ * epoch or the byte comparison fails on the clock. Packaging does this
+ * the same way. */
+const ENV = Object.assign({}, process.env, { SOURCE_DATE_EPOCH: FX.fixture_epoch });
 
 console.log('--- README numbers come from fixtures ---');
 const readme = read('README.md');
@@ -41,7 +45,8 @@ ok('README does not claim "Real output, not a promise"', !readme.includes('Real 
 ok('README states the model boundary (spend not converted to meetings)', /not convert(ed)? .*(engine )?spend into meetings|spend is not converted/i.test(readme));
 
 console.log('--- committed example agrees with the runner ---');
-const live = execFileSync('node', [path.join(__dirname, 'run.cjs'), '--example', '--json'], { encoding: 'utf8' });
+const live = execFileSync('node', [path.join(__dirname, 'run.cjs'), '--example', '--json'],
+  { encoding: 'utf8', env: ENV });
 const committed = read('examples/acme/output.json');
 ok('examples/acme/output.json matches a fresh --example --json run', live.trim() === committed.trim());
 const board = read('examples/acme/BOARD.md');
@@ -158,10 +163,87 @@ ok('no doc still advertises an end-of-life Node floor', (() => {
   return !/18|20/.test(String(pkg.engines.node));
 })());
 /* The voice rule applies to the new prose too. */
-['CONTRIBUTING.md', 'SECURITY.md', 'ROADMAP.md', 'docs/MODEL_CARD.md', 'docs/EVIDENCE-AUDIT.md']
+['CONTRIBUTING.md', 'SECURITY.md', 'ROADMAP.md', 'docs/MODEL_CARD.md', 'docs/EVIDENCE-AUDIT.md',
+  'docs/CODEX.md', 'skills/README.md', 'examples/REAL_CASE_TEMPLATE.md']
   .forEach(f => {
     ok(f + ': no em dashes', !read(f).includes(String.fromCharCode(0x2014)));
   });
+
+console.log('--- output schema and Node matrix cannot drift from code ---');
+const runSrc = read('engine/run.cjs');
+const schemaVer = Number((runSrc.match(/const OUTPUT_SCHEMA_VERSION = (\d+);/) || [])[1]);
+ok('run.cjs declares OUTPUT_SCHEMA_VERSION', Number.isInteger(schemaVer) && schemaVer >= 4, String(schemaVer));
+const card = read('docs/MODEL_CARD.md');
+const cardHeader = card.split('\n').slice(0, 12).join('\n');
+ok('MODEL_CARD header output schema matches run.cjs',
+  cardHeader.includes('output schema v' + schemaVer));
+ok('MODEL_CARD versioning section matches run.cjs',
+  card.includes('(`engine/run.cjs`, currently ' + schemaVer + ')'));
+const pkgEngines = JSON.parse(read('package.json')).engines.node;
+const nodeFloor = Number(String(pkgEngines).match(/(\d+)/)[1]);
+ok('package.json engines floor is 22 or higher', nodeFloor >= 22, String(pkgEngines));
+const wf = read('.github/workflows/tests.yml');
+ok('workflow matrix is Node 22 and 24 on Ubuntu and macOS',
+  /node:\s*\[22,\s*24\]/.test(wf) && /macos-latest/.test(wf));
+function claimsCurrentCiRunsEol(s) {
+  return /CI runs the same chain on Node 18/.test(s)
+    || /run on Node 18, 20, and 22/.test(s)
+    || /Node 18 or newer/.test(s);
+}
+ok('CONTRIBUTING current CI prose is Node 22 and 24, not 18/20',
+  /Node 22 and 24/.test(read('CONTRIBUTING.md')) && !claimsCurrentCiRunsEol(read('CONTRIBUTING.md')));
+ok('MODEL_CARD current CI prose is Node 22 and 24, not 18/20',
+  /Node 22 and 24/.test(card) && !claimsCurrentCiRunsEol(card));
+ok('README names the Node 22 floor and 22/24 CI',
+  /floor is\s+Node 22/.test(readme) && /CI runs 22 and 24/.test(readme) && !claimsCurrentCiRunsEol(readme));
+const agentSkill = read('.agents/skills/nine-engines/SKILL.md');
+ok('.agents skill Node floor matches package engines',
+  new RegExp('Node ' + nodeFloor + ' or newer').test(agentSkill) && !/Node 18/.test(agentSkill));
+
+console.log('--- permanent demand and cash boundary; engines_running is annotation ---');
+ok('README states conversion will not land until a future version',
+  /will not be/.test(readme) && /meetings or bookings/.test(readme));
+ok('README states cash/runway is the operator check',
+  /affordability is the operator's check/.test(readme));
+ok('MODEL_CARD states demand is permanently out of scope',
+  /Permanently out of scope/.test(card) && /future version explicitly adds it/.test(card));
+ok('board memo states the permanent demand/cash boundary',
+  /permanently out of scope/.test(boardMemo));
+ok('README says engines_running does not change verdicts',
+  /annotation only/.test(readme) && /does not change them/.test(readme));
+ok('intake says engines_running does not change verdicts',
+  /does\s+not change them/.test(read('skills/nine-engines/references/intake.md')));
+ok('params.example.yaml comments engines_running as narrative context',
+  /narrative context; annotated on verdicts; does not change them/.test(read('company/params.example.yaml')));
+
+console.log('--- skill-only install is a hard gate ---');
+['skills/nine-engines/SKILL.md', 'skills/setup/SKILL.md', '.agents/skills/nine-engines/SKILL.md']
+  .forEach(f => {
+    const s = read(f);
+    ok(f + ': STOPs when calculators are missing',
+      /STOP/.test(s) && /engine\/run\.cjs/.test(s) && /bin\/nine-engines/.test(s));
+    ok(f + ': does not hand-apply verdicts as the product',
+      !/apply the decision rules[\s\S]{0,80}by hand/.test(s));
+  });
+ok('README says a skills-only copy has no numbers',
+  /only copied `skills\/`/.test(readme) && /do not have numbers/.test(readme));
+
+console.log('--- Codex, skills map, case template ---');
+ok('docs/CODEX.md exists and quotes the README Codex CLI version',
+  fs.existsSync(path.join(root, 'docs/CODEX.md')) &&
+  read('docs/CODEX.md').includes('0.147.0-alpha.6.5') &&
+  readme.includes('docs/CODEX.md'));
+ok('skills/README.md maps setup/monday/review to Claude slash commands', (() => {
+  const s = read('skills/README.md');
+  return ['/nine-engines:setup', '/nine-engines:monday', '/nine-engines:review'].every(c => s.includes(c));
+})());
+ok('case template is labeled TEMPLATE ONLY and has the ROADMAP v1 sections', (() => {
+  const s = read('examples/REAL_CASE_TEMPLATE.md');
+  return /TEMPLATE ONLY/.test(s) &&
+    /Parameters as entered/.test(s) && /Model output/.test(s) &&
+    /Overrides/.test(s) && /Decisions the team actually made/.test(s) &&
+    /What the model did not know/.test(s);
+})());
 
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');

@@ -18,10 +18,11 @@ overrides, a claim registry where every benchmark carries a source or
 an operator-heuristic label, and five test suites that hold the
 documentation to the pinned fixtures.
 
-What does not exist yet: any real-company case study, any demand model,
-any cash or runway model, and any completed design-partner review
-round. The only worked example in the repository is Acme Security, an
-explicitly illustrative made-up company.
+What does not exist yet: any real-company case study, and any completed
+design-partner review round. Demand coverage and cash/runway are
+permanently out of scope in this product line (documented in the README,
+the model card, and the board memo). The only worked example in the
+repository is Acme Security, an explicitly illustrative made-up company.
 
 ## Non-goals
 
@@ -56,19 +57,17 @@ decisions the team actually made, and a plain section naming what the
 model did not know at the time and how much that mattered. One case
 clears this bar. Zero does not.
 
-**2. Demand resolved, one way or the other.** Either the model gains a
-demand layer that connects engine spend to meeting volume, with the
-constants sourced or labeled and pinned in the fixtures, or the README,
-the model card, and the board memo carry an explicit and permanent
-statement that demand is out of scope and will not be modeled. What
-does not survive to v1 is the current position of leaving the question
-open.
+**2. Demand resolved, one way or the other.** Resolved as permanently
+out of scope. The README, the model card, and the board memo state that
+engine spend is not converted to meetings or bookings and will not be
+in this product line until a future version explicitly adds it. Do not
+implement a demand layer to close this criterion.
 
-**3. Cash and runway resolved, one way or the other.** Either the model
-prices the plan against burn and runway, so a plan that clears the ARR
-target but cannot be funded says so, or the same explicit and permanent
-out-of-scope statement in the same three places. Today the model
-reports payroll run rate and stops.
+**3. Cash and runway resolved, one way or the other.** Resolved as
+permanently out of scope. The same three places state that cash and
+runway are not modeled: payroll run rate is reported, affordability is
+the operator's check. Do not implement a burn or runway model to close
+this criterion.
 
 **4. Five to ten CEO and VC design-partner reviews completed.** Real
 readers, each one pressure-testing the board memo and the override

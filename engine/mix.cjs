@@ -264,8 +264,8 @@
     }
 
     /* Already-running annotation. This flags continuity; it does not
-     * change the verdict. Current engine performance is not yet a
-     * model input, and pretending otherwise would be dishonest. */
+     * change the verdict. Current engine performance is not a model
+     * input, and pretending otherwise would be dishonest. */
     ENGINES.forEach(function (e) {
       r[e].already_running = has(running, e);
       if (r[e].already_running) {
@@ -284,7 +284,7 @@
 
     var notes = [
       'Weights and thresholds are knobs; argue with them in the reasons.',
-      'The split is a starting allocation hypothesis, not a forecast. Engine spend is not yet converted into meetings or bookings; the capacity model in engine.cjs answers staffing separately.',
+      'The split is a starting allocation hypothesis, not a forecast. Engine spend is not converted into meetings or bookings; that conversion is out of scope until a future version explicitly adds it. The capacity model in engine.cjs answers staffing separately.',
       'A human approves every external send, in every engine, always.'
     ];
     floorCuts.forEach(function (c) {

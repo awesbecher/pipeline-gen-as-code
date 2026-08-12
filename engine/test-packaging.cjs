@@ -207,6 +207,8 @@ ok('workflow parses captured JSON instead of discarding it',
   /JSON\.parse\(out\)/.test(wf) && !/--example --json > \/dev\/null/.test(wf));
 ok('workflow runs both official validators',
   /claude plugin validate/.test(wf) && /validate_plugin\.py/.test(wf));
+ok('CODEX_VALIDATOR_REF is a 40-char commit SHA, not a moving branch',
+  /CODEX_VALIDATOR_REF:\s*[0-9a-f]{40}/.test(wf) && !/CODEX_VALIDATOR_REF:\s*main\s*$/m.test(wf));
 ok('the wrapper is committed executable', (() => {
   const { execFileSync } = require('child_process');
   try {
@@ -214,6 +216,36 @@ ok('the wrapper is committed executable', (() => {
     return out.startsWith('100755');
   } catch (e) { return true; /* not a git checkout, skip */ }
 })());
+
+console.log('--- CLAUDE.md and AGENTS.md stay identical ---');
+ok('CLAUDE.md and AGENTS.md are byte-identical',
+  fs.readFileSync(path.join(root, 'CLAUDE.md'), 'utf8') ===
+  fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8'));
+
+console.log('--- params.example.yaml copies stay identical ---');
+ok('company, acme, and skill-bundled params.example.yaml match', (() => {
+  const a = fs.readFileSync(path.join(root, 'company', 'params.example.yaml'), 'utf8');
+  const b = fs.readFileSync(path.join(root, 'examples', 'acme', 'params.yaml'), 'utf8');
+  const c = fs.readFileSync(path.join(root, 'skills', 'nine-engines', 'references', 'params.example.yaml'), 'utf8');
+  return a === b && a === c;
+})());
+
+console.log('--- doctor CLI ---');
+const doc = spawnSync('node', [RUN, '--doctor'], { encoding: 'utf8', cwd: root, env: ENV });
+ok('--doctor exits 0 in a clone with calculators present', doc.status === 0,
+  (doc.stderr || '').split('\n')[0]);
+ok('--doctor prints Node vs package engines',
+  /Node: v/.test(doc.stdout) && /requires >=22/.test(doc.stdout));
+ok('--doctor prints install mode clone (or unpacked bundle if .git is absent)',
+  /Install mode: (clone|unpacked bundle)/.test(doc.stdout));
+ok('--doctor prints params path and plan dir',
+  /Params path:/.test(doc.stdout) && /Plan dir:/.test(doc.stdout));
+ok('--doctor does not combine with --json',
+  spawnSync('node', [RUN, '--doctor', '--json'], { encoding: 'utf8', cwd: root }).status === 2);
+const docBin = spawnSync(path.join(root, 'bin', 'nine-engines'), ['doctor'],
+  { encoding: 'utf8', cwd: root, env: { PATH: process.env.PATH } });
+ok('bin/nine-engines doctor works', docBin.status === 0 && /Nine Engines doctor/.test(docBin.stdout),
+  (docBin.stderr || '').split('\n')[0]);
 
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');

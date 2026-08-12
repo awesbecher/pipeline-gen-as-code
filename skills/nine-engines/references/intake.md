@@ -31,7 +31,9 @@ can answer with one word per item. Write the result to
    payroll. Default: none; this one they must answer, the budget split
    depends on it.
 8. ICP in one line and the two or three buying personas.
-9. Engines already running, if any (use the keys below).
+9. Engines already running, if any (use the keys below). This is
+   narrative context: it is annotated on the matching verdicts and does
+   not change them. Current performance is not modeled.
 10. Hard constraints, from the vocabulary below. Default: none.
 
 ## Constraint vocabulary
@@ -65,3 +67,26 @@ and discloses assumptions when these are absent.
 Write these under `capacity:` in the params file; `engine/run.cjs` then
 appends the seat math, hiring schedule, and payroll run rate to the
 verdicts.
+
+## Advanced calibration
+
+Most CAP and MIX knobs are code constants, not params.yaml fields.
+Unknown keys are rejected. Recalibrate in the order in
+`docs/MODEL_CARD.md` (CAP-1 funnel, CAP-2 steady override, CAP-3 ramp
+tenures, CAP-4 haircut, CAP-5 support ratios, MIX-1 floors).
+
+Params fields that exist today:
+
+- `team.aes_ramping_tenure_months`: real ramp cohorts (CAP-3). One
+  whole-month tenure per ramping AE.
+- `team.ses`, `team.bdrs`, `team.sales_leaders`, `team.bdr_managers`,
+  `team.se_leads`: real headcount so the model does not derive from
+  the default 2.5 ratios (CAP-5).
+- `acv` and `cycle_days`: the inputs the steady-state formula reads
+  (CAP-2). There is no `steadyOverride` field in this schema.
+
+To change funnel rates (CAP-1), the haircut (CAP-4), AE-per-SE or
+AE-per-BDR ratios (CAP-5), or paid-media and events spend floors
+(MIX-1), edit `engine/engine.cjs` or `engine/mix.cjs`, bump the matching
+version, and add a CHANGELOG entry. Do not invent schema fields for
+those knobs.

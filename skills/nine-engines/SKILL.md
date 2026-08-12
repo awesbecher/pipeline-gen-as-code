@@ -21,6 +21,41 @@ send email, LinkedIn messages, or any external communication on the
 user's behalf without explicit approval of the specific message. Draft,
 queue, and report; the user owns the send button.
 
+## Hard gate: the calculators must be present
+
+Resolve the bundle root from THIS FILE's own location. This skill file
+sits at `<root>/skills/nine-engines/SKILL.md`, so the root is two
+directories up from the directory holding this file. That rule works
+from a clone, a Claude plugin cache, and a Codex plugin cache alike.
+
+Before any verdict, budget split, or capacity number, confirm these
+files exist relative to that root:
+
+    <root>/engine/run.cjs
+    <root>/bin/nine-engines
+
+If either is missing, STOP. You have the portable skill only: intake,
+decision-rule prose, and plan templates. You do not have the tested
+calculators. Do not hand-apply verdicts or invent a budget split. The
+only exception is clearly labeled illustrative discussion of the rules
+in `references/engines.md`, with no numbers presented as this company's
+plan.
+
+Tell the user, then point them at one of these install paths:
+
+    git clone https://github.com/awesbecher/pipeline-gen-as-code
+    cd pipeline-gen-as-code
+
+    # Claude Code plugin
+    /plugin marketplace add awesbecher/pipeline-gen-as-code
+    /plugin install nine-engines@wesbecher
+
+    # Codex CLI plugin (verified against Codex CLI 0.147.0-alpha.6.5)
+    codex plugin marketplace add awesbecher/pipeline-gen-as-code --ref v0.3.2
+    codex plugin add nine-engines@wesbecher
+
+Resume only after `engine/run.cjs` and `bin/nine-engines` are on disk.
+
 ## Workflow
 
 ### 1. Intake
@@ -36,14 +71,10 @@ to `company/params.yaml` matching `company/params.example.yaml`.
 
 ### 2. Verdicts
 
-Resolve the bundle root from THIS FILE's own location. This skill file
-sits at `<root>/skills/nine-engines/SKILL.md`, so the root is two
-directories up from the directory holding this file. That rule works
-from a clone, a Claude plugin cache, and a Codex plugin cache alike. No
-environment variable is required: `CLAUDE_PLUGIN_ROOT`,
+No environment variable is required: `CLAUDE_PLUGIN_ROOT`,
 `CLAUDE_PROJECT_DIR`, slash commands, and `$ARGUMENTS` are
 Claude-specific and may not exist. If `CLAUDE_PLUGIN_ROOT` happens to be
-set, it points at the same root.
+set, it points at the same root already resolved above.
 
 Run the wrapper, which locates the runner from its own path:
 
@@ -72,12 +103,6 @@ fields with the user rather than working around validation. The
 contract: portfolio drivers decide verdicts, capacity drivers feed the
 staffing model, narrative context drives nothing (run --help for the
 exact field groups).
-
-If the engine directory is not available (this skill directory copied
-on its own), apply the decision rules in `references/engines.md` by
-hand; they are the same rules. Tell the user what that costs: no
-calculator output, no exact budget split, no capacity math, and no
-claim IDs, because the registry is not there either.
 
 Present the verdict table to the user and let them argue
 with it; every threshold is a knob, and an overridden verdict with a

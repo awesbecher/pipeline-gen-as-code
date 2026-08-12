@@ -29,10 +29,39 @@ that, not an environment variable. `CLAUDE_PLUGIN_ROOT`,
 `CLAUDE_PROJECT_DIR`, slash commands, and `$ARGUMENTS` are
 Claude-specific and are not assumed to exist here.
 
+## Hard gate: the calculators must be present
+
+Before any verdict, budget split, or capacity number, confirm these
+files exist relative to the resolved bundle root:
+
+    <root>/engine/run.cjs
+    <root>/bin/nine-engines
+
+If either is missing, STOP. You have the portable skill only: intake,
+decision-rule prose, and plan templates. You do not have the tested
+calculators. Do not hand-apply verdicts or invent a budget split. The
+only exception is clearly labeled illustrative discussion of the rules,
+with no numbers presented as this company's plan.
+
+Tell the user, then point them at one of these install paths:
+
+    git clone https://github.com/awesbecher/pipeline-gen-as-code
+    cd pipeline-gen-as-code
+
+    # Claude Code plugin
+    /plugin marketplace add awesbecher/pipeline-gen-as-code
+    /plugin install nine-engines@wesbecher
+
+    # Codex CLI plugin (verified against Codex CLI 0.147.0-alpha.6.5)
+    codex plugin marketplace add awesbecher/pipeline-gen-as-code --ref v0.3.2
+    codex plugin add nine-engines@wesbecher
+
+Resume only after `engine/run.cjs` and `bin/nine-engines` are on disk.
+
 ## Running it
 
 The deterministic engines are CommonJS Node with no dependencies and no
-network calls. Node 18 or newer.
+network calls. Node 22 or newer.
 
     <root>/bin/nine-engines <path/to/company/params.yaml>
     <root>/bin/nine-engines --example --board
@@ -40,7 +69,8 @@ network calls. Node 18 or newer.
 
 Flags: `--json` machine-readable, `--board` board memo, `--example` the
 bundled illustrative Acme fixture (never treat it as the user's data),
-`--help` the field contract, `--version`.
+`--doctor` install checks with no network, `--help` the field contract,
+`--version`.
 
 ## Where company state goes
 
@@ -73,8 +103,10 @@ Two install modes, and they differ.
 ## What the model does and does not do
 
 The engine split is a starting allocation hypothesis. Engine spend is
-not converted into meetings or bookings in this version, and you never
-imply otherwise. Overall staffing clears only when AE bookings capacity
-and BDR support capacity both clear. Every benchmark number resolves to
-a claim ID in `<root>/docs/SOURCES.md` or is labeled an operator
-heuristic; never invent one.
+not converted into meetings or bookings, and will not be until a future
+version explicitly adds that conversion. You never imply otherwise.
+`engines_running` is annotation only and does not change verdicts.
+Overall staffing clears only when AE bookings capacity and BDR support
+capacity both clear. Every benchmark number resolves to a claim ID in
+`<root>/docs/SOURCES.md` or is labeled an operator heuristic; never
+invent one.

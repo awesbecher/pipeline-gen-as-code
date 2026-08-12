@@ -47,13 +47,18 @@ jobs:
         run: |
           node engine/run.cjs --help > /dev/null
           node engine/run.cjs --version
+          node engine/run.cjs --doctor > /dev/null
           node engine/run.cjs --example > /dev/null
           node engine/run.cjs --example --board > /dev/null
           if node engine/run.cjs 2> /dev/null; then echo "should have exited 2"; exit 1; fi
       - name: Captured JSON is parsed, not discarded
         # Redirecting to /dev/null hid the truncation bug for a whole
         # release. Capture it the way a consumer does and parse it.
+        # Pin generated_on to the committed fixture epoch so a later
+        # calendar day does not fail the byte compare.
         run: |
+          set -e
+          export SOURCE_DATE_EPOCH=$(node -p "require('./engine/fixtures.json').fixture_epoch")
           node -e "
             const {execFileSync} = require('child_process');
             const fs = require('fs');
@@ -140,12 +145,12 @@ jobs:
           claude plugin validate .
           claude plugin validate .claude-plugin/plugin.json
       - name: Official OpenAI Codex plugin validator
-        # CODEX_VALIDATOR_REF tracks main today. If OpenAI moves the
-        # spec this gate is where we find out; set it to a commit SHA
-        # when that becomes noisy.
+        # Pinned to openai/codex main at edit time
+        # (379cb68444057c721b6c8fa0bd610b7c6ecb9824, 2026-08-12).
+        # Bumps must be deliberate: a moving branch can change a
+        # required check under us.
         env:
-          # Pinned commit, not a moving branch. Bump deliberately.
-          CODEX_VALIDATOR_REF: main
+          CODEX_VALIDATOR_REF: 379cb68444057c721b6c8fa0bd610b7c6ecb9824
         run: |
           set -euo pipefail
           python3 -m pip install --quiet --break-system-packages pyyaml \
