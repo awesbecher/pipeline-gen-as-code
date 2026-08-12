@@ -11,6 +11,18 @@ No environment variable is required; `CLAUDE_PLUGIN_ROOT`,
 `CLAUDE_PROJECT_DIR`, slash commands, and `$ARGUMENTS` are
 Claude-specific and may not exist.
 
+Hard gate: before any verdict or capacity number, confirm
+`<root>/engine/run.cjs` and `<root>/bin/nine-engines` exist. If either
+is missing, STOP. You have the portable skill only. Do not hand-apply
+verdicts or invent a budget split (illustrative discussion of the rules
+is allowed if labeled as such). Tell the user to clone
+https://github.com/awesbecher/pipeline-gen-as-code, or install the
+Claude plugin (`/plugin marketplace add awesbecher/pipeline-gen-as-code`
+then `/plugin install nine-engines@wesbecher`), or the Codex plugin
+(`codex plugin marketplace add awesbecher/pipeline-gen-as-code --ref v0.3.2`
+then `codex plugin add nine-engines@wesbecher`). Resume only after the
+calculators are on disk.
+
 Two install modes decide where company state goes. In **clone mode**
 the clone is the project root: `company/params.yaml` and `plan/` inside
 it are the right destinations. In **plugin mode** the plugin cache is

@@ -25,8 +25,8 @@ GTM engineer: yes.
 
 Allocated $24,999 of $25,000; $1 unallocated rounding remainder. The
 split is a starting hypothesis from fixed 85/15 weights, not a
-forecast; engine spend is not converted into meetings in this model
-version.
+forecast; engine spend is not converted into meetings, and will not be
+until a future version explicitly adds that conversion.
 
 Why this mix, in one paragraph: enterprise ACV ($120K) with rep
 coverage turns on the rep-led motions (manual outbound, ABM) and the

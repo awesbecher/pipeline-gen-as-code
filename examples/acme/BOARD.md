@@ -4,7 +4,7 @@
 >
 > model 0.3.2 · mix 0.3.2 · params schema v1 · output schema v4 · generated 2026-08-07 · parameters 20f4e7b7aefd
 
-This is a sales capacity and engine allocation memo. It decides where pipeline money goes and whether the bookings target is staffable. It does not model demand or cash, so a staffing verdict of "clears" is not a statement that the company plan clears.
+This is a sales capacity and engine allocation memo. It decides where pipeline money goes and whether the bookings target is staffable. Demand coverage and cash runway are permanently out of scope in this product line. Engine spend is not converted into meetings or bookings. Payroll run rate is reported; affordability is the operator's check. A staffing verdict of "clears" is not a statement that the company plan clears.
 
 ## Decision box
 
@@ -28,8 +28,8 @@ This is a sales capacity and engine allocation memo. It decides where pipeline m
 
 ## What this memo does not model
 
-- Demand coverage: not modeled. The plan counts the first meetings the bookings target implies. Nothing here proves the funded engines will produce them; engine spend is not converted into meetings.
-- Cash and runway viability: not modeled. Sales payroll is priced, but this model holds no balance sheet, burn rate, or runway. Check the hiring plan against your cash position before approving it.
+- Demand coverage: not modeled. Permanently out of scope in this product line until a future version explicitly adds it. The plan counts the first meetings the bookings target implies. Nothing here proves the funded engines will produce them. Engine spend is not converted into meetings or bookings.
+- Cash and runway viability: not modeled. Permanently out of scope in this product line. Sales payroll run rate is reported, but this model holds no balance sheet, burn rate, or runway. Affordability is the operator's check against cash on hand.
 
 ## The ask, in one paragraph
 
@@ -55,7 +55,7 @@ The staffing plan below clears the target with modeled capacity of $6,991,639, a
 
 Cash: $24,999 allocated of $25,000 a month; $1 unallocated (rounding remainder).
 
-This split is a management starting hypothesis from fixed 85/15 weights. It is not a forecast, and engine spend is not converted into meetings or bookings in this model version.
+This split is a management starting hypothesis from fixed 85/15 weights. It is not a forecast. Engine spend is not converted into meetings or bookings, and will not be until a future version explicitly adds that conversion.
 
 ## Hires and timing
 
@@ -92,7 +92,7 @@ Read the downside row as the real ask: holding $7,000,000 through a 15 percent p
 
 - Downside sensitivity: with the approved plan unchanged, rep productivity 15 percent below plan misses the target by $1,017,107 of gross capacity.
 - Upside support strain: the same plan runs BDR support at 109.7 percent because more bookings mean more meetings to source.
-- The engine allocation is a starting hypothesis, not a demand forecast. Nothing above converts engine spend into meetings.
+- The engine allocation is a starting hypothesis, not a demand forecast. Engine spend is not converted into meetings. Cash and runway are not modeled; payroll run rate is reported, affordability is the operator's check.
 
 ## Assumptions this output rests on
 

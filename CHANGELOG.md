@@ -1,5 +1,33 @@
 # Changelog
 
+## Unreleased
+
+Trust and DX pass: kill docs drift, pin the Codex validator, hard-gate
+a skill-only install, and make demand plus cash/runway a permanent
+boundary. No mix or capacity math change. No version bump.
+
+- MODEL_CARD `output_schema_version` now matches `engine/run.cjs` (4).
+  CONTRIBUTING and the clone-first skill state Node >=22 and CI on 22
+  and 24, matching `package.json` engines and `.github/workflows/tests.yml`.
+  Docs tests fail if those drift again.
+- CI pins `CODEX_VALIDATOR_REF` to openai/codex commit
+  `379cb68444057c721b6c8fa0bd610b7c6ecb9824`. Bumps must be deliberate.
+- Skills STOP if `engine/run.cjs` or `bin/nine-engines` is missing.
+  README says a `skills/`-only copy has no numbers.
+- Demand coverage and cash/runway are permanently out of scope in the
+  README, the model card, and the board memo. Engine spend is not
+  converted to meetings or bookings. Payroll run rate is reported;
+  affordability is the operator's check. `NOT_MODELED` notes and mix
+  notes say the same thing. ROADMAP v1 criteria 2 and 3 are closed as
+  documentation, not as new models.
+- `engines_running` is documented as annotation only. It still does not
+  change verdicts.
+- `bin/nine-engines doctor` / `--doctor` prints Node vs engines, params
+  and plan writability, and guessed install mode. No network.
+- docs/CODEX.md, skills/README.md, an advanced-calibration pointer in
+  intake, and `examples/REAL_CASE_TEMPLATE.md` (template only).
+- Packaging test: `CLAUDE.md` and `AGENTS.md` stay identical.
+
 ## 0.3.2 (2026-08-07)
 
 Trust pass against the August 7 pre-promotion audit. The parser now

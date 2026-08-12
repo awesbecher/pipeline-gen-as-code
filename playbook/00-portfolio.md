@@ -54,8 +54,9 @@ re-price the basis every quarter instead of trusting the order.
 Engines the mix engine marks `run_now` share 85 percent of the
 monthly pipeline budget (8500 basis points, exactly apportioned),
 weighted by fit. The split is a starting allocation hypothesis, not a
-forecast; engine spend is not converted into meetings in this model
-version. Engines marked `instrument_now`
+forecast; engine spend is not converted into meetings. That conversion
+is out of scope until a future version explicitly adds it. Engines
+marked `instrument_now`
 share the rest equally; the allocation is deliberately small because
 their cost is mostly patience. `defer` and `blocked` engines get zero and
 a written reason, so the decision can be argued with instead of forgotten.

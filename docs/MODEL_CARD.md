@@ -72,20 +72,21 @@ sales payroll run rate. Staffing reports three verdicts, AE bookings
 capacity, BDR support capacity, and overall, and overall never reads
 "clears" while a support layer is over capacity.
 
-**Engine spend is not converted into meetings or bookings.** There is no
-function anywhere in this repository that turns a dollar of engine
-budget into a meeting, a pipeline dollar, or a booking. The allocation
-answers "where should this money go, given who you are." The capacity
-model answers "can a team of this shape carry this number." Nothing
-joins them. Do not read the two outputs as one funnel.
+**Engine spend is not converted into meetings or bookings.** That
+conversion is permanently out of scope in this product line until a
+future version explicitly adds it. There is no function anywhere in this
+repository that turns a dollar of engine budget into a meeting, a
+pipeline dollar, or a booking. The allocation answers "where should this
+money go, given who you are." The capacity model answers "can a team of
+this shape carry this number." Nothing joins them. Do not read the two
+outputs as one funnel.
 
 ## Empirically validated versus operator heuristic
 
 Be precise about what the test suite proves.
 
 **What the suite proves.** Five suites and 340 assertions on the 0.3.2
-release, run on Node 18, 20, and 22 on Ubuntu and Node 18 and 22 on
-macOS:
+release, run on Node 22 and 24 on Ubuntu and macOS:
 
 - Deterministic implementation. The math is reproducible and the
   invariants hold across swept inputs, not only on the fixture.
@@ -149,25 +150,29 @@ cohort tenures.
 
 **Narrative context** is carried into outputs and drives no verdict:
 company, stage, funding, ICP, personas, and the engines already running.
-Engines already running are annotated on verdicts and do not change
-them. If a field cannot change the answer, the repository says so
-instead of implying otherwise.
+`engines_running` is annotation only. It does not change verdicts,
+weights, or the budget split. Current engine performance is not modeled.
+If a field cannot change the answer, the repository says so instead of
+implying otherwise.
 
 Anything the model derives rather than reads (a BDR count, an SE count,
 a ramp stagger) is disclosed in the output assumptions list.
 
 ## Known failure modes
 
-1. **No demand model sits behind the meeting count.** The capacity model
-   asks how many meetings a team can work and whether the BDR layer can
-   source them. It never asks whether the market will supply them at the
-   assumed conversion rates. A plan can clear on paper in a market that
-   will not produce the meetings.
-2. **No cash or runway model.** The model reports sales payroll run rate
-   and monthly pipeline spend. It does not model burn, runway, gross
-   margin, cash collection, or whether the company can afford the plan
-   it just produced. A plan that clears the ARR target can still be
-   unfundable.
+1. **No demand model sits behind the meeting count.** Permanently out of
+   scope in this product line until a future version explicitly adds it.
+   The capacity model asks how many meetings a team can work and whether
+   the BDR layer can source them. It never asks whether the market will
+   supply them at the assumed conversion rates, and it does not convert
+   engine spend into meetings or bookings. A plan can clear on paper in
+   a market that will not produce the meetings.
+2. **No cash or runway model.** Permanently out of scope in this product
+   line. The model reports sales payroll run rate and monthly pipeline
+   spend. It does not model burn, runway, gross margin, cash collection,
+   or whether the company can afford the plan it just produced.
+   Affordability is the operator's check. A plan that clears the ARR
+   target can still be unfundable.
 3. **Ramp and productivity constants are heuristics, not fitted
    parameters.** CAP-1 through CAP-5 are one operator's numbers. If your
    funnel converts differently, if your reps ramp faster or slower, or
@@ -188,9 +193,9 @@ a ramp stagger) is disclosed in the output assumptions list.
    link that the model does not compute. Say out loud that the split is
    a hypothesis when you present it.
 7. **Current engine performance is collected as context, not consumed.**
-   The engines you already run are annotated on the verdicts and do not
-   change them. If your automated outbound is failing today, the model
-   will still recommend it.
+   `engines_running` is annotation only. The engines you already run are
+   flagged on the verdicts and do not change them. If your automated
+   outbound is failing today, the model will still recommend it.
 8. **Benchmarks age.** Every market statistic in SOURCES.md expires for
    planning purposes on 2027-08-05.
 
@@ -243,10 +248,11 @@ and the runner banner:
   Renaming, removing, or retyping a field, or changing validation so
   that previously valid input is rejected, is a breaking change and
   requires a new schema version.
-- **`output_schema_version`** (`engine/run.cjs`, currently 3) is the
+- **`output_schema_version`** (`engine/run.cjs`, currently 4) is the
   shape of the JSON. Anything consuming the JSON pins this. It moved to
   3 when per-layer staffing status and the two scenario tables were
-  added.
+  added, and to 4 when provenance (generation date, params hash) and
+  not-modeled statuses landed in the JSON.
 
 The package version in `package.json` is the release version, and all
 plugin manifests must agree with it (the packaging suite enforces this).

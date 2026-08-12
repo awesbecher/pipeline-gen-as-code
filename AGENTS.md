@@ -20,8 +20,11 @@ portfolio drivers decide engine verdicts; capacity drivers feed the
 staffing model; narrative context (stage, funding, ICP, personas) is
 carried into outputs and drives no verdict. The engine budget split is
 a starting allocation hypothesis; engine spend is not converted into
-meetings or bookings in this model version, and you never imply
-otherwise. An engine with a published minimum monthly spend (paid media
+meetings or bookings, and will not be until a future version explicitly
+adds that conversion. You never imply otherwise. Cash and runway are
+not modeled: payroll run rate is reported, affordability is the
+operator's check. `engines_running` is annotation only and does not
+change verdicts. An engine with a published minimum monthly spend (paid media
 $8K, events $15K) is only funded when the split actually reaches that
 floor; otherwise it defers and says so. Staffing reports three
 verdicts, AE bookings capacity, BDR support capacity, and overall:

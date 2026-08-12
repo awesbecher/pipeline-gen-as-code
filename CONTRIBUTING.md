@@ -23,9 +23,9 @@ node engine/test-packaging.cjs  # captured stdout, ESM ancestor, manifests, skil
 
 All five must pass locally before you open a pull request, not only in
 CI. There are no runtime dependencies and there is no build step, so
-this takes seconds. CI runs the same chain on Node 18, 20, and 22 on
-Ubuntu and Node 18 and 22 on macOS, plus both official plugin
-validators.
+this takes seconds. The Node floor is 22 (`package.json` engines). CI
+runs the same chain on Node 22 and 24 on Ubuntu and macOS, plus both
+official plugin validators.
 
 ## The fixtures are exact pins
 

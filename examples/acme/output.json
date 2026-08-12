@@ -23,12 +23,12 @@
       {
         "dimension": "demand_coverage",
         "status": "not_modeled",
-        "note": "The plan counts the first meetings the bookings target implies. Nothing here proves the funded engines will produce them; engine spend is not converted into meetings."
+        "note": "Permanently out of scope in this product line until a future version explicitly adds it. The plan counts the first meetings the bookings target implies. Nothing here proves the funded engines will produce them. Engine spend is not converted into meetings or bookings."
       },
       {
         "dimension": "cash_and_runway",
         "status": "not_modeled",
-        "note": "Sales payroll is priced, but this model holds no balance sheet, burn rate, or runway. Check the hiring plan against your cash position before approving it."
+        "note": "Permanently out of scope in this product line. Sales payroll run rate is reported, but this model holds no balance sheet, burn rate, or runway. Affordability is the operator's check against cash on hand."
       }
     ],
     "warnings": [
@@ -253,7 +253,7 @@
     "unallocated_total": 1,
     "notes": [
       "Weights and thresholds are knobs; argue with them in the reasons.",
-      "The split is a starting allocation hypothesis, not a forecast. Engine spend is not yet converted into meetings or bookings; the capacity model in engine.cjs answers staffing separately.",
+      "The split is a starting allocation hypothesis, not a forecast. Engine spend is not converted into meetings or bookings; that conversion is out of scope until a future version explicitly adds it. The capacity model in engine.cjs answers staffing separately.",
       "A human approves every external send, in every engine, always.",
       "Paid Media qualified but the split could only fund it at $1,932 against a $8,000 floor, so it is deferred and its share went back to the engines that clear their own bar.",
       "Events qualified but the split could only fund it at $4,250 against a $15,000 floor, so it is deferred and its share went back to the engines that clear their own bar."

@@ -62,9 +62,9 @@ function versionLine() {
  * never mistakes a staffing verdict for a company plan. */
 const NOT_MODELED = [
   { key: 'demand_coverage', label: 'Demand coverage',
-    note: 'The plan counts the first meetings the bookings target implies. Nothing here proves the funded engines will produce them; engine spend is not converted into meetings.' },
+    note: 'Permanently out of scope in this product line until a future version explicitly adds it. The plan counts the first meetings the bookings target implies. Nothing here proves the funded engines will produce them. Engine spend is not converted into meetings or bookings.' },
   { key: 'cash_and_runway', label: 'Cash and runway viability',
-    note: 'Sales payroll is priced, but this model holds no balance sheet, burn rate, or runway. Check the hiring plan against your cash position before approving it.' }
+    note: 'Permanently out of scope in this product line. Sales payroll run rate is reported, but this model holds no balance sheet, burn rate, or runway. Affordability is the operator\'s check against cash on hand.' }
 ];
 function note(s) { process.stderr.write(s); }
 
@@ -79,6 +79,7 @@ function usage() {
     '  node engine/run.cjs <file> --json               versioned machine-readable output',
     '  node engine/run.cjs <file> --board              board memo (BOARD.md content)',
     '  node engine/run.cjs --example [--json|--board]  run the bundled illustrative example',
+    '  node engine/run.cjs --doctor [params.yaml]      install and environment checks, no network',
     '  node engine/run.cjs --help | --version',
     '',
     'Field groups (the contract):',
@@ -89,6 +90,67 @@ function usage() {
     'Schema and format: company/params.example.yaml documents every field.',
     'Invalid input exits 2 with field-specific errors. Nothing fails open.'
   ].join('\n');
+}
+
+function canAccess(p, mode) {
+  try { fs.accessSync(p, mode); return true; } catch (e) { return false; }
+}
+
+function doctor(paramsArg) {
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  const engines = (pkg.engines && pkg.engines.node) || '>=22';
+  const floorMatch = String(engines).match(/(\d+)/);
+  const floor = floorMatch ? Number(floorMatch[1]) : 22;
+  const nodeVer = process.versions.node;
+  const major = parseInt(nodeVer, 10);
+  const nodeOk = Number.isFinite(major) && major >= floor;
+  const runPath = path.join(root, 'engine', 'run.cjs');
+  const binPath = path.join(root, 'bin', 'nine-engines');
+  const hasRun = fs.existsSync(runPath);
+  const hasBin = fs.existsSync(binPath);
+  const hasGit = fs.existsSync(path.join(root, '.git'));
+  const hasClaude = fs.existsSync(path.join(root, '.claude-plugin', 'plugin.json'));
+  const hasCodex = fs.existsSync(path.join(root, '.codex-plugin', 'plugin.json'));
+  let mode;
+  if (!hasRun || !hasBin) mode = 'skill-only (calculators missing; clone or install the plugin)';
+  else if (hasGit) mode = 'clone';
+  else if (hasClaude || hasCodex) mode = 'plugin';
+  else mode = 'unpacked bundle';
+
+  const paramsPath = paramsArg
+    ? path.resolve(paramsArg)
+    : path.join(process.cwd(), 'company', 'params.yaml');
+  let paramsLine;
+  if (fs.existsSync(paramsPath)) {
+    const writable = canAccess(paramsPath, fs.constants.W_OK);
+    paramsLine = paramsPath + (writable ? ' exists, writable' : ' exists, not writable');
+  } else {
+    const parent = path.dirname(paramsPath);
+    const parentWritable = fs.existsSync(parent) && canAccess(parent, fs.constants.W_OK);
+    paramsLine = paramsPath + ' missing' + (parentWritable ? ' (parent writable)' : '');
+  }
+
+  const planDir = path.join(process.cwd(), 'plan');
+  let planLine;
+  if (fs.existsSync(planDir)) {
+    planLine = planDir + (canAccess(planDir, fs.constants.W_OK) ? ' exists, writable' : ' exists, not writable');
+  } else {
+    const cwdWritable = canAccess(process.cwd(), fs.constants.W_OK);
+    planLine = planDir + ' missing' + (cwdWritable ? ' (cwd writable; mkdir -p plan)' : ' (cwd not writable)');
+  }
+
+  const lines = [
+    'Nine Engines doctor',
+    'Node: v' + nodeVer + ' (requires ' + engines + ') ' + (nodeOk ? 'ok' : 'FAIL'),
+    'Calculators: engine/run.cjs ' + (hasRun ? 'present' : 'MISSING') +
+      ', bin/nine-engines ' + (hasBin ? 'present' : 'MISSING'),
+    'Install mode: ' + mode,
+    'Bundle root: ' + root,
+    'Params path: ' + paramsLine,
+    'Plan dir: ' + planLine
+  ];
+  emit(lines.join('\n'));
+  return (nodeOk && hasRun && hasBin) ? 0 : 1;
 }
 
 /* ---------- helpers ---------- */
@@ -164,7 +226,7 @@ function main() {
   const positional = argv.filter(a => !a.startsWith('--'));
 
   for (const f of flags) {
-    if (!['--json', '--board', '--example', '--help', '--version'].includes(f)) {
+    if (!['--json', '--board', '--example', '--help', '--version', '--doctor'].includes(f)) {
       note('Unknown flag ' + f + '\n\n' + usage() + '\n');
       return 2;
     }
@@ -174,6 +236,14 @@ function main() {
     emit('model ' + ENGINE.MODEL_VERSION + ' · mix ' + MIX.MIX_VERSION +
       ' · params schema v' + PARAMS.SCHEMA_VERSION + ' · output schema v' + OUTPUT_SCHEMA_VERSION);
     return 0;
+  }
+  if (flags.has('--doctor') || positional[0] === 'doctor') {
+    if (flags.has('--json') || flags.has('--board') || flags.has('--example')) {
+      note('doctor does not combine with --json, --board, or --example.\n');
+      return 2;
+    }
+    const fileArg = flags.has('--doctor') ? positional[0] : positional[1];
+    return doctor(fileArg);
   }
   if (flags.has('--json') && flags.has('--board')) {
     note('Pick one of --json or --board.\n');
@@ -326,7 +396,7 @@ function main() {
     L.push('>');
     L.push('> ' + versionLine() + ' · generated ' + generatedOn() + ' · parameters ' + paramsHash(p));
     L.push('');
-    L.push('This is a sales capacity and engine allocation memo. It decides where pipeline money goes and whether the bookings target is staffable. It does not model demand or cash, so a staffing verdict of "clears" is not a statement that the company plan clears.');
+    L.push('This is a sales capacity and engine allocation memo. It decides where pipeline money goes and whether the bookings target is staffable. Demand coverage and cash runway are permanently out of scope in this product line. Engine spend is not converted into meetings or bookings. Payroll run rate is reported; affordability is the operator\'s check. A staffing verdict of "clears" is not a statement that the company plan clears.');
     L.push('');
     if (cap) {
       const scDec = sc;
@@ -404,7 +474,7 @@ function main() {
       ' a month; ' + money(mix.unallocated_total) + ' unallocated (rounding remainder' +
       (mix.run_now.length ? '' : ' plus the intentionally unfunded run pool') + ').');
     L.push('');
-    L.push('This split is a management starting hypothesis from fixed 85/15 weights. It is not a forecast, and engine spend is not converted into meetings or bookings in this model version.');
+    L.push('This split is a management starting hypothesis from fixed 85/15 weights. It is not a forecast. Engine spend is not converted into meetings or bookings, and will not be until a future version explicitly adds that conversion.');
     L.push('');
     if (cap) {
       L.push('## Hires and timing');
@@ -466,7 +536,7 @@ function main() {
         L.push('- ' + s.label + ' support strain: the same plan runs BDR support at ' + pct(sc.fixed[s.key].bdrCheck.util) +
           ' because more bookings mean more meetings to source.');
       });
-      L.push('- The engine allocation is a starting hypothesis, not a demand forecast. Nothing above converts engine spend into meetings.');
+      L.push('- The engine allocation is a starting hypothesis, not a demand forecast. Engine spend is not converted into meetings. Cash and runway are not modeled; payroll run rate is reported, affordability is the operator\'s check.');
       L.push('');
     }
     L.push('## Assumptions this output rests on');

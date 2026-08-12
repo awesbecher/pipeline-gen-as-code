@@ -76,14 +76,17 @@ on the page where you can argue with it.
 The honest boundary, stated up front: the engine allocation and the
 capacity model are two separate calculations. The split across
 engines is a management starting hypothesis from fixed weights, not a
-forecast; this version does not convert engine spend into meetings or
-bookings. The capacity model answers a different question, whether
-your target is staffable at all, and answers it with validated inputs
-and regression-tested calculators. Be precise about what that buys. The
-suite proves deterministic implementation, regression behavior, pinned
-fixtures, and documentation consistency. It does not prove predictive
-validity, and the core capacity constants are operator heuristics, not
-measured industry data. The full accounting is in
+forecast. Engine spend is not converted into meetings or bookings, and
+will not be in this product line until a future version explicitly
+adds that conversion. Cash and runway are not modeled: payroll run
+rate is reported, affordability is the operator's check. The capacity
+model answers a different question, whether your target is staffable
+at all, and answers it with validated inputs and regression-tested
+calculators. Be precise about what that buys. The suite proves
+deterministic implementation, regression behavior, pinned fixtures,
+and documentation consistency. It does not prove predictive validity,
+and the core capacity constants are operator heuristics, not measured
+industry data. The full accounting is in
 [docs/MODEL_CARD.md](docs/MODEL_CARD.md). Every threshold is a knob you
 are supposed to argue with.
 
@@ -118,8 +121,9 @@ with field-specific errors; nothing fails open):
   base and target, churn, expansion, current AEs, BDRs, and
   optionally SEs, leadership, and real ramp cohorts.
 - Narrative context, which drives no verdict and says so: stage,
-  funding, ICP, personas. If a field cannot change the answer, this
-  repo will not pretend it does.
+  funding, ICP, personas, `engines_running`. `engines_running` is
+  annotation only; it does not change verdicts. If a field cannot
+  change the answer, this repo will not pretend it does.
 
 **Outputs:** the verdict table with reasons and decision inputs, exact
 allocation in basis points with unallocated cash reported, the
@@ -128,13 +132,15 @@ capacity check with hiring schedule and payroll, a generated
 scenarios, and machine-readable JSON with versions, warnings, and
 every assumption listed.
 
-**Limits:** engine spend is not converted to meetings (yet); the core
-model constants are one operator's heuristics, tested for
-reproducibility and not for accuracy, indexed in
-[docs/SOURCES.md](docs/SOURCES.md); current engine performance is
-collected as context, annotated on verdicts, and not yet a model
-input. When the model derives something you did not supply, it says
-so in the output.
+**Limits:** engine spend is not converted to meetings or bookings, and
+will not be until a future version explicitly adds that conversion;
+cash and runway are not modeled (payroll run rate is reported;
+affordability is the operator's check); the core model constants are
+one operator's heuristics, tested for reproducibility and not for
+accuracy, indexed in [docs/SOURCES.md](docs/SOURCES.md);
+`engines_running` is collected as context, annotated on verdicts, and
+does not change them. When the model derives something you did not
+supply, it says so in the output.
 
 ## The illustrative fixture
 
@@ -258,7 +264,8 @@ The wrapper finds the engine from its own location, so it works from
 any directory and needs no environment variables. `node
 engine/run.cjs <path>` does the same thing. Flags: `--json` for
 machine-readable output, `--board` for the memo, `--example` for the
-Acme fixture, `--help` for the field contract.
+Acme fixture, `--doctor` for install and environment checks (no
+network), `--help` for the field contract.
 
 **Claude Code plugin** (versioned installs, `/nine-engines:setup`,
 `:monday`, `:review`; plugin code and your project state resolve
@@ -270,7 +277,9 @@ data by accident):
 /plugin install nine-engines@wesbecher
 ```
 
-**Codex CLI plugin**, verified against Codex CLI 0.147.0-alpha.6.5:
+**Codex CLI plugin**, verified against Codex CLI 0.147.0-alpha.6.5.
+Exact commands, cache vs project dir, and known failure modes:
+[docs/CODEX.md](docs/CODEX.md).
 
 ```text
 codex plugin marketplace add awesbecher/pipeline-gen-as-code --ref v0.3.2
@@ -302,17 +311,14 @@ pass the params path explicitly:
 /path/to/plugin-cache/bin/nine-engines ./company/params.yaml --board > plan/BOARD.md
 ```
 
-**Copying the skill alone is a manual-lite path, not the product.** You
-can drop `skills/nine-engines/` into any agent's skills directory, and
-that directory carries the intake interview, the parameter schema, the
-nine decision rules, and the plan templates. With those an agent can
-apply the decision rules by hand and draft a plan in the right shape.
-It cannot do three things the copied directory has no files for: run
-the calculators (no `engine/` and no `bin/`, so no verdicts, no budget
-split, no capacity math), pull the full operating cards (no
-`playbook/`), or cite a claim ID (no `docs/SOURCES.md`). For verdicts
-you can defend and numbers you can publish, clone the repo or install
-the plugin.
+**If you only copied `skills/`, you do not have numbers.** That
+directory carries intake, decision-rule prose, and plan templates. It
+does not carry `engine/` or `bin/`. Do not hand-apply verdicts or
+invent a budget split. Clone the repo or install the plugin, then run
+the calculators. The copied skill is a manual-lite path for labeled
+illustrative discussion, not the product. It also cannot pull the full
+operating cards (no `playbook/`) or cite a claim ID (no
+`docs/SOURCES.md`).
 
 Privacy, scoped honestly. The calculators are dependency-free Node
 and run locally. They make no network calls, and your parameters and
@@ -371,6 +377,8 @@ status, and the known failure modes.
 - [ROADMAP.md](ROADMAP.md) · what ships next and the v1 exit criteria
 - [docs/MODEL_CARD.md](docs/MODEL_CARD.md) · intended use, constants,
   failure modes, and what the tests do not prove
+- [docs/CODEX.md](docs/CODEX.md) · Codex install, cache vs project dir,
+  known failure modes
 - [docs/PRIVACY.md](docs/PRIVACY.md) · what stays local and what your
   assistant sees
 
