@@ -56,7 +56,9 @@ location. Do not depend on those variables.
 1. **Skill-only copy.** If you copied `skills/` and nothing else,
    `engine/run.cjs` and `bin/nine-engines` are missing. The skill must
    STOP. There are no numbers until you clone or install the plugin.
-   `bin/nine-engines doctor` reports `skill-only` in that case.
+   Doctor cannot run in that case; it is `engine/run.cjs`. A doctor
+   report of `skill-only` is only reachable if `run.cjs` exists but
+   `bin/nine-engines` does not.
 2. **Writing into the cache.** Params and plans in the plugin cache are
    in the wrong place and can be overwritten on the next plugin update.
 3. **Running `--example` as the company.** `--example` is the bundled

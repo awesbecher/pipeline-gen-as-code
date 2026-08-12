@@ -4,9 +4,12 @@
  * Usage:
  *   node engine/run.cjs <path/to/params.yaml|.json> [--json|--board]
  *   node engine/run.cjs --example [--json|--board]
+ *   node engine/run.cjs --doctor [params.yaml]
  *   node engine/run.cjs --help | --version
  *
- * Exit codes: 0 success, 2 invalid input or usage, 1 unexpected error.
+ * Exit codes: 0 success, 2 invalid input or usage, 1 unexpected error
+ * or doctor FAIL (Node below the engines floor, or a calculator file
+ * missing). Doctor is the only planned use of 1 besides a crash.
  * There is no implicit fallback to sample data: you either pass your
  * own parameters file or ask for the bundled illustrative example
  * explicitly with --example.
@@ -88,7 +91,8 @@ function usage() {
     '  narrative context: ' + PARAMS.GROUPS.narrative_context.join(', ') + ' (drives no verdict)',
     '',
     'Schema and format: company/params.example.yaml documents every field.',
-    'Invalid input exits 2 with field-specific errors. Nothing fails open.'
+    'Invalid input exits 2 with field-specific errors. Nothing fails open.',
+    'Doctor exits 1 if Node is below the engines floor or a calculator file is missing.'
   ].join('\n');
 }
 
