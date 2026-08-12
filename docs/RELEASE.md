@@ -27,13 +27,30 @@ Verification on the released commit:
    benchmark figures this repo has since corrected. Until it is
    updated, do not send promotion traffic there. The repo-side
    mitigation is in place; the site spec is in the project handoff.
-2. Protect `main`: require pull requests and the test, install-paths
-   and manifests checks; block force pushes and branch deletion. Delete
-   the merged branches `claude/s-tier-release-hardening`,
+2. Done (2026-08-12). Repository ruleset `protect main` (id 20656201,
+   active since 2026-08-10) covers the default branch. It requires a
+   pull request before merge, requires the Actions checks
+   `test (ubuntu-latest, 22)`, `test (ubuntu-latest, 24)`,
+   `test (macos-latest, 22)`, `test (macos-latest, 24)`,
+   `install-paths`, and `manifests`, blocks force pushes, and blocks
+   deletion of `main`. Required approving reviews are 0 and code-owner
+   review is off, so the solo maintainer can merge. The merged branches
+   named here (`claude/s-tier-release-hardening`,
    `claude/v0.3.1-board-truth-hotfix`, `claude/v0.3.2-trust-pass`,
-   `scaffold` and `week-two`.
-3. Enable secret scanning and push protection if the account supports
-   them.
+   `scaffold`, `week-two`) were already gone. Merged PR #6 branch
+   `cursor/trust-dx-optimizations-e091` was deleted the same day. Only
+   `main` remains. "Require branches to be up to date before merging"
+   is still off. Automatically delete head branches is still off. Both
+   need an admin click; the Cursor GitHub App cannot PATCH rulesets or
+   repository settings.
+3. Partial. This is a public personal-account repository, created
+   2026-08-04. GitHub runs secret scanning automatically and for free
+   on public repositories. The Cursor GitHub App cannot read or change
+   `security_and_analysis`, so push protection was not confirmed via
+   API. Dependabot alerts are off (`hasVulnerabilityAlertsEnabled` is
+   false) and the app cannot enable them. Owner action: open
+   Settings, Code security and analysis, confirm Secret scanning and
+   Push protection are enabled, and enable Dependabot alerts.
 4. Plugin directory re-check; the 0.3.0 submission is still in review.
 5. Design-partner phase: five to ten CEO and VC readers before any
    broad announcement. Publish one anonymized case before claiming the
@@ -106,6 +123,23 @@ About description:
 Topics:
 
     ai-native, ai-startups, b2b-sales, board-planning, claude-code, gtm, pipeline-generation, revenue-operations, sales-capacity
+
+Branch protection, ruleset `protect main` (id 20656201, active,
+https://github.com/awesbecher/pipeline-gen-as-code/rules/20656201):
+
+    Target: default branch (`main`)
+    Require a pull request: yes (0 approving reviews, code-owner review off)
+    Required status checks (GitHub Actions app 15368):
+      test (ubuntu-latest, 22)
+      test (ubuntu-latest, 24)
+      test (macos-latest, 22)
+      test (macos-latest, 24)
+      install-paths
+      manifests
+    Require branches to be up to date: no
+    Block force pushes: yes
+    Block deletions: yes
+    Admin bypass: never (solo maintainer can still merge because reviews are 0)
 
 ## Node support
 
