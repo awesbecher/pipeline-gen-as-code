@@ -224,12 +224,11 @@ AEO) so next year's number costs less. They are cheap in cash, not in
 founder time; see MIX-2 in the source registry for the cost basis.
 
 This repository is canonical. A longer prose edition of the playbook
-lives at [wesbecher.llc/pipeline](https://www.wesbecher.llc/pipeline),
-and as of August 2026 it still reflects an earlier version of the
-model: nine engines numbered differently, one combined forecast, and
-several benchmark figures this repository has since corrected. Where
-the two disagree, the repository is right. The page is being brought
-into line.
+lives at [wesbecher.llc/pipeline](https://www.wesbecher.llc/pipeline).
+As of August 2026 the two agree: the same engine numbering, the same
+claim IDs behind every benchmark, and the same separation between
+budget allocation and sales capacity. Where they ever disagree, the
+repository is right.
 
 <img src="assets/flow.svg" alt="company/params.yaml feeds mix.cjs and engine.cjs, which write PLAN.md and BOARD.md from the playbook cards. monday.md and review.md loop weekly. Changed assumptions return to params.yaml." width="100%">
 
