@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+README diagrams restyled to the wesbecher.llc tokens and the
+/pipeline/ two-clock layout. Banner and social card drop the gold W
+for the site OG lockup. No model, schema, or version change.
+
+- `assets/banner.svg` and `assets/social-card.svg` (plus the raster
+  `social-card.png`) match the site OG: black field, 8px `#4361EE`
+  bar, blue-square lockup, sentence-case headline, last phrase in
+  blue. Social footer routes are Playbook, Pipeline, Capacity, Team
+  Buildout. No PMF.
+- `assets/portfolio.svg` is the /pipeline/ "portfolio, by time to
+  turn on" block. Footer states the model does not convert engine
+  spend into meetings.
+- `assets/flow.svg` replaces the README mermaid with the same
+  params-to-plan loop, drawn as square cards with a 4px left rule.
+
 Trust and DX pass: kill docs drift, pin the Codex validator, hard-gate
 a skill-only install, and make demand plus cash/runway a permanent
 boundary. No mix or capacity math change. No version bump.

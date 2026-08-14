@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 520" width="1120" height="520" role="img" aria-label="The portfolio, by time to turn on. This quarter: Automated Outbound, Manual Outbound, ABM, Paid Media, Social Content, Events. Months to instrument: PLG, Community + Partner Led, SEO + AEO, cheapest at scale. This model does not convert engine spend into meetings.">
+  <rect width="1120" height="520" fill="#FFFFFF"/>
+
+  <text x="28" y="36" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="600" letter-spacing="1.6" fill="#6E7684">THE PORTFOLIO, BY TIME TO TURN ON</text>
+
+  <rect x="28" y="52" width="704" height="400" fill="#FFFFFF" stroke="#E3E6EC" stroke-width="1"/>
+  <text x="52" y="82" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="600" letter-spacing="1.6" fill="#2E43B8">TURN ON THIS QUARTER</text>
+  <text x="52" y="102" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="13.5" font-weight="500" fill="#5B6472">Staffed and instrumented in weeks. Pays this year.</text>
+
+  <rect x="52" y="122" width="212" height="110" fill="#F6F7FA"/>
+  <rect x="52" y="122" width="4" height="110" fill="#4361EE"/>
+  <text x="68" y="158" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#0A0A0A">01 Automated Outbound</text>
+  <text x="68" y="182" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" font-weight="500" fill="#5B6472">one GTM engineer + one rep</text>
+
+  <rect x="274" y="122" width="212" height="110" fill="#F6F7FA"/>
+  <rect x="274" y="122" width="4" height="110" fill="#4361EE"/>
+  <text x="290" y="158" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#0A0A0A">03 Manual Outbound</text>
+  <text x="290" y="182" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" font-weight="500" fill="#5B6472">rep-led, ACV $25K and up</text>
+
+  <rect x="496" y="122" width="212" height="110" fill="#F6F7FA"/>
+  <rect x="496" y="122" width="4" height="110" fill="#4361EE"/>
+  <text x="512" y="158" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#0A0A0A">04 ABM</text>
+  <text x="512" y="182" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" font-weight="500" fill="#5B6472">named list + signals</text>
+
+  <rect x="52" y="242" width="212" height="110" fill="#F6F7FA"/>
+  <rect x="52" y="242" width="4" height="110" fill="#4361EE"/>
+  <text x="68" y="278" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#0A0A0A">06 Paid Media</text>
+  <text x="68" y="302" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" font-weight="500" fill="#5B6472">accelerant, not creator</text>
+
+  <rect x="274" y="242" width="212" height="110" fill="#F6F7FA"/>
+  <rect x="274" y="242" width="4" height="110" fill="#4361EE"/>
+  <text x="290" y="278" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#0A0A0A">08 Social Content</text>
+  <text x="290" y="302" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" font-weight="500" fill="#5B6472">founder-led</text>
+
+  <rect x="496" y="242" width="212" height="110" fill="#F6F7FA"/>
+  <rect x="496" y="242" width="4" height="110" fill="#4361EE"/>
+  <text x="512" y="278" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#0A0A0A">09 Events</text>
+  <text x="512" y="302" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" font-weight="500" fill="#5B6472">pre-booked or wasted</text>
+
+  <rect x="754" y="52" width="338" height="400" fill="#FFFFFF" stroke="#E3E6EC" stroke-width="1"/>
+  <text x="778" y="82" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="600" letter-spacing="1.6" fill="#2E43B8">MONTHS TO INSTRUMENT</text>
+  <text x="778" y="102" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="13.5" font-weight="500" fill="#5B6472">Cheapest at scale, in this order.</text>
+
+  <rect x="778" y="118" width="16" height="10" fill="#DCE2FC"/>
+  <rect x="797" y="118" width="16" height="10" fill="#C8D1FA"/>
+  <rect x="816" y="118" width="16" height="10" fill="#B4C0F8"/>
+  <text x="840" y="128" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="700" letter-spacing="0.9" fill="#2E43B8">CHEAPER AT SCALE &#8594;</text>
+
+  <rect x="778" y="146" width="290" height="72" fill="#B4C0F8"/>
+  <text x="794" y="174" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#0A0A0A">02 Product-Led Growth</text>
+  <text x="794" y="196" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" font-weight="600" fill="#2E43B8">cheapest CAC at scale</text>
+
+  <rect x="778" y="228" width="290" height="72" fill="#C8D1FA"/>
+  <text x="794" y="256" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#0A0A0A">05 Community + Partner Led</text>
+  <text x="794" y="278" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" font-weight="600" fill="#2E43B8">second</text>
+
+  <rect x="778" y="310" width="290" height="72" fill="#DCE2FC"/>
+  <text x="794" y="338" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#0A0A0A">07 SEO + AEO</text>
+  <text x="794" y="360" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" font-weight="600" fill="#2E43B8">third</text>
+
+  <text x="28" y="488" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="13.5" font-weight="500" fill="#5B6472">This model does not convert engine spend into meetings.</text>
+</svg>
