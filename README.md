@@ -206,6 +206,8 @@ companies run each one, and the numbers that say each is working,
 with each claim indexed to a source or labeled an operator heuristic
 in [docs/SOURCES.md](docs/SOURCES.md).
 
+<img src="assets/portfolio.svg" alt="The nine engines by time to turn on: this quarter versus months to instrument. This model does not convert engine spend into meetings." width="100%">
+
 | # | Engine | Runs when (the model's rule) |
 |---|--------|------------------------------|
 | 01 | [Automated Outbound](playbook/01-automated-outbound.md) | Nearly always; needs one owner |
@@ -231,18 +233,7 @@ several benchmark figures this repository has since corrected. Where
 the two disagree, the repository is right. The page is being brought
 into line.
 
-```mermaid
-flowchart LR
-    P["company/params.yaml<br/>validated, schema v1"] --> M["engine/mix.cjs<br/>nine verdicts + exact split"]
-    P --> C["engine/engine.cjs<br/>seats, ramp, hiring, payroll"]
-    M --> PL["plan/PLAN.md + BOARD.md<br/>with overrides persisted"]
-    C --> PL
-    K["playbook/<br/>nine operating cards"] --> PL
-    PL --> MO["plan/monday.md"]
-    MO --> R["plan/review.md"]
-    R --> MO
-    R -. assumptions changed .-> P
-```
+<img src="assets/flow.svg" alt="company/params.yaml feeds mix.cjs and engine.cjs, which write PLAN.md and BOARD.md from the playbook cards. monday.md and review.md loop weekly. Changed assumptions return to params.yaml." width="100%">
 
 ## Run it
 
