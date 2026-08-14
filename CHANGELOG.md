@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+README hero cache-bust: the header now loads `assets/hero.svg`, not
+`assets/banner.svg`, so GitHub cannot keep serving the gold-W file.
+Shields.io pills leave the hero. The jump row is a numbered contents
+rail. The tests badge sits under Tests and evidence. No model or
+version change.
+
 README diagrams restyled to the wesbecher.llc tokens and the
 /pipeline/ two-clock layout. Banner and social card drop the gold W
 for the site OG lockup. No model, schema, or version change.
