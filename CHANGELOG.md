@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+README site parity: the Nine Engines methodology section no longer
+tells readers that wesbecher.llc/pipeline reflects an earlier version
+of the model. The page now carries the same engine numbering, the same
+claim IDs behind every benchmark, and the same split between budget
+allocation and sales capacity. The repository stays canonical where
+the two ever disagree. No model, schema, or version change.
+
 README hero cache-bust: the header now loads `assets/hero.svg`, not
 `assets/banner.svg`, so GitHub cannot keep serving the gold-W file.
 Shields.io pills leave the hero. The jump row is a numbered contents
