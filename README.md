@@ -1,20 +1,18 @@
 <div align="center">
-
-<img src="assets/banner.svg" alt="Pipeline gen as code: The Nine Engines playbook by Andrew Wesbecher" width="100%">
-
-[![tests](https://github.com/awesbecher/pipeline-gen-as-code/actions/workflows/tests.yml/badge.svg)](https://github.com/awesbecher/pipeline-gen-as-code/actions/workflows/tests.yml)
-[![license: MIT](https://img.shields.io/badge/license-MIT-0A0A0A)](LICENSE)
-[![dependencies](https://img.shields.io/badge/dependencies-zero-4361EE)](engine/)
-[![skill](https://img.shields.io/badge/agent%20skill-portable-4361EE)](skills/nine-engines/SKILL.md)
-[![status](https://img.shields.io/badge/status-design--partner%20beta-4361EE)](docs/MODEL_CARD.md)
-
-[The board memo](examples/acme/BOARD.md) ·
-[Run it](#run-it) ·
-[What it does](#what-this-is-and-what-it-is-not) ·
-[The engines](#the-nine-engines-methodology) ·
-[Evidence](#tests-and-evidence) ·
-[The operator](#the-operator)
-
+  <img src="assets/hero.svg" alt="Pipeline gen as code. The Nine Engines playbook by Andrew Wesbecher." width="100%">
+  <p>
+    <a href="examples/acme/BOARD.md">01 Board memo</a>
+    &nbsp;·&nbsp;
+    <a href="#run-it">02 Run it</a>
+    &nbsp;·&nbsp;
+    <a href="#what-this-is-and-what-it-is-not">03 What it does</a>
+    &nbsp;·&nbsp;
+    <a href="#the-nine-engines-methodology">04 The engines</a>
+    &nbsp;·&nbsp;
+    <a href="#tests-and-evidence">05 Evidence</a>
+    &nbsp;·&nbsp;
+    <a href="#the-operator">06 The operator</a>
+  </p>
 </div>
 
 ---
@@ -324,6 +322,8 @@ payroll, hiring, customer, or pipeline data. Details in
 [docs/PRIVACY.md](docs/PRIVACY.md).
 
 ## Tests and evidence
+
+[![tests](https://github.com/awesbecher/pipeline-gen-as-code/actions/workflows/tests.yml/badge.svg)](https://github.com/awesbecher/pipeline-gen-as-code/actions/workflows/tests.yml)
 
 No runtime dependencies; the engines run on bare Node. The floor is
 Node 22, and CI runs 22 and 24 on both Ubuntu and macOS.
