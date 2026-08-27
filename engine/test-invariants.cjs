@@ -195,11 +195,13 @@ const cap = E.DEFAULTS.adv.maxPerMonth;
   okTrue('Hiring.capacityOf_le_frontLoaded n=' + n + ' shifted<=front', cMid <= cFront + 1e-6);
 });
 
+/* hireCount_minimal is about feasible schedules. maxPerMonth is 2, so
+ * N-1 hires cannot all sit in month 1. Front-loading under the cap is
+ * the most capacity that count can book; it must still miss. */
 const nHires = def.newSeats.length;
-const allMonth1 = [];
-for (let i = 0; i < nHires - 1; i++) allMonth1.push(1);
-okTrue('Hiring.hireCount_minimal: N-1 all month 1 still misses',
-  capacityOf(allMonth1, def.existingGross, def.steadyMo, def.prof) < def.grossNeeded);
+const fewer = frontLoaded(nHires - 1, cap);
+okTrue('Hiring.hireCount_minimal: N-1 front-loaded under cap still misses',
+  capacityOf(fewer, def.existingGross, def.steadyMo, def.prof) < def.grossNeeded);
 
 console.log('--- Solver.relax_feasible / relax_clears / Inputs.exitArr_ge_target ---');
 const GRID = [];
