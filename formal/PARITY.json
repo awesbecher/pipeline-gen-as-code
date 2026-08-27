@@ -1,0 +1,15 @@
+{
+  "generated_from": "Harmonic Aristotle RequestProject/SolverDefault.lean and SupportPlan.lean (request 0a5a913e-6fbe-4862-93e6-717ff6f63e2a)",
+  "note": "Rounded integers match engine/fixtures.json solver_default. Exact rationals are recorded for the Lean statements.",
+  "existing_gross": 3616652,
+  "existing_gross_rational": "18083261/5",
+  "gross": 6991639,
+  "gross_rational": "69916387/10",
+  "exit": 7022147,
+  "exit_rational": "702214709/100",
+  "hires": [1, 1, 2, 2, 3, 3, 5],
+  "total_bdrs": 6,
+  "new_bdr_hire_months": [1, 2, 3, 5],
+  "total_ses": 5,
+  "bdr_capacity": 780
+}

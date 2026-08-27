@@ -11,7 +11,7 @@
     "nine-engines": "./bin/nine-engines"
   },
   "scripts": {
-    "test": "node engine/test-engine.cjs && node engine/test-mix.cjs && node engine/test-params.cjs && node engine/test-docs.cjs && node engine/test-packaging.cjs",
+    "test": "node engine/test-engine.cjs && node engine/test-mix.cjs && node engine/test-invariants.cjs && node engine/test-formal-parity.cjs && node engine/test-params.cjs && node engine/test-docs.cjs && node engine/test-packaging.cjs",
     "example": "node engine/run.cjs --example",
     "board": "node engine/run.cjs --example --board"
   },

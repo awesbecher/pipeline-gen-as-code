@@ -14,6 +14,12 @@ company/*.local.json
 node_modules/
 .DS_Store
 
+# Lake / Lean build artifacts. Sources under formal/ stay tracked.
+formal/.lake/
+
+# Courier drop for a one-shot import. Not a deliverable.
+_inbox/
+
 # Secrets never belong in this repository. Connector API keys live in
 # environment variables the client expands at launch; see docs/CONNECTORS.md.
 .env

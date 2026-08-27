@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+Formal verification: Harmonic Aristotle Lean model vendored under
+`formal/`. 27 theorems, no sorry, standard axioms. CI rebuilds with
+`lake build`. JS calculators stay pinned by fixtures plus
+`engine/test-invariants.cjs` and `engine/test-formal-parity.cjs`.
+No mix or capacity math change. No version bump.
+
 README hero cache-bust: the header now loads `assets/hero.svg`, not
 `assets/banner.svg`, so GitHub cannot keep serving the gold-W file.
 Shields.io pills leave the hero. The jump row is a numbered contents

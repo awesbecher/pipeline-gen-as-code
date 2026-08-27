@@ -30,11 +30,13 @@ node engine/run.cjs --version
 
 ## Tests
 
-Five suites. Run all five after any change in this directory.
+JS suites. Run them after any change in this directory.
 
 ```bash
 node engine/test-engine.cjs      # capacity model against named, pinned fixtures
 node engine/test-mix.cjs         # verdict logic, thresholds, floors, constraint sweep
+node engine/test-invariants.cjs  # JS mirrors of the Lean theorems in formal/
+node engine/test-formal-parity.cjs # formal/PARITY.json vs solver_default
 node engine/test-params.cjs      # schema: every fail-open case fails closed
 node engine/test-docs.cjs        # docs publish the same numbers as the fixtures
 node engine/test-packaging.cjs   # package layout, bin, and manifest agreement
