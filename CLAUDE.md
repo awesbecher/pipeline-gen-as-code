@@ -72,18 +72,21 @@ truncates captured output at the pipe buffer.
     examples/acme/         the committed illustrative fixture
     docs/                  SOURCES.md (claim registry), CONNECTORS.md,
                            PRIVACY.md, RELEASE.md
+    formal/                Lean 4 model of the calculators (Aristotle)
     plan/                  generated output, gitignored by default
 
 ## Verification
 
     node engine/test-engine.cjs    # capacity: named, pinned fixtures
     node engine/test-mix.cjs       # verdicts, floors, constraint sweep
+    node engine/test-invariants.cjs # JS mirrors of formal/ theorems
+    node engine/test-formal-parity.cjs # PARITY.json vs solver_default
     node engine/test-params.cjs    # schema: fail-closed battery
     node engine/test-docs.cjs      # docs agree with fixtures
     node engine/test-packaging.cjs # captured stdout, ESM ancestor, manifests
 
-Run all five after touching anything in `engine/`; `npm test` runs the
-chain. The fixtures in `engine/fixtures.json` are exact pins; regenerating them
+Run the chain after touching anything in `engine/` or `formal/`; `npm test`
+runs it. The fixtures in `engine/fixtures.json` are exact pins; regenerating them
 (`node engine/gen-fixtures.cjs`) is a deliberate, reviewed act, and
 the workbook-schedule fixture's $50 parity tolerance exists because
 the source workbook rounds monthly cells (the model's own numbers are

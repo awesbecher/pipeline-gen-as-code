@@ -329,9 +329,11 @@ No runtime dependencies; the engines run on bare Node. The floor is
 Node 22, and CI runs 22 and 24 on both Ubuntu and macOS.
 
 ```bash
-npm test                        # all five suites
+npm test                        # JS suites, including invariants and formal parity
 node engine/test-engine.cjs     # capacity: pinned fixtures plus swept invariants
 node engine/test-mix.cjs        # verdicts, spend floors, constraint sweep
+node engine/test-invariants.cjs # JS mirrors of the Lean theorems
+node engine/test-formal-parity.cjs # formal/PARITY.json vs solver_default
 node engine/test-params.cjs     # schema: every fail-open case fails closed
 node engine/test-docs.cjs       # README and plan numbers must match the fixtures
 node engine/test-packaging.cjs  # captured stdout, ESM ancestor, manifests, skills
@@ -359,6 +361,23 @@ anything. No test compares an output to a real company's realized
 bookings, hiring, or payroll, because no such comparison exists yet.
 [docs/MODEL_CARD.md](docs/MODEL_CARD.md) lists every constant, its
 status, and the known failure modes.
+
+## Formally verified invariants
+
+The two calculators have a machine-checked model in Lean 4. Harmonic
+Aristotle produced 27 theorems with no `sorry` and only Lean's
+standard axioms (`propext`, `Classical.choice`, `Quot.sound`). Proofs
+live in [`formal/`](formal/). CI rebuilds them with `lake build`.
+
+The theorems verify the formal model and its exact-rational
+arithmetic. The JavaScript calculators are pinned by
+[`engine/fixtures.json`](engine/fixtures.json) and by the invariant
+tests in `engine/test-invariants.cjs` and `engine/test-formal-parity.cjs`.
+This is not a proof that the JavaScript is bug-free.
+
+Two known divergences (IEEE float versus exact rationals, and
+early-stop on unreachable targets) are recorded in
+[`formal/README.md`](formal/README.md).
 
 ## Read next
 

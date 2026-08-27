@@ -18,8 +18,9 @@ the issue if there is one. -->
 
 **Tests**
 
-- [ ] `npm test` passes locally. All five suites: test-engine,
-      test-mix, test-params, test-docs, test-packaging.
+- [ ] `npm test` passes locally. Suites: test-engine,
+      test-mix, test-invariants, test-formal-parity, test-params,
+      test-docs, test-packaging.
 - [ ] Assertion count before and after:
 - [ ] New behavior has a test. A bug fix has a regression test that
       fails on the old code.

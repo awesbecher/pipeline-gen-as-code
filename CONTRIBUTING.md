@@ -11,21 +11,24 @@ request.
 npm test
 ```
 
-That runs all five suites in order:
+That runs the JS suites in order:
 
 ```bash
 node engine/test-engine.cjs     # capacity: named, pinned fixtures plus swept invariants
 node engine/test-mix.cjs        # verdicts, spend floors, constraint sweep, allocation conservation
+node engine/test-invariants.cjs # JS mirrors of the Lean theorems in formal/
+node engine/test-formal-parity.cjs # formal/PARITY.json vs solver_default
 node engine/test-params.cjs     # schema: every fail-open case fails closed
 node engine/test-docs.cjs       # README, plan, and board numbers must match the fixtures
 node engine/test-packaging.cjs  # captured stdout, ESM ancestor, manifests, skills, workflow shape
 ```
 
-All five must pass locally before you open a pull request, not only in
-CI. There are no runtime dependencies and there is no build step, so
-this takes seconds. The Node floor is 22 (`package.json` engines). CI
-runs the same chain on Node 22 and 24 on Ubuntu and macOS, plus both
-official plugin validators.
+Those suites must pass locally before you open a pull request, not only
+in CI. The JS suites have no runtime dependencies and no build step, so
+they take seconds. The Lean model in `formal/` is a separate
+`lake build`. The Node floor is 22 (`package.json` engines). CI runs
+the same JS chain on Node 22 and 24 on Ubuntu and macOS, plus both
+official plugin validators, plus the Lean rebuild.
 
 ## The fixtures are exact pins
 

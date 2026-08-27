@@ -97,7 +97,7 @@ ok('package.json documents a maintained Node floor (18 and 20 are end of life)',
   /(>=\s*)?(22|24)/.test(String(pkg.engines && pkg.engines.node)) && !/18|20/.test(String(pkg.engines && pkg.engines.node)),
   String(pkg.engines && pkg.engines.node));
 ok('package.json test script runs every suite',
-  ['test-engine', 'test-mix', 'test-params', 'test-docs', 'test-packaging'].every(s => pkg.scripts.test.includes(s)));
+  ['test-engine', 'test-mix', 'test-invariants', 'test-formal-parity', 'test-params', 'test-docs', 'test-packaging'].every(s => pkg.scripts.test.includes(s)));
 ok('no runtime dependencies', !pkg.dependencies || Object.keys(pkg.dependencies).length === 0);
 
 /* ---------- 4. manifests ---------- */
@@ -200,8 +200,11 @@ wfLines.forEach((line, i) => {
 ok('no workflow name holds an unquoted colon', badNames.length === 0, badNames.slice(0, 2).join(' | '));
 const tabs = wfLines.map((l, i) => /\t/.test(l) ? i + 1 : null).filter(Boolean);
 ok('workflow uses no tab indentation', tabs.length === 0, tabs.slice(0, 3).join(', '));
-ok('workflow runs every suite', ['test-engine', 'test-mix', 'test-params', 'test-docs', 'test-packaging']
+ok('workflow runs every suite', ['test-engine', 'test-mix', 'test-invariants', 'test-formal-parity', 'test-params', 'test-docs', 'test-packaging']
   .every(s => wf.includes(s + '.cjs')));
+ok('workflow has a formal Lean job',
+  /name:\s*Lean formal model/.test(wf) && /lake exe cache get/.test(wf) && /lake build/.test(wf)
+  && /sorry/.test(wf) && /native_decide/.test(wf));
 ok('workflow tests macOS, where the truncation reproduced', /macos-latest/.test(wf));
 ok('workflow parses captured JSON instead of discarding it',
   /JSON\.parse\(out\)/.test(wf) && !/--example --json > \/dev\/null/.test(wf));

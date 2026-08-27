@@ -37,6 +37,10 @@ jobs:
         run: node engine/test-engine.cjs
       - name: Mix engine (thresholds, floors, constraint sweep)
         run: node engine/test-mix.cjs
+      - name: Formal invariants mirrored in JavaScript
+        run: node engine/test-invariants.cjs
+      - name: Formal PARITY.json matches solver_default fixture
+        run: node engine/test-formal-parity.cjs
       - name: Input schema (fail-closed battery)
         run: node engine/test-params.cjs
       - name: Docs agree with fixtures
@@ -162,3 +166,49 @@ jobs:
       - name: Marketplace shapes
         run: |
           node -e "const m=JSON.parse(require('fs').readFileSync('.agents/plugins/marketplace.json','utf8')); const e=m.plugins[0]; if(!e.source.source||!e.policy.installation) throw new Error('codex marketplace shape missing')"
+
+  formal:
+    name: Lean formal model
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Cache elan toolchain and Lake build
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.elan
+            formal/.lake
+          key: lean-${{ runner.os }}-${{ hashFiles('formal/lean-toolchain', 'formal/lake-manifest.json', 'formal/lakefile.toml') }}
+          restore-keys: |
+            lean-${{ runner.os }}-
+      - name: Install elan (SHA-pinned v4.2.4)
+        run: |
+          set -euo pipefail
+          ELAN_URL="https://github.com/leanprover/elan/releases/download/v4.2.4/elan-x86_64-unknown-linux-gnu.tar.gz"
+          ELAN_SHA="42b94d4244e8353142c456ec0e4ca6528fd898a6c604d4059f494e706e431f63"
+          if [ ! -x "$HOME/.elan/bin/elan" ]; then
+            curl -fsSL -o /tmp/elan.tar.gz "$ELAN_URL"
+            echo "${ELAN_SHA}  /tmp/elan.tar.gz" | sha256sum -c
+            tar -xzf /tmp/elan.tar.gz -C /tmp
+            /tmp/elan-init -y --default-toolchain none
+          fi
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: lake exe cache get and lake build
+        working-directory: formal
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          lake exe cache get
+          lake build
+      - name: No sorry and no native_decide
+        working-directory: formal
+        run: |
+          set -euo pipefail
+          if grep -R -n --include='*.lean' -E '\bsorry\b|\bnative_decide\b' RequestProject/; then
+            echo "sorry or native_decide found in RequestProject/"
+            exit 1
+          fi
+          echo "RequestProject/ has no sorry and no native_decide"
